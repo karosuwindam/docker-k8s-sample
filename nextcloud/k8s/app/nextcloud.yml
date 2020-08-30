@@ -15,11 +15,14 @@ spec:
       containers:
       - name: nextcloud
         image: arm32v7/nextcloud
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
         volumeMounts:
         - name: nextcloud-st
           mountPath: /var/www/html
+      nodeSelector:
+        type: k8s-worker-1
       volumes:
       - name: nextcloud-st
         persistentVolumeClaim:

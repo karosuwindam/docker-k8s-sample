@@ -10,9 +10,11 @@ spec:
     storage: "20Gi"
   accessModes:
     - ReadWriteOnce
-  nfs:
-    server: 192.168.0.24
-    path: /home/pi/usb/usb0
+  hostPath:
+    path: /home/pi/usb/usb0/mariadb
+  # nfs:
+  #   server: 192.168.0.24
+  #   path: /home/pi/usb/usb0/mariadb
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -24,4 +26,4 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 128Gi
+      storage: 20Gi

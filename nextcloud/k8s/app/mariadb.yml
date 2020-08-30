@@ -15,6 +15,7 @@ spec:
     spec:
       containers:
       - image: turgon37/armhf-mariadb
+        imagePullPolicy: IfNotPresent
         name: mariadb
         env:
         - name: MYSQL_ROOT_PASSWORD
@@ -31,6 +32,8 @@ spec:
         volumeMounts:
         - name: mariadb-persistent-storage
           mountPath: /var/lib/mysql
+      nodeSelector:
+        type: k8s-worker-1  
       volumes:
       - name: mariadb-persistent-storage
         persistentVolumeClaim:

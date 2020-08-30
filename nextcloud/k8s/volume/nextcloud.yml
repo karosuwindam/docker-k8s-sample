@@ -10,9 +10,11 @@ spec:
     storage: "128Gi"
   accessModes:
     - ReadWriteOnce
-  nfs:
-    server: 192.168.0.24
-    path: /home/pi/usb/usb0
+  hostPath:
+    path: /home/pi/usb/usb0/nextcloud
+  # nfs:
+    # server: 192.168.0.24
+    # path: /home/pi/usb/usb0/nextcloud
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

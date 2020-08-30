@@ -17,7 +17,7 @@ spec:
         image: nginx
         ports:
         - containerPort: 80
-       nodeSelector:
+      nodeSelector:
         type: raspberrypi5
 ---
 apiVersion: v1
