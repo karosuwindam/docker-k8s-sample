@@ -1,21 +1,6 @@
 version: '3'
 
 services:
-  # MySQL
-  mysql:
-    image:  hypriot/rpi-mysql
-    container_name: mysql_host1
-    environment:
-        MYSQL_ROOT_PASSWORD: root
-        MYSQL_DATABASE: test_database
-        MYSQL_USER: docker
-        MYSQL_PASSWORD: docker
-        TZ: 'Asia/Tokyo'
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    volumes:
-        - ./services/mysql/data:/var/lib/mysql
-    ports:
-        - 33060:3306
   # Grafana
   grafana:
     image: grafana/grafana
@@ -32,10 +17,10 @@ services:
 #cadvisor-arm
   cadvisor:
     image: braingamer/cadvisor-arm
-    volumes:
+    volumes: 
         - /:/rootfs:ro
-        - /var/run:/var/run:rw
-        - /sys:/sys:ro
+        - /var/run:/var/run:rw 
+        - /sys:/sys:ro 
         - /var/lib/docker/:/var/lib/docker:ro
     ports:
         - 8081:8080
@@ -70,7 +55,5 @@ services:
     container_name: golang
     devices:
         - "/dev/i2c-1"
-    links:
-        - mysql
     ports:
         - 4000:4000
