@@ -19,7 +19,7 @@ spec:
   selector:
     matchLabels:
       app: mysql
-　# podをアップデートする時の動作を定義
+  # podをアップデートする時の動作を定義
   # Recreateのときはpodは一つしか存在できず、更新すると
   # 古いものが消え新しいものが再度作成される
   strategy:
@@ -30,7 +30,7 @@ spec:
         app: mysql
     spec:
       containers:
-      - image: mysql:5.6
+      - image: hypriot/rpi-mysql
         name: mysql
         env:
         - name: MYSQL_ROOT_PASSWORD
@@ -38,7 +38,7 @@ spec:
         ports:
         - containerPort: 3306
           name: mysql
-        volumeMounts:# コンテナ内のどのディレクトリにpersistentVolumeをマウントするか
+        volumeMounts: # コンテナ内のどのディレクトリにpersistentVolumeをマウントするか
         - name: mysql-persistent-storage
           mountPath: /var/lib/mysql
       volumes: #
