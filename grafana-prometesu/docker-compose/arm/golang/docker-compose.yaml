@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  # rpi-senser
+  rpi-senser:
+    image: resin/rpi-raspbian
+    devices:
+        - /dev/vchiq

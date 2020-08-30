@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nextcloud
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+    spec:
+      containers:
+      - name: nextcloud
+        image: nextcloud_app
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nextcloud-st
+          mountPath: /var/www/html
+      volumes:
+      - name: nextcloud-st
+        persistentVolumeClaim:
+          claimName: nextcloud-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-service
+spec:
+  selector:
+    app: nextcloud
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
+
