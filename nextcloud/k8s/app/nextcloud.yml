@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: nextcloud
-        image: nextcloud_app
+        image: arm32v7/nextcloud
         ports:
         - containerPort: 80
         volumeMounts:

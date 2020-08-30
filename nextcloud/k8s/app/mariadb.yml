@@ -1,52 +1,48 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mariadb-next
-  labels:
-    app: nextcloude
+  name: mariadb
 spec:
   selector:
     matchLabels:
-      app: nextcloud
-      tier: mariadb
+      app: mariadb
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: nextcloud
-        tier: mariadb
+        app: mariadb
     spec:
       containers:
       - image: turgon37/armhf-mariadb
         name: mariadb
         env:
         - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-pass
-              key: password
+          value: root
+        - name: MYSQL_PASSWORD
+          value: root
+        - name: MYSQL_DATABASE
+          value: nextcloud
+        - name: MYSQL_USER
+          value: nextcloud
         ports:
         - containerPort: 3306
-          name: mysql
+          name: mariadb
         volumeMounts:
-        - name: mysql-persistent-storage
+        - name: mariadb-persistent-storage
           mountPath: /var/lib/mysql
       volumes:
-      - name: mysql-persistent-storage
+      - name: mariadb-persistent-storage
         persistentVolumeClaim:
-          claimName: mysql-pv-claim
+          claimName: mariadb-pv-claim
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: wordpress-mysql
-  labels:
-    app: wordpress
+  name: mariadb
 spec:
   ports:
     - port: 3306
   selector:
-    app: wordpress
-    tier: mysql
+    app: mariadb
   clusterIP: None

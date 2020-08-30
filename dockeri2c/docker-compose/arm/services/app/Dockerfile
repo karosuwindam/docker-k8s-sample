@@ -6,7 +6,7 @@ RUN  curl -OL https://dl.google.com/go/go1.14.4.linux-armv6l.tar.gz
 RUN tar -C /usr/local -xzf go1.14.4.linux-armv6l.tar.gz
 RUN rm -rf go1.14.4.linux-armv6l.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
-RUN go get -u github.com/jinzhu/gorm
+RUN github.com/go-gorm/gorm
 RUN go get -u github.com/go-sql-driver/mysql
 RUN go get -u github.com/davecheney/i2c
 WORKDIR /app

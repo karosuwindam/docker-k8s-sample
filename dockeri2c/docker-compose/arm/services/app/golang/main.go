@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"github.com/go-gorm/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
@@ -106,4 +106,3 @@ func main() {
 	http.ListenAndServe(":"+port, nil)
 
 }
-
