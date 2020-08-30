@@ -38,6 +38,9 @@ services:
 #exporter
   exporter:
     image: prom/node-exporter
+    # volumes: 
+    #  - /home/pi/usb/usb1:/home/pi/usb/usb1
+    #  - /home/pi/usb/usb2:/home/pi/usb/usb2
     ports:
       - 9100:9100
   #influxdb
@@ -56,4 +59,4 @@ services:
     devices:
         - "/dev/i2c-1"
     ports:
-        - 4000:4000
+        - 9140:9140
