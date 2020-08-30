@@ -4,6 +4,7 @@ services:
 #cadvisor-arm
   cadvisor:
     image: braingamer/cadvisor-arm
+    restart: always
     volumes: 
         - /:/rootfs:ro
         - /var/run:/var/run:rw 
@@ -14,8 +15,9 @@ services:
 #exporter
   exporter:
     image: prom/node-exporter
-    #volumes: 
-    #  - /home/pi/usb/usb1:/home/pi/usb/usb1
-    #  - /home/pi/usb/usb2:/home/pi/usb/usb2
+    restart: always
+    volumes: 
+     - /home/pi/usb/usb1:/home/pi/usb/usb1
+     - /home/pi/usb/usb2:/home/pi/usb/usb2
     ports:
       - 9100:9100
