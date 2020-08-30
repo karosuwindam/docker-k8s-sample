@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+  # deploymentが管理するpodを定義
+  # labelsにapp=mysqlと設定されたpodを管理する
+  selector:
+    app: mysql 
+  clusterIP: None
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+　# podをアップデートする時の動作を定義
+  # Recreateのときはpodは一つしか存在できず、更新すると
+  # 古いものが消え新しいものが再度作成される
+  strategy:
+    type: Recreate
+  template: # podの定義
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:5.6
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: password # 本番ではsecretを使ってねとある
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:# コンテナ内のどのディレクトリにpersistentVolumeをマウントするか
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes: #
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+          # name=mysql-pv-claimを使って、マウントできるPVを探す
