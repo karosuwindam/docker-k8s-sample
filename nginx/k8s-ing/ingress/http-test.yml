@@ -1,0 +1,53 @@
+# apiVersion: networking.k8s.io/v1beta1
+# kind: Ingress
+# metadata:
+#   name: test-ingress
+#   namespace: ns-test
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /
+#     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+# spec:
+#   rules:
+#     # - host: ns-test.192.168.0.25.nip.io
+#     - host: rasbperrypi5.local
+#       http:
+#         paths:
+#           - path: /apache
+#             backend:
+#               serviceName: apache-svc
+#               servicePort: 80
+#           - path: /nginx
+#             backend:
+#               serviceName: nginx-svc
+#               servicePort: 80
+#           - path: /
+#             backend:
+#               serviceName: blackhole
+#               servicePort: 80
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  namespace: ns-test
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: foo.bar.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-svc
+            port:
+              number: 80
+      - path: /apache
+        pathType: Prefix
+        backend:
+          service:
+            name: apache-svc
+            port:
+              number: 80

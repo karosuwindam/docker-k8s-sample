@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: config-vol
+              mountPath: /etc/prometheus/prometheus.yml
+              # mountPath: /prometheus/prometheus.yml
+              subPath: prometheus.yml
+      volumes:
+        - name: config-vol
+          configMap:
+            name: prometheus-configmap
+            items:
+              - key: prometheus.yml
+                path: prometheus.yml
+    

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config2
+data:
+  config: |
+    address-pools:
+      - name: nt-test
+        protocol: layer2
+        addresses:
+          - 192.168.0.240-192.168.0.245
