@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: exporter
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      name: exporter
+  template:
+    metadata:
+      labels:
+        name: exporter
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9100'
+        prometheus.io/path: /metrics
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: exporter
+        image: prom/node-exporter
+        ports:
+        - containerPort: 9100
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: usb1
+          mountPath: /home/pi/usb/usb1
+        - name: usb2
+          mountPath: /home/pi/usb/usb2
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      hostNetwork: true
+      hostPID: true
+      volumes:
+      - name: usb1
+        hostPath:
+          path: /home/pi/usb/usb1
+      - name: usb2
+        hostPath:
+          path: /home/pi/usb/usb2
