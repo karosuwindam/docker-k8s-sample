@@ -61,6 +61,24 @@ data:
       #     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       #     insecure_skip_verify: true  # Required with Minikube.
       #
+      # - job_name: 'kubernetes-nodes'
+      #   tls_config:
+      #     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      #   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      #   kubernetes_sd_configs:
+      #     - role: node
+      # - job_name: 'kubernetes-services'
+      #   tls_config:
+      #     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      #   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      #   kubernetes_sd_configs:
+      #     - role: services
+      # - job_name: 'kubernetes-endpoints'
+      #   tls_config:
+      #     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      #   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      #   kubernetes_sd_configs:
+      #     - role: endpoints
       - job_name: 'kubernetes-pods'
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
@@ -69,7 +87,7 @@ data:
           - role: pod
         relabel_configs:
           - source_labels: [__meta_kubernetes_pod_container_name]
-            regex: 'exporter'
+            regex: cadvisor|exporter
             action: keep
           # - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           #   action: keep

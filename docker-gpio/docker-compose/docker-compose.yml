@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  #golang
+  gogpio:
+    build: services/app
+    container_name: gogpio
+    devices:
+        - "/dev/gpiomem"
