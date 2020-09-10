@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry-front
+  namespace: registry
+spec:
+  selector:
+    matchLabels:
+      name: registry-front
+  template:
+    metadata:
+      labels:
+        name: registry-front
+        app: registry-front
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - amd64
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: registry-front
+        image: ekazakov/docker-registry-frontend
+        env:
+          - name: ENV_DOCKER_REGISTRY_HOST
+            value: "registry"
+          - name: ENV_DOCKER_REGISTRY_PORT
+            value: "5000"
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: 500Mi
+          requests:
+            cpu: 0.5
+            memory: 200Mi
+      terminationGracePeriodSeconds: 30
+    #   hostNetwork: true
+    #   hostPID: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-front
+  namespace: registry
+spec:
+  selector:
+    app: registry-front
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 31001
+  type: LoadBalancer

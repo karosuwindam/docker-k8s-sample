@@ -11,6 +11,9 @@ services:
       - 5000:5000
 #docker-registry-frontend
   front:
+    #amd64
+    #image: ekazakov/docker-registry-frontend
+    #arm
     image: ryansmick/arm-docker-registry-frontend:1.0
     restart: always
     environment:

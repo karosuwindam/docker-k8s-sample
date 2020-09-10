@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry
+  namespace: registry
+spec:
+  selector:
+    matchLabels:
+      name: registry
+  template:
+    metadata:
+      labels:
+        name: registry
+        app: registry
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - amd64
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: registry
+        image: registry:2.7.1
+        ports:
+        - containerPort: 5000
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 0.5
+            memory: 200Mi
+        volumeMounts:
+          - name: registry-st
+            mountPath: /var/lib/registry
+      terminationGracePeriodSeconds: 30
+    #   hostNetwork: true
+    #   hostPID: true
+      volumes:
+        - name: registry-st
+          persistentVolumeClaim:
+            claimName: registry-pv-claim
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "registry-pv-volume"
+  namespace: registry
+  labels:
+    type: "local"
+spec:
+  storageClassName: "manual"
+  capacity:
+    storage: "20Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /lib/opt
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registry-pv-claim
+  namespace: registry
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: registry
+    namespace: registry
+spec:
+  selector:
+    app: registry
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 31000
+  type: LoadBalancer
