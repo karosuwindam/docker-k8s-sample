@@ -37,9 +37,15 @@ spec:
         effect: NoSchedule
       containers:
       - name: gogpio
-        image: nginx #prom/node-exporter
-        # ports:
-        # - containerPort: 9100
+        image: bookserver2:31000/test/gogpio:runtest3 #prom/node-exporter
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: WEB_PORT
+            value: "9999"
+        ports:
+          - containerPort: 9999
+        # hostDevices:
+        #   - /dev/gpiomem
         resources:
           limits:
             memory: 200Mi
@@ -47,7 +53,8 @@ spec:
             cpu: 100m
             memory: 200Mi
         securityContext:
-            privileged: true
+          privileged: true
       terminationGracePeriodSeconds: 30
-    #   hostNetwork: true
-    #   hostPID: true
+      hostNetwork: true
+      hostPID: true
+   

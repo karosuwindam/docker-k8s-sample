@@ -12,5 +12,6 @@ ADD ./golang ./
 RUN go build -o app
 FROM multiarch/ubuntu-core:armhf-bionic
 WORKDIR /app
+COPY ./golang/index.html /app
 COPY --from=builder /app/app /app
 CMD ["./app"]

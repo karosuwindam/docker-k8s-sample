@@ -1,2 +1,2 @@
-kubectl label nodes k8s-worker-1 gpio-
-kubectl label nodes k8s-worker-1 gpio=true
+kubectl label nodes raspberrypi5 gpio-
+kubectl label nodes raspberrypi5 gpio=true
