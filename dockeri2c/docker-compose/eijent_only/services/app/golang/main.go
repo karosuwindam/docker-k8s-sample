@@ -55,5 +55,6 @@ func main() {
 	http.HandleFunc("/metrics", metrics)
 	http.HandleFunc("/", data)
 	http.ListenAndServe(":"+port, nil)
+	fmt.Println("stop server")
 
 }

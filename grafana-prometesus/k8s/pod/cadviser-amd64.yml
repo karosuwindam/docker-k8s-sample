@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: cadvisor
+  name: cadvisor-amd64
   namespace: gf-space
 spec:
   selector:
@@ -28,13 +28,13 @@ spec:
                 - key: kubernetes.io/arch
                   operator: In
                   values:
-                    - arm
+                    - amd64
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
       containers:
       - name: cadvisor
-        image: braingamer/cadvisor-arm
+        image: zcube/cadvisor
         ports:
         - containerPort: 8080
         resources:

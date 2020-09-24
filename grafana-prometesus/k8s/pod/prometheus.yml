@@ -12,6 +12,15 @@ spec:
       labels:
         app: prometheus
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - "raspberrypi5"
       serviceAccountName: prometheus
       serviceAccount: prometheus
       containers:
@@ -25,6 +34,8 @@ spec:
               mountPath: /etc/prometheus/prometheus.yml
               # mountPath: /prometheus/prometheus.yml
               subPath: prometheus.yml
+            - name: prometheus-vol
+              mountPath: /prometheus
       volumes:
         - name: config-vol
           configMap:
@@ -32,4 +43,7 @@ spec:
             items:
               - key: prometheus.yml
                 path: prometheus.yml
+        - name: prometheus-vol
+          persistentVolumeClaim:
+            claimName: prometheus-pv-claim
     

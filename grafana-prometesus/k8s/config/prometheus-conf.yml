@@ -87,7 +87,7 @@ data:
           - role: pod
         relabel_configs:
           - source_labels: [__meta_kubernetes_pod_container_name]
-            regex: cadvisor|exporter
+            regex: cadvisor|exporter|dockeri2cmoni
             action: keep
           # - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           #   action: keep
@@ -112,8 +112,12 @@ data:
           - source_labels: [__meta_kubernetes_pod_node_name]
             action: replace
             target_label: node_name
-      #remote_write:
-      #  - url: "http://influxdb:8086/api/v1/prom/write?db=prometheus"
+    remote_write:
+      - url: "http://192.168.0.21:8086/api/v1/prom/write?db=prometheus"
+        queue_config:
+          max_shards: 500
+          max_samples_per_send: 300
+          batch_send_deadline: 15s
       
-      #remote_read:
-      # - url: "http://influxdb:8086/api/v1/prom/read?db=prometheus"
+    remote_read:
+      - url: "http://192.168.0.21:8086/api/v1/prom/read?db=prometheus"
