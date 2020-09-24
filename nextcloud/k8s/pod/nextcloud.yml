@@ -15,14 +15,15 @@ spec:
       containers:
       - name: nextcloud
         # image: arm32v7/nextcloud
-        image: nextcloud_app
+        # image: nextcloud_app
+        image: bookserver2:31000/karosu/nextcloud_smb
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
         resources:
           limits:
             cpu: 2
-            memory: 1Gi
+            memory: 1.5Gi
           requests:
             cpu: 1
             memory: 400Mi
