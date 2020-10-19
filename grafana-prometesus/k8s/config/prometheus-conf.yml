@@ -115,9 +115,9 @@ data:
     remote_write:
       - url: "http://192.168.0.21:8086/api/v1/prom/write?db=prometheus"
         queue_config:
-          max_shards: 500
+          max_shards: 600
           max_samples_per_send: 300
-          batch_send_deadline: 15s
+          batch_send_deadline: 30s
       
     remote_read:
       - url: "http://192.168.0.21:8086/api/v1/prom/read?db=prometheus"
