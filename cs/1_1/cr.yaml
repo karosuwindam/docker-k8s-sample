@@ -1,0 +1,17 @@
+apiVersion: "stable.example.com/v1"
+kind: Sample
+# kind: CronTab
+metadata:
+  name: my-cr-sample-object
+spec:
+#   # image: my-cr-image
+  cronSpec: "* * * * */5"
+  # cronSpec: 100
+  message: "Hello Custom Resource!"
+# apiVersion: "stable.example.com/v1"
+# kind: CronTab
+# metadata:
+#   name: my-new-cron-object
+# spec:
+#   cronSpec: "* * * * */5"
+#   image: my-awesome-cron-image

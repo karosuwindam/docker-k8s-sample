@@ -1,0 +1,110 @@
+$ kubectl describe customresourcedefinition.apiextensions.k8s.io/samples.stable.example.com
+Name:         samples.stable.example.com
+Namespace:    
+Labels:       <none>
+Annotations:  <none>
+API Version:  apiextensions.k8s.io/v1
+Kind:         CustomResourceDefinition
+Metadata:
+  Creation Timestamp:  2020-10-29T12:37:35Z
+  Generation:          1
+  Managed Fields:
+    API Version:  apiextensions.k8s.io/v1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        f:acceptedNames:
+          f:kind:
+          f:listKind:
+          f:plural:
+          f:shortNames:
+          f:singular:
+        f:conditions:
+    Manager:      kube-apiserver
+    Operation:    Update
+    Time:         2020-10-29T12:37:35Z
+    API Version:  apiextensions.k8s.io/v1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        f:conversion:
+          .:
+          f:strategy:
+        f:group:
+        f:names:
+          f:kind:
+          f:listKind:
+          f:plural:
+          f:shortNames:
+          f:singular:
+        f:scope:
+        f:versions:
+      f:status:
+        f:storedVersions:
+    Manager:         kubectl-client-side-apply
+    Operation:       Update
+    Time:            2020-10-29T12:37:35Z
+  Resource Version:  157663
+  Self Link:         /apis/apiextensions.k8s.io/v1/customresourcedefinitions/samples.stable.example.com
+  UID:               40580709-c89c-4c9b-979c-4af151c5e379
+Spec:
+  Conversion:
+    Strategy:  None
+  Group:       stable.example.com
+  Names:
+    Kind:       Sample
+    List Kind:  SampleList
+    Plural:     samples
+    Short Names:
+      sp
+    Singular:  sample
+  Scope:       Namespaced
+  Versions:
+    Name:  v1beta1
+    Schema:
+      openAPIV3Schema:
+        Properties:
+          Host:
+            Type:  string
+          Port:
+            Type:  string
+        Type:      object
+    Served:        true
+    Storage:       true
+    Name:          v1
+    Schema:
+      openAPIV3Schema:
+        Properties:
+          Host:
+            Type:  string
+          Port:
+            Type:  string
+        Type:      object
+    Served:        true
+    Storage:       false
+Status:
+  Accepted Names:
+    Kind:       Sample
+    List Kind:  SampleList
+    Plural:     samples
+    Short Names:
+      sp
+    Singular:  sample
+  Conditions:
+    Last Transition Time:  2020-10-29T12:37:35Z
+    Message:               no conflicts found
+    Reason:                NoConflicts
+    Status:                True
+    Type:                  NamesAccepted
+    Last Transition Time:  2020-10-29T12:37:35Z
+    Message:               the initial names have been accepted
+    Reason:                InitialNamesAccepted
+    Status:                True
+    Type:                  Established
+  Stored Versions:
+    v1beta1
+Events:  <none>
