@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-nextcloud
+spec:
+  selector:
+    matchLabels:
+      app: nginx-nextcloud
+  template:
+    metadata:
+      labels:
+        app: nginx-nextcloud
+    spec:
+      containers:
+        - name: nginx-nextcloud
+          image: nginx
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config-vol
+              mountPath: /etc/nginx/conf.d/server.conf
+              # mountPath: /prometheus/prometheus.yml
+              subPath: server.conf
+      nodeSelector:
+        type: k8s-worker-1
+      hostNetwork: true
+      hostPID: true
+      volumes:
+        - name: config-vol
+          configMap:
+            name: nginx-configmap
+            items:
+              - key: server.conf
+                path: server.conf

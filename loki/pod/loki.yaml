@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      containers:
+        - name: loki
+          image: grafana/loki:1.6.0
+          imagePullPolicy: IfNotPresent
+          args:
+          - --config.file=/etc/loki/local-config.yaml       #   command: ["-config.file=/etc/loki/local-config.yaml"]
+          ports:
+            - containerPort: 3100
+          volumeMounts:
+            - name: grafana-vol
+              mountPath: /loki
+      volumes:
+        - name: grafana-vol
+          persistentVolumeClaim:
+            claimName: myclaim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+  namespace: gf-space
+spec:
+  selector:
+    app: loki
+  ports:
+    - port: 3100
+  clusterIP: None
