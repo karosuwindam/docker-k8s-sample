@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  #golang
+  golang:
+    build: services/app
+    container_name: golang
+    environment:
+      DHT11_PORT: 12
+      SENSER_TYPE: DHT11
+
+  #  restart: always
+    privileged: true
+  #  volumes:
+  #    - /sys/class/gpio/:/sys/class/gpio/:rw
+  #  devices:
+  #      - "/dev/gpiomem"
+#    ports:
+#        - 9140:9140

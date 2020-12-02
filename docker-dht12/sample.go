@@ -25,7 +25,7 @@ func main() {
 	// sensorType := dht.AM2302
 	// sensorType := dht.DHT12
 	// Read DHT11 sensor data from specific pin, retrying 10 times in case of failure.
-	pin := 12
+	pin := 13
 	temperature, humidity, retried, err :=
 		dht.ReadDHTxxWithRetry(sensorType, pin, false, 10)
 	if err != nil {
