@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -14,47 +11,66 @@ type AM2320Data struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-var data_hum, data_tmp float64
-var cpu_tmp string
-
-func metrics(w http.ResponseWriter, r *http.Request) {
-	output := ""
-	if data_hum != 0 || data_tmp != 0 {
-		output += "senser_data{type=\"tmp\"} " + strconv.FormatFloat(data_tmp, 'f', 1, 64)
-		output += "\n" + "senser_data{type=\"hum\"} " + strconv.FormatFloat(data_hum, 'f', 1, 64)
-	}
-	output += "\n" + "senser_data{type=\"cpu_tmp\"} " + cpu_tmp
-	fmt.Fprintf(w, "%s", output)
-
-}
-func data(w http.ResponseWriter, r *http.Request) {
-	output := "<html><body><a href=\"/metrics\">metrics</a></body></html>"
-	fmt.Fprintf(w, "%s", output)
-
-}
-
 func main() {
-	hum, tmp := ReadAM2320()
-	data_hum = float64(hum)
-	data_tmp = float64(tmp)
-	cpu_tmp = cpuTmp()
+	server := ServerInt()
+	server.Sennser.Am2320.Init()
+	for i := 0; i < 3; i++ {
+		if server.Sennser.Am2320.Test() {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	if !server.Sennser.Am2320.Flag {
+		server.Sennser.Dht.Init()
+		for i := 0; i < 1; i++ {
+			if server.Sennser.Dht.Test() {
+				break
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+	server.Sennser.Tsl2561.Init()
+
+	for i := 0; i < 3; i++ {
+		if server.Sennser.Tsl2561.Test() {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	if server.Sennser.Am2320.Flag {
+		hum, tmp := server.Sennser.Am2320.Read()
+		server.Data.Hum = float64(hum)
+		server.Data.Tmp = float64(tmp)
+	} else if server.Sennser.Dht.Flag {
+		hum, tmp := server.Sennser.Dht.Read()
+		server.Data.Hum = float64(hum)
+		server.Data.Tmp = float64(tmp)
+	}
+	if server.Sennser.Tsl2561.Flag {
+		lux := server.Sennser.Tsl2561.ReadVisibleLux()
+		server.Data.Lux = lux
+	}
+	server.Data.Rpi.cpu_tmp = cpuTmp()
 	go func() {
 		for {
-			hum, tmp := ReadAM2320()
-			data_hum = float64(hum)
-			data_tmp = float64(tmp)
-			cpu_tmp = cpuTmp()
-			// sample1 := AM2320Data{Tmp: tmp, Hum: hum}
-			// fmt.Printf("%v,%v\n", sample1.Tmp, sample1.Hum)
+			if server.Sennser.Am2320.Flag {
+				hum, tmp := server.Sennser.Am2320.Read()
+				server.Data.Hum = float64(hum)
+				server.Data.Tmp = float64(tmp)
+			} else if server.Sennser.Dht.Flag {
+				hum, tmp := server.Sennser.Dht.Read()
+				server.Data.Hum = float64(hum)
+				server.Data.Tmp = float64(tmp)
+			}
+			if server.Sennser.Tsl2561.Flag {
+				lux := server.Sennser.Tsl2561.ReadVisibleLux()
+				server.Data.Lux = lux
+			}
+			server.Data.Rpi.cpu_tmp = cpuTmp()
 			time.Sleep(15 * time.Second)
 		}
 	}()
-
-	port := "9140"
-	fmt.Println("start server " + port)
-	http.HandleFunc("/metrics", metrics)
-	http.HandleFunc("/", data)
-	http.ListenAndServe(":"+port, nil)
-	fmt.Println("stop server")
+	server.ServerStart()
 
 }
