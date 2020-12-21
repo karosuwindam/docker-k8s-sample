@@ -12,6 +12,7 @@ const (
 	CONTROL   byte  = 0x80
 	TIMING    byte  = 0x81
 	INTERRUPT byte  = 0x86
+	IDDATA    byte  = 0x8A
 	DATA0LOW  byte  = 0x8C
 	DATA0HIGH byte  = 0x8D
 	DATA1LOW  byte  = 0x8E
@@ -95,10 +96,13 @@ const (
 var packageType int = 0
 
 type Tsl2561 struct {
-	Flag bool
+	Flag    bool
+	Name    string
+	Message string
 }
 
 func (t *Tsl2561) Init() {
+	t.Name = "tsl256"
 	t.Up()
 	t.WriteByte(INTERRUPT, 0)
 	t.Down()
@@ -107,30 +111,56 @@ func (t *Tsl2561) Init() {
 func (t *Tsl2561) WriteByte(command, data byte) {
 	i2c, err := i2c.New(TSL2561, I2C_BUS)
 	if err != nil {
+		t.Message = err.Error()
 		return
 	}
 	defer i2c.Close()
-	i2c.Write([]byte{command, data})
+	_, err = i2c.Write([]byte{command, data})
+	if err != nil {
+		t.Message = err.Error()
+		return
+	}
+	t.Message = "OK"
 
 }
 func (t *Tsl2561) ReadByte(command byte, size int) []byte {
 	i2c, err := i2c.New(TSL2561, I2C_BUS)
 	if err != nil {
+		t.Message = err.Error()
 		return []byte{}
 	}
 	defer i2c.Close()
 	i2c.Write([]byte{command})
+	if err != nil {
+		t.Message = err.Error()
+		return []byte{}
+	}
 	buf := make([]byte, size)
 	i2c.Read(buf)
+	if err != nil {
+		t.Message = err.Error()
+		return []byte{}
+	}
+	t.Message = "OK"
 	return buf
 }
 
 func (t *Tsl2561) Test() bool {
+	t.Flag = false
 	i2c, err := i2c.New(TSL2561, I2C_BUS)
 	if err != nil {
+		fmt.Println(err.Error())
+		t.Message = err.Error()
 		return false
 	}
 	defer i2c.Close()
+	tmp := t.ReadByte(IDDATA, 1)
+	if tmp[0] != 0x50 {
+		t.Message = "NG"
+		return false
+	}
+	t.Message = "OK"
+	t.Flag = true
 	return true
 }
 func (t *Tsl2561) Up() {
@@ -321,22 +351,4 @@ func (t *Tsl2561) ReadData(onoff, gain int) {
 	fmt.Println(full, ir, float64(full-ir)*0.03)
 	t.Down()
 
-}
-func _Readtsl2561() (float32, float32) {
-	i2c, err := i2c.New(TSL2561, I2C_BUS)
-	if err != nil {
-		return 0, 0
-
-	}
-	defer i2c.Close()
-	i2c.Write([]byte{0x0})
-	time.Sleep(time.Microsecond * 10)
-
-	i2c.Write([]byte{0x3, 0x0, 0x4})
-	time.Sleep(time.Microsecond * 15)
-	buf := make([]byte, 6)
-	i2c.Read(buf)
-	hum := float32((uint(buf[2])<<8)|uint(buf[3])) / 10 //湿度
-	tmp := float32((uint(buf[4])<<8)|uint(buf[5])) / 10 //温度
-	return hum, tmp
 }
