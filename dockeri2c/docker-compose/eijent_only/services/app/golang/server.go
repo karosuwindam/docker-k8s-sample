@@ -8,18 +8,24 @@ import (
 )
 
 type SennserData struct {
-	Am2320  Am2320
-	Dht     DhtSenser
-	Tsl2561 Tsl2561
+	Am2320    Am2320
+	Dht       DhtSenser
+	Tsl2561   Tsl2561
+	Co2senser Co2Sennser
 }
 
 type RaspberrypiData struct {
 	cpu_tmp string
 }
+type Co2Data struct {
+	Tmp int
+	Co2 int
+}
 type DataType struct {
 	Hum float64
 	Tmp float64
 	Lux int
+	Co2 Co2Data
 	Rpi RaspberrypiData
 }
 
@@ -67,6 +73,15 @@ func (t *ServerData) jsonData(w http.ResponseWriter, r *http.Request) {
 		tmp.Data = strconv.Itoa(t.Data.Lux)
 		outdata = append(outdata, tmp)
 	}
+	if t.Sennser.Co2senser.Flag {
+		tmp.Senser = t.Sennser.Co2senser.Name
+		tmp.Type = "co2"
+		tmp.Data = strconv.Itoa(t.Data.Co2.Co2)
+		outdata = append(outdata, tmp)
+		tmp.Type = "tmp"
+		tmp.Data = strconv.Itoa(t.Data.Co2.Tmp)
+		outdata = append(outdata, tmp)
+	}
 	tmp.Senser = "raspberrypi"
 	tmp.Type = "cpu_tmp"
 	tmp.Data = t.Data.Rpi.cpu_tmp
@@ -95,6 +110,10 @@ func (t *ServerData) health(w http.ResponseWriter, r *http.Request) {
 			code = 405
 		}
 		outdata = append(outdata, tmp)
+	} else {
+		tmp.Sennserdata = "Temp Sensor"
+		tmp.Message = "OFF"
+		outdata = append(outdata, tmp)
 	}
 	if t.Sennser.Tsl2561.Flag {
 		tmp.Sennserdata = t.Sennser.Tsl2561.Name
@@ -102,6 +121,22 @@ func (t *ServerData) health(w http.ResponseWriter, r *http.Request) {
 		if tmp.Message != "OK" {
 			code = 405
 		}
+		outdata = append(outdata, tmp)
+	} else {
+		tmp.Sennserdata = "Lux Sensor"
+		tmp.Message = "OFF"
+		outdata = append(outdata, tmp)
+	}
+	if t.Sennser.Co2senser.Flag {
+		tmp.Sennserdata = t.Sennser.Co2senser.Name
+		tmp.Message = t.Sennser.Co2senser.Message
+		if tmp.Message != "OK" {
+			code = 405
+		}
+		outdata = append(outdata, tmp)
+	} else {
+		tmp.Sennserdata = "CO2 sensor"
+		tmp.Message = "OFF"
 		outdata = append(outdata, tmp)
 	}
 	if len(outdata) < 1 {
@@ -130,6 +165,12 @@ func (t *ServerData) metrics(w http.ResponseWriter, r *http.Request) {
 			output += "\n"
 		}
 		output += "senser_data{type=\"lux\"} " + strconv.Itoa(t.Data.Lux)
+	}
+	if t.Sennser.Co2senser.Flag {
+		if output != "" {
+			output += "\n"
+		}
+		output += "senser_data{type=\"co2\"} " + strconv.Itoa(t.Data.Co2.Co2)
 	}
 	if output != "" {
 		output += "\n"

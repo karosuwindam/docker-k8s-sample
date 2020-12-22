@@ -30,6 +30,7 @@ func main() {
 		}
 	}
 	server.Sennser.Tsl2561.Init()
+	server.Sennser.Co2senser.Init("/dev/ttyS0")
 
 	for i := 0; i < 3; i++ {
 		if server.Sennser.Tsl2561.Test() {
@@ -51,6 +52,11 @@ func main() {
 		lux := server.Sennser.Tsl2561.ReadVisibleLux()
 		server.Data.Lux = lux
 	}
+	if server.Sennser.Co2senser.Flag {
+		co2ppm, temp := server.Sennser.Co2senser.Read()
+		server.Data.Co2.Co2 = co2ppm
+		server.Data.Co2.Tmp = temp
+	}
 	server.Data.Rpi.cpu_tmp = cpuTmp()
 	go func() {
 		for {
@@ -66,6 +72,11 @@ func main() {
 			if server.Sennser.Tsl2561.Flag {
 				lux := server.Sennser.Tsl2561.ReadVisibleLux()
 				server.Data.Lux = lux
+			}
+			if server.Sennser.Co2senser.Flag {
+				co2ppm, temp := server.Sennser.Co2senser.Read()
+				server.Data.Co2.Co2 = co2ppm
+				server.Data.Co2.Tmp = temp
 			}
 			server.Data.Rpi.cpu_tmp = cpuTmp()
 			time.Sleep(15 * time.Second)

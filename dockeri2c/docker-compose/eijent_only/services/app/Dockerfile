@@ -7,6 +7,7 @@ RUN rm -rf go1.14.4.linux-armv6l.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
 RUN go get -u github.com/davecheney/i2c
 RUN go get -u github.com/d2r2/go-dht
+RUN go get -u github.com/tarm/serial
 # RUN go get -u 
 WORKDIR /app
 ADD ./golang/ ./

@@ -12,7 +12,7 @@ func main() {
 	m := 0
 	var err error
 	output := []byte{}
-	c := &serial.Config{Name: "/dev/serial0", Baud: 9600}
+	c := &serial.Config{Name: "/dev/ttyS0", Baud: 9600}
 	s, err := serial.OpenPort(c)
 	if err != nil {
 		log.Fatal(err)
