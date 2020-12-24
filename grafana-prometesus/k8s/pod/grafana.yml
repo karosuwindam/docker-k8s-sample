@@ -14,11 +14,13 @@ spec:
     spec:
       containers:
         - name: grafana
-          image: grafana/grafana
+          image: grafana/grafana:7.3.6
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
               value: 'Asia/Tokyo'
+            # - name: GF_INSTALL_PLUGINS
+            #   value: 'grafana-image-renderer'
           ports:
             - containerPort: 3000
           volumeMounts:

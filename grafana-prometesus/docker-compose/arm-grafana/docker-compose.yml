@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  # Grafana
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+        TZ: 'Asia/Tokyo'
+    ports:
+        - 3500:3000
