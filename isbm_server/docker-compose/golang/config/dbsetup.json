@@ -1,0 +1,9 @@
+{
+  "Dbtype": "mysql",
+  "Dbuser": "bookserver",
+  "Dbpassword": "bookserver",
+  "Ipaddr": "bookserver2.local",
+  "Port": "3306",
+  "Databs": "isbn_bookbase",
+  "DbPath": "./test.db"
+}
