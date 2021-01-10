@@ -8,12 +8,12 @@ spec:
   - port: 3306
   # deploymentが管理するpodを定義
   # labelsにapp=mysqlと設定されたpodを管理する
-    targetPort: 3306
-    nodePort: 32001
+    # targetPort: 3306
+    # nodePort: 32001
   selector:
     app: mysqlhost 
-  # clusterIP: None
-  type: LoadBalancer
+  clusterIP: None
+  # type: LoadBalancer
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
