@@ -1,25 +1,29 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql_host
+  name: mysqlhost
   namespace: isbn-sp
 spec:
   ports:
   - port: 3306
   # deploymentが管理するpodを定義
   # labelsにapp=mysqlと設定されたpodを管理する
+    targetPort: 3306
+    nodePort: 32001
   selector:
-    app: mysql_host 
-  clusterIP: None
+    app: mysqlhost 
+  # clusterIP: None
+  type: LoadBalancer
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
-  name: mysql
+  name: mysqlhost
+  namespace: isbn-sp
 spec:
   selector:
     matchLabels:
-      app: mysql
+      app: mysqlhost
   # podをアップデートする時の動作を定義
   # Recreateのときはpodは一つしか存在できず、更新すると
   # 古いものが消え新しいものが再度作成される
@@ -28,11 +32,11 @@ spec:
   template: # podの定義
     metadata:
       labels:
-        app: mysql_host
+        app: mysqlhost
     spec:
       containers:
       - image: hypriot/rpi-mysql
-        name: mysql_host
+        name: mysqlhost
         env:
         - name: MYSQL_ROOT_PASSWORD
           value: root
@@ -44,9 +48,15 @@ spec:
           value: bookserver
         - name: TZ
           value: 'Asia/Tokyo'
+        # - name: LANG
+        #   value: en_GB.UTF-8
+        # command: [sh,-c,"mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci"]
+        args:
+        - --character-set-server=utf8mb4
+        - --collation-server=utf8mb4_unicode_ci
         ports:
         - containerPort: 3306
-          name: mysql
+          name: mysqlhost
         volumeMounts: # コンテナ内のどのディレクトリにpersistentVolumeをマウントするか
         - name: mysql-persistent-storage
           mountPath: /var/lib/mysql

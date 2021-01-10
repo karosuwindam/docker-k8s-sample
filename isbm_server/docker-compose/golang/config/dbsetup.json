@@ -2,8 +2,9 @@
   "Dbtype": "mysql",
   "Dbuser": "bookserver",
   "Dbpassword": "bookserver",
-  "Ipaddr": "bookserver2.local",
+  "Ipaddr": "bookserver2",
   "Port": "3306",
+  "Port": "32001",
   "Databs": "isbn_bookbase",
   "DbPath": "./test.db"
 }

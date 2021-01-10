@@ -14,7 +14,7 @@ spec:
 #   hostPath:
 #     path: "/mnt/data"
   nfs:
-    server: 192.168.0.25
+    server: 192.168.0.24
     path: /home/pi/usb/usb1/mysql
 ---
 apiVersion: v1
