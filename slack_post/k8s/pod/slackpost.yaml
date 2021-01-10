@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: slackpost-env
+data:
+  SLACK_TOKEN: token
+  SLACK_CHANNEL: randam
+  WEB_PORT: 8080
+  # WEB_IP: 
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slackpost
+spec:
+  selector:
+    matchLabels:
+      app: slackpost
+  template:
+    metadata:
+      labels:
+        app: slackpost
+    spec:
+      containers:
+        - name: slackpost
+          image: bookserver2:31000/moni/slackpost:0.1
+          imagePullPolicy: IfNotPresent
+          envFrom:
+              - configMapRef:
+                name: slackpost-env # ConfigMap の name を指定。すべてのキーが環境変数として展開される
+                prefix: MY_PREFIX_ 
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: slackpost-service
+spec:
+  selector:
+    app: slackpost
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 33000
+  type: LoadBalancer

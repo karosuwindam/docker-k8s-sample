@@ -1,14 +1,14 @@
 FROM multiarch/ubuntu-core:armhf-bionic As builder
 RUN apt-get update &&\
     apt-get install -y curl gcc git
-RUN curl -OL https://dl.google.com/go/go1.14.4.linux-armv6l.tar.gz
-RUN tar -C /usr/local -xzf go1.14.4.linux-armv6l.tar.gz
-RUN rm -rf go1.14.4.linux-armv6l.tar.gz
+RUN curl -OL https://dl.google.com/go/go1.14.4.linux-armv6l.tar.gz &&\
+    tar -C /usr/local -xzf go1.14.4.linux-armv6l.tar.gz &&\
+    rm -rf go1.14.4.linux-armv6l.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
-RUN go get -u github.com/davecheney/i2c
-RUN go get -u github.com/d2r2/go-dht
-RUN go get -u github.com/tarm/serial
-RUN go get -u github.com/nlopes/slack
+RUN go get -u github.com/davecheney/i2c &&\
+    go get -u github.com/d2r2/go-dht &&\
+    go get -u github.com/tarm/serial &&\
+    go get -u github.com/nlopes/slack
 # RUN go get -u 
 WORKDIR /app
 ADD ./golang/ ./
