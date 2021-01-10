@@ -1,0 +1,56 @@
+.imagelist{
+	/* width: 50px; */
+	height: 100px;
+}
+
+.table{
+	display: table;
+    width: 100%;
+}
+
+.tableCell, .tableHead {
+	border: 1px solid #999999;
+	display: table-cell;
+	padding: 3px 3px;
+}
+.tableCellLess {
+	display: table-cell;
+	padding: 3px 10px;
+}
+.tableRow {
+	display: table-row;
+}
+
+div.output{
+    border: inset 1px #000000;
+    height: 90%;
+    overflow-x: auto;
+}
+
+.button{
+    display: inline-block;
+    max-width: 180px;
+    text-align: left;
+    background-color: #ffa300;
+    font-size: 16px;
+    color: #FFF;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    border-bottom: 4px solid #d37800;
+}
+.button:active {
+    transform: translateY(4px);
+    border-bottom: none;
+}
+
+#interactive.viewport canvas, video {
+    float: left;
+    width: 640px;
+    height: 480px;
+  }
+  
+#interactive.viewport canvas.drawingBuffer, video.drawingBuffer {
+    margin-left: -640px;
+}

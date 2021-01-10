@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: isbn-sp
+  name: isbn-configmap
+data:
+  dbsetup.json: |
+    {
+      "Dbtype": "mysql",
+      "Dbuser": "bookserver",
+      "Dbpassword": "bookserver",
+      "Ipaddr": "mysqlhost",
+      "Port": "3306",
+      "Databs": "isbn_bookbase",
+      "DbPath": "./test.db"
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: isbnserver
+  namespace: isbn-sp
+spec:
+  selector:
+    matchLabels:
+      app: isbnserver
+  template:
+    metadata:
+      labels:
+        app: isbnserver
+    spec:
+      containers:
+        - name: isbnserver
+          image: bookserver2:31000/karosu/isbmserver:0.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config-vol
+              mountPath: /app/config/dbsetup.json
+              # mountPath: /prometheus/prometheus.yml
+              subPath: dbsetup.json
+      volumes:
+        - name: config-vol
+          configMap:
+            name: isbn-configmap
+            items:
+              - key: dbsetup.json
+                path: dbsetup.json
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: isbn-service
+  namespace: isbn-sp
+spec:
+  selector:
+    app: isbnserver
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 32000
+  type: LoadBalancer

@@ -1,0 +1,30 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: nginx-pv-volume # PVの名前
+  namespace: isbn-sp
+  labels:
+    type: local
+spec:
+  storageClassName: manual # PVCと一致させる必要がある
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce # 一つのノードからread/writeでマウントできるモード
+  nfs:
+    server: 192.168.0.24
+    path: /home/pi/usb/usb1/nginx/ssl
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-pv-claim
+  namespace: isbn-sp
+spec:
+  # storageClassName=manualのPVを探してマウントする
+  storageClassName: manual 
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi # PVが持っている容量のうち20GBを使用する
