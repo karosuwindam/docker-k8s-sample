@@ -13,13 +13,23 @@
                 }else{
                 }
             }
+            var timer = ""
+            var saerch = function(output,flag){
+                getJSON(output,flag);
+            };
+            function saerch_key(){
+                if (timer != ""){
+                    clearTimeout(timer);
+                }
+                timer = setTimeout(saerch,500,`output`,false);
+            };
         </script>
         <title>ISBM Serch Web API</title>
     </head>
     <body>
         <div>ISBN検索をする</div>
         <input type="button" value="stop" onclick="stopbttton(this)" style="width: 300px;height: 30px;"><br>
-        <input type="text" name="serch" id="keyword" onkeyup="getJSON(`output`,false)">
+        <input type="text" name="serch" id="keyword" onkeyup="saerch_key();return false">
         <input type="button" value="serch" onclick="getJSON(`output`,true)">
         <input type="button" value="clear" onclick="cleardata()" style="height: 30px;">
         <hr>
