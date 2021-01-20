@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  namespace: slackpost-env
+  name: slackpost-env
 data:
-  SLACK_TOKEN: token
-  SLACK_CHANNEL: randam
-  WEB_PORT: 8080
+  SLACK_TOKEN: "Bot User OAuth Access Token"
+  SLACK_CHANNEL: "random"
+  WEB_PORT: "8080"
   # WEB_IP: 
 ---
 apiVersion: apps/v1
@@ -26,9 +26,9 @@ spec:
           image: bookserver2:31000/moni/slackpost:0.1
           imagePullPolicy: IfNotPresent
           envFrom:
-              - configMapRef:
+            - configMapRef:
                 name: slackpost-env # ConfigMap の name を指定。すべてのキーが環境変数として展開される
-                prefix: MY_PREFIX_ 
+              # prefix: MY_PREFIX_ 
           ports:
             - containerPort: 8080
 ---
@@ -42,5 +42,5 @@ spec:
   ports:
     - port: 8080
       targetPort: 8080
-      nodePort: 33000
+      nodePort: 30002
   type: LoadBalancer
