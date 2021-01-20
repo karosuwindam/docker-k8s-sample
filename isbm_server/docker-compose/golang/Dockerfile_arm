@@ -14,10 +14,10 @@ RUN go get -u github.com/seihmd/openbd &&\
 WORKDIR /app
 ADD . .
 RUN go build -o app
-# FROM multiarch/ubuntu-core:armhf-bionic
-FROM ubuntu:20.04
+FROM multiarch/ubuntu-core:armhf-bionic
+# FROM ubuntu:20.04
 RUN apt-get update && \
-#    apt-get upgrade -y && \
+    apt-get upgrade -y && \
     apt-get install -y locales locales-all curl && \
 #    locale-gen ja_JP.UTF-8 &&\
     apt-get clean &&\

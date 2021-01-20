@@ -18,8 +18,14 @@ type WebSetup struct {
 	RootPath string `json:rootpath`
 }
 
+type Heath struct {
+	Message  string
+	Httpcode int
+}
+
 type WebSetupData struct {
 	Data WebSetup
+	Ck   Heath
 	flag bool
 }
 
@@ -69,7 +75,15 @@ func (t *WebSetupData) websetup() error {
 	} else {
 		t.flag = true
 	}
+	t.Ck.Message = "OK"
+	t.Ck.Httpcode = 200
 	return nil
+}
+
+//heathチェック
+func (t *WebSetupData) heath(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(t.Ck.Httpcode)
+	fmt.Fprintf(w, "%s", t.Ck.Message)
 }
 
 //静的HTMLのページを返す
@@ -112,6 +126,7 @@ func (t *WebSetupData) webstart() {
 	fmt.Println(t.Data.Ip + ":" + t.Data.Port + "server start")
 	http.HandleFunc("/v1/", apiserver)
 	http.HandleFunc("/sql/", sqlapiserver)
+	http.HandleFunc("/heath", t.heath)
 	http.HandleFunc("/", t.viewhtml)
 	http.ListenAndServe(t.Data.Ip+":"+t.Data.Port, nil)
 }
