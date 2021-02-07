@@ -8,8 +8,7 @@ import (
 )
 
 var (
-	AM2320  = uint8(0x5c)
-	I2C_BUS = 1
+	AM2320 = uint8(0x5c)
 )
 
 type Am2320 struct {
