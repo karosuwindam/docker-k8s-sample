@@ -17,13 +17,24 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm
                 - key: kubernetes.io/hostname
                   operator: In
                   values:
-                    - "bookserver2"
+                    - bookserver2
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
       containers:
         - name: gpiomoni
-          image: bookserver2:31000/moni/co2moni:0.1
+          image: bookserver2:31000/moni/co2moni:0.2
           imagePullPolicy: IfNotPresent
           resources:
             limits:

@@ -16,7 +16,7 @@ RUN go build -o app
 FROM multiarch/ubuntu-core:armhf-bionic
 RUN apt-get update && \
 #    apt-get upgrade -y && \
-    apt-get install -y curl && \
+    apt-get install -y curl tzdata && \
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
