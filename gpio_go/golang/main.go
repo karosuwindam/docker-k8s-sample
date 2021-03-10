@@ -24,8 +24,8 @@ func (t *Ckdata) check_data() bool {
 	for _, gdata := range getdata() {
 		// fmt.Println(data)
 
-		if gdata.Type = "lux" {
-			t.lux , _ := strconv.Atoi(gdata.Data)
+		if gdata.Type == "lux" {
+			t.lux , _ = strconv.Atoi(gdata.Data)
 		}
 		if gdata.Type == "co2" {
 			co2data, _ := strconv.Atoi(gdata.Data)
@@ -81,8 +81,16 @@ func main() {
 			starttime := time.Now().In(loc)
 			if co2data.lux == 0 {
 				gpiodata.OutPin[0] = LED_OFF
-				fmt.Println(starttime, "LED", LED_OFF, co2data.data, co2data.avg, co2data.lux)
+				if count != -1{
+					fmt.Println(starttime, "LED", LED_OFF, co2data.data, co2data.avg, co2data.lux)
+				}
+				co2data.check_data()
+				count = -1
 			} else {
+				if count < 0 {
+					fmt.Println(starttime, "LED", LED_OFF, co2data.data, co2data.avg, co2data.lux)
+					count = 1
+				}
 				if co2data.check_data() {
 					gpiodata.OutPin[0] = LED_ON
 					if count != 0 {
