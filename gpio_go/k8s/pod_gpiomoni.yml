@@ -34,7 +34,7 @@ spec:
         effect: NoSchedule
       containers:
         - name: gpiomoni
-          image: bookserver2:31000/moni/co2moni:0.2
+          image: bookserver2:31000/moni/co2moni:0.3
           imagePullPolicy: IfNotPresent
           resources:
             limits:
