@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  front:
+    build: 
+      context: front-slack
+      dockerfile: Dockerfile_x86
+    environment:
+      SEND_URL: "slack_post"
+      SEND_PORT: 8080
+      WEB_PORT: 8080
+      WEB_IP: ""
+    ports:
+      - 8080:8080
+    links:
+      - slack_post
+  slack_post:
+    build: 
+      context: ./slack_post
+      dockerfile: Dockerfile_x86
+    environment:
+      SLACK_TOKEN: token_data
+      SLACK_CHANNEL: random
+      WEB_PORT: 8080
+      # WEB_IP: ""
+    # ports:
+    #   - 8080:8080
