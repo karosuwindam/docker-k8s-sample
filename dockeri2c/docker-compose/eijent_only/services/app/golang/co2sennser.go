@@ -115,14 +115,16 @@ func (t *Co2Sennser) output() (int, int) {
 }
 
 func (t *Co2Sennser) write(data []byte) ([]byte, error) {
+	var werr error
 	s := t.port
-	_, err := s.Write(data)
-	if err != nil {
-		return []byte{}, err
-	}
 	output := []byte{}
 	m := 0
 	go func() {
+		_, werr = s.Write(data)
+		if werr != nil {
+			log.Fatal(werr)
+			return
+		}
 		for {
 			buf := make([]byte, 32)
 			n, err := s.Read(buf)
@@ -132,6 +134,9 @@ func (t *Co2Sennser) write(data []byte) ([]byte, error) {
 			}
 			for _, v := range buf[:n] {
 				output = append(output, v)
+				if output[0] != 0xff{
+					output = []byte{}
+				}
 			}
 			m += n
 			if m > 8 {
@@ -141,6 +146,9 @@ func (t *Co2Sennser) write(data []byte) ([]byte, error) {
 	}()
 	i := 0
 	for {
+		if werr != nil{
+			return output, werr
+		}
 		if i > CO2TIMEOUT {
 			return output, errors.New("Srial Read Time Out")
 		}

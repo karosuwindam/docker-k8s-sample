@@ -21,6 +21,7 @@ spec:
               value: 'Asia/Tokyo'
             # - name: GF_INSTALL_PLUGINS
             #   value: 'grafana-image-renderer'
+              # value: 'nec-baas-iframe-panel'
           ports:
             - containerPort: 3000
           volumeMounts:
