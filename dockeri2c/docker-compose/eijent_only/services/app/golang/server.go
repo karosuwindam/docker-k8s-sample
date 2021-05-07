@@ -187,17 +187,17 @@ func (t *ServerData) health(w http.ResponseWriter, r *http.Request) {
 func (t *ServerData) metrics(w http.ResponseWriter, r *http.Request) {
 	output := ""
 	if t.Sennser.Am2320.Flag {
-		output += "senser_data{type=\"tmp\"} " + strconv.FormatFloat(t.Data.Tmp, 'f', 1, 64)
-		output += "\n" + "senser_data{type=\"hum\"} " + strconv.FormatFloat(t.Data.Hum, 'f', 1, 64)
+		output += "senser_data{type=\"tmp\",sennser=\"AM2320\"} " + strconv.FormatFloat(t.Data.Tmp, 'f', 1, 64)
+		output += "\n" + "senser_data{type=\"hum\",sennser=\"AM2320\"} " + strconv.FormatFloat(t.Data.Hum, 'f', 1, 64)
 	} else if t.Sennser.Dht.Flag {
-		output += "senser_data{type=\"tmp\"} " + strconv.FormatFloat(t.Data.Tmp, 'f', 1, 64)
-		output += "\n" + "senser_data{type=\"hum\"} " + strconv.FormatFloat(t.Data.Hum, 'f', 1, 64)
+		output += "senser_data{type=\"tmp\",sennser=\"DHT11\"} " + strconv.FormatFloat(t.Data.Tmp, 'f', 1, 64)
+		output += "\n" + "senser_data{type=\"hum\",sennser=\"DHT11\"} " + strconv.FormatFloat(t.Data.Hum, 'f', 1, 64)
 	}
 	if t.Sennser.Tsl2561.Flag {
 		if output != "" {
 			output += "\n"
 		}
-		output += "senser_data{type=\"lux\"} " + strconv.Itoa(t.Data.Lux)
+		output += "senser_data{type=\"lux\",sennser=\"TSL-2561\"} " + strconv.Itoa(t.Data.Lux)
 	}
 	if t.Sennser.Co2senser.Flag {
 		if output != "" {
