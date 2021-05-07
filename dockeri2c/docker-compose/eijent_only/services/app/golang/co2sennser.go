@@ -34,6 +34,8 @@ var (
 const (
 	GROVENAME  string = "Grove - CO2 Sensor"
 	MHZ19CNAME string = "MH-Z19C"
+	CO2_MAX           = 5000
+	CO2_MIN           = 400
 )
 const (
 	INIT       = 0
@@ -168,7 +170,11 @@ func (t *MhZ19c) Output() (int, int) {
 	data := t.ReadData
 	co2ppm := int(data[2])*256 + int(data[3])
 	temp := int(data[4]) - 40
-	return co2ppm, temp
+	if (co2ppm >= CO2_MIN) && (co2ppm <= CO2_MAX) {
+		return co2ppm, temp
+	} else {
+		return -1, -1
+	}
 }
 
 func (t *MhZ19c) Close() {
