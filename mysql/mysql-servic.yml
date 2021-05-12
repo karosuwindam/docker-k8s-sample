@@ -46,6 +46,9 @@ spec:
           value: mysql
         - name: TZ
           value: 'Asia/Tokyo'
+        args:
+        - --character-set-server=utf8mb4
+        - --collation-server=utf8mb4_unicode_ci
         ports:
         - containerPort: 3306
           name: mysql
