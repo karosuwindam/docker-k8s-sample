@@ -29,12 +29,13 @@ spec:
                   operator: In
                   values:
                     - arm
+                    - arm64
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
       containers:
       - name: exporter
-        image: prom/node-exporter
+        image: prom/node-exporter:v1.1.2
         ports:
         - containerPort: 9100
         resources:
