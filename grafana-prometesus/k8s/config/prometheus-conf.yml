@@ -131,3 +131,13 @@ data:
       
     #remote_read:
     #  - url: "http://192.168.0.21:8086/api/v1/prom/read?db=prometheus"
+    remote_write:
+      - url: "http://192.168.0.6:8086/api/v1/prom/write?db=test&u=karosu&p=windam1314"
+        queue_config:
+          max_shards: 600
+          max_samples_per_send: 300
+          batch_send_deadline: 30s
+      
+    remote_read:
+      - url: "http://192.168.0.6:8086/api/v1/prom/read?db=test&u=karosu&p=windam1314"
+
