@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: grafana
-          image: grafana/grafana:7.3.6
+          image: grafana/grafana:7.4.3
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
