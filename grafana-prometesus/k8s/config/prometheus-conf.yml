@@ -79,6 +79,16 @@ data:
       #   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       #   kubernetes_sd_configs:
       #     - role: endpoints
+      - job_name: 'kube-state-metrics'
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            regex: kube-state-metrics
+            action: keep
       - job_name: 'kubernetes-pods'
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
