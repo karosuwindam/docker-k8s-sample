@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpiomoni
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      app: gpiomoni
+  template:
+    metadata:
+      labels:
+        app: gpiomoni
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - "bookserver2"
+      containers:
+        - name: gpiomoni
+          image: bookserver2:31000/moni/co2moni:0.1
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: 400Mi
+            requests:
+              cpu: 300m
+              memory: 200Mi
+          securityContext:
+            privileged: true
