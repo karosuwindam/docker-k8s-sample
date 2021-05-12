@@ -20,4 +20,5 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/app /app
+RUN mkdir tmp
 CMD ["./app"]

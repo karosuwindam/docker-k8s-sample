@@ -7,9 +7,10 @@ import (
 )
 
 type Server struct {
-	Port string
-	Ip   string
-	api  ApiData
+	Port  string
+	Ip    string
+	slack SlackApi
+	api   ApiData
 }
 
 type message struct {
@@ -20,6 +21,7 @@ type message struct {
 func (t *Server) apiselect(w http.ResponseWriter, r *http.Request) {
 	var tmp message
 	tmp.Url = r.RequestURI
+	t.api.InitSlack(t.slack)
 	t.api.ApiSelect(w, r)
 	tmp.Message = t.api.Message
 	output, _ := json.Marshal(tmp)
