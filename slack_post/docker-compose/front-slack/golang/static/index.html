@@ -2,6 +2,25 @@
     <head>
         <title>slack post</title>
         <script>
+            function cheaksend(){
+                xhr = new XMLHttpRequest();
+                var URL = "/health";
+                xhr.open('GET',URL,true);
+                xhr.send();
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState == 4){
+                        if(xhr.status == 200){
+                            var data = xhr.responseText;
+                            jsondata = JSON.parse(data)
+                            if (jsondata.Message == "OK"){
+                                senddata()
+                            }else{
+                                document.getElementById("output").innerHTML = jsondata.Message
+                            }
+                        }
+                    }
+                }
+            }
             function senddata(){
                 xhr = new XMLHttpRequest();
                 var URL = "/postmessage";
@@ -30,7 +49,7 @@
     <body>
         <form name="formdata">
             <textarea name="t_message" id="message" cols="30" rows="10"></textarea>
-            <input type="button" value="send" onclick="senddata();return false;">    
+            <input type="button" value="send" onclick="cheaksend();return false;">    
         </form>
         <div id="output"></div>
     </body>

@@ -28,6 +28,13 @@ func (t *Server) apiselect(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(output)+"\n")
 }
 
+func (t *Server) health(w http.ResponseWriter, r *http.Request) {
+	code := 200
+	output := "{\"Message\":\"OK\"}"
+	w.WriteHeader(code)
+	fmt.Fprintf(w, output)
+}
+
 func (t *Server) hello(w http.ResponseWriter, r *http.Request) {
 	output := "Hello World"
 	fmt.Fprintf(w, output)
@@ -36,6 +43,7 @@ func (t *Server) hello(w http.ResponseWriter, r *http.Request) {
 func (t *Server) Start() {
 	mux := http.NewServeMux()
 	mux.Handle("/api/", http.HandlerFunc(t.apiselect))
+	mux.Handle("/health", http.HandlerFunc(t.health))
 	mux.Handle("/help", http.HandlerFunc(t.hello))
 
 	s := http.Server{
