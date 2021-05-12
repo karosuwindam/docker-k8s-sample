@@ -8,10 +8,11 @@ import (
 )
 
 type SennserData struct {
-	Am2320    Am2320
-	Dht       DhtSenser
-	Tsl2561   Tsl2561
-	Co2senser Co2Sennser
+	Am2320  Am2320
+	Dht     DhtSenser
+	Tsl2561 Tsl2561
+	// Co2senser Co2Sennser
+	Co2senser MhZ19c
 	Bme280    Bme280
 }
 
