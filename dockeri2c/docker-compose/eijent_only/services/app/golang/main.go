@@ -31,8 +31,10 @@ func senserDataCk(server *ServerData) {
 	}
 	if server.Sennser.Co2senser.Flag {
 		co2ppm, temp := server.Sennser.Co2senser.Read()
-		server.Data.Co2.Co2 = co2ppm
-		server.Data.Co2.Tmp = temp
+		if co2ppm > 0 {
+			server.Data.Co2.Co2 = co2ppm
+			server.Data.Co2.Tmp = temp	
+		}
 	}
 	if server.Sennser.Bme280.Flag {
 		press, temp, hum := server.Sennser.Bme280.ReadData()

@@ -38,7 +38,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: dockeri2cmoni
-        image: bookserver2:31000/moni/dockeri2cmoni:0.82
+        image: bookserver2:31000/moni/dockeri2cmoni:0.83
         ports:
         - containerPort: 9140
         resources:
