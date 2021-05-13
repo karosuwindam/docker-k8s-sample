@@ -8,6 +8,7 @@ arm用のgrafana-prometesu監視がすべてできるようにしたファイル
 
 * dockeri2c \
   prometesuが監視できるエージェントセット \
+  様々な、センサーに対応している \
   CPU温度を測定する機能付き
 
 * nextcloud
@@ -17,3 +18,6 @@ arm 用のnextcloud読み込みファイル
 * other
 1. raspi-cpu-temp \
   ラズベリーパイのCPU温度図るだけのprometesu拡張ファイル
+
+* pvd
+ディスクの出力用ファイルの集まり

@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: isbnserver
-          image: bookserver2:31000/karosu/isbmserver:0.2
+          image: bookserver2:31000/karosu/isbmserver:0.4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
