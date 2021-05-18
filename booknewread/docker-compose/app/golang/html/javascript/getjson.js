@@ -12,6 +12,20 @@ function serchgetJSON(output){
     req.open("GET","/json",true);
     req.send();
 }
+function getnobleJSON(output){
+    var req = new window.XMLHttpRequest();
+    req.onreadystatechange = function(){
+      if(req.readyState == 4 && req.status == 200){
+        var data=req.responseText;
+        // data = JSON.parse(data);
+        console.log(data);
+        document.getElementById(output).innerHTML = table_noble(data);
+        // document.getElementById(output).innerHTML = data;
+      }
+    };
+    req.open("GET","/jsonnobel",true);
+    req.send();
+}
 function getnewJSON(output,page){
     var req = new window.XMLHttpRequest();
     req.onreadystatechange = function(){
@@ -28,6 +42,29 @@ function getnewJSON(output,page){
     var str = "page="+page
     req.send(str);
 }
+
+function table_noble(data){
+    var output = "";
+    var tmp = JSON.parse(data);
+    console.log(tmp);
+    output += "<div class='table'>"
+    for (var i=0;i<tmp.length;i++){
+        output += "<div class='table_line'>"
+        output += "<div class='block'>"
+        output += "<a href='"+tmp[i].Url+"'>"+tmp[i].Title+"</a>"
+        output += "</div>"
+        output += "<div class='block'>"
+        output += "<a href='"+tmp[i].LastUrl+"'>"+tmp[i].LastStoryT+"</a>"
+        output += "</div>"
+        output += "<div class='block'>"
+        output += tmp[i].Lastdate
+        output += "</div>"
+        output += "</div>"
+    }
+    output += "</div>"
+    return output;
+}
+
 function table_con(data){
     var output = "<tr>";
     for (var i=0;i<data.length;i++){

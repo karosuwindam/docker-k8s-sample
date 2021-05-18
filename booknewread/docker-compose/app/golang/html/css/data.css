@@ -1,0 +1,10 @@
+.table_line {
+    display: table;
+    /* width: 600px; */
+}
+
+.block {
+    display: table-cell;
+    border: solid 1px #999;
+    width: 500px;
+}

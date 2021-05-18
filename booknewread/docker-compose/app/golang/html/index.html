@@ -1,5 +1,6 @@
 <html>
     <head>
+        <link rel="stylesheet" href="css/data.css">
         <script src="./javascript/getjson.js"></script>
         <script>
             function geturl(){
@@ -10,11 +11,15 @@
                 var page = document.getElementById("page").value
                 getnewJSON("output",page);
             }
+            function getnewnoble(){
+                getnobleJSON("output");
+            }
             function chmonth(data){
                 document.getElementById("page").value = data.value;
                 geturlb();
             }
             window.onload = function(){
+                // getnobleJSON("output");
                 getnewJSON("output","0");
             }
         </script>
@@ -23,8 +28,9 @@
     <body>
         <li><input type="button" value="get" onclick="geturl()"></li>
         <li><input type="button" value="getb" onclick="geturlb()">
-            <input type="radio" name="type" id="type" value="0" checked oncLick="geturlb()">漫画
+            <input type="radio" name="type" id="type" value="0" oncLick="geturlb()" checked>漫画
             <input type="radio" name="type" id="type" value="1" oncLick="geturlb()">小説
+            <input type="radio" name="type" id="type" value="2" oncLick="getnewnoble()" >小説になろう更新
             <input type="hidden" name="page" id="page" value="0">
             <input type="radio" name="month" id="month" value="0" oncLick="chmonth(this)" checked>今月
             <input type="radio" name="month" id="month" value="1" oncLick="chmonth(this)">来月

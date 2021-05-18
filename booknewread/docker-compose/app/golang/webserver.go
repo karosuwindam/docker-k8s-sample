@@ -175,6 +175,16 @@ func (t *WebSetupData) getlocaljson(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+func (t *WebSetupData) getnowdata(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		jsondata, err := json.Marshal(Listdata)
+		if err != nil {
+			fmt.Fprint(w, err.Error())
+		} else {
+			fmt.Fprintf(w, "%s", jsondata)
+		}
+	}
+}
 
 func (t *WebSetupData) webstart() {
 	if !t.flag {
@@ -185,5 +195,6 @@ func (t *WebSetupData) webstart() {
 	http.HandleFunc("/", t.viewhtml)
 	http.HandleFunc("/json", t.json)
 	http.HandleFunc("/jsonb", t.getlocaljson)
+	http.HandleFunc("/jsonnobel", t.getnowdata)
 	http.ListenAndServe(t.Data.Ip+":"+t.Data.Port, nil)
 }
