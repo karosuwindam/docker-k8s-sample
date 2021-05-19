@@ -2,6 +2,7 @@ package novel_chack
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ const (
 	BASE_URL_NAROU    = "http://ncode.syosetu.com"
 	BASE_URL_NAROUS   = "https://ncode.syosetu.com"
 	BASE_URL_KAKUYOMU = "https://kakuyomu.jp"
+	BASE_URL_NOCKU    = "https://novel18.syosetu.com"
 )
 
 func ChackUrldata(url string) List {
@@ -39,8 +41,60 @@ func ChackUrldata(url string) List {
 		if url[:len(BASE_URL_KAKUYOMU)] == BASE_URL_KAKUYOMU {
 			output = chackKakuyomu(url)
 		}
-
 	}
+	if len(BASE_URL_NOCKU) <= len(url) {
+		if url[:len(BASE_URL_NOCKU)] == BASE_URL_NOCKU {
+			output = chackNokutarn(url)
+		}
+	}
+
+	return output
+
+}
+
+//ノクターンノベルのチェック
+func chackNokutarn(urldata string) List {
+	var output List
+	output.Url = urldata
+	req, err := http.NewRequest(http.MethodPost, urldata, nil)
+	if err != nil {
+		fmt.Println(err.Error())
+		return output
+	}
+	// req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Cookie", "over18=yes")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Println(err.Error())
+		return output
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromResponse(resp)
+	if err != nil {
+		fmt.Println(err.Error())
+		return output
+	}
+	// fmt.Println(doc.Text())
+	output.Title = doc.Find("p.novel_title").Text()
+	doc.Find("dl.novel_sublist2").Each(func(i int, s *goquery.Selection) {
+		output.LastStoryT = strings.TrimSpace(s.Find("dd.subtitle").Text())
+		times := strings.TrimSpace(s.Find("dt.long_update").Text())
+		if times != "" {
+			if strings.Index(times, "（改）") > 0 {
+				times = times[:strings.Index(times, "（改）")]
+			}
+			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
+			output.Lastdate = t
+
+		}
+		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
+		if tmp != "" {
+			output.LastUrl = BASE_URL_NAROU + tmp
+		}
+		output.Count = i + 1
+	})
 	return output
 
 }
