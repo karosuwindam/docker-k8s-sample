@@ -100,6 +100,7 @@ func (t *WebSetupData) viewhtml(w http.ResponseWriter, r *http.Request) {
 		upath = "/" + upath
 		r.URL.Path = upath
 	}
+	log.Println(r.Method + ":" + r.URL.Path)
 	if upath == "/" {
 		upath += "index.html"
 	}
@@ -176,6 +177,8 @@ func (t *WebSetupData) getlocaljson(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (t *WebSetupData) getnowdata(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method + ":" + r.URL.Path)
+
 	if r.Method == "GET" {
 		jsondata, err := json.Marshal(Listdata)
 		if err != nil {

@@ -23,11 +23,13 @@ var Listdata []novel_chack.List
 func main() {
 	tmp := map[int]ListData{}
 	GrobalListData = tmp
-	ch1 := make(chan bool)
+	ch1 := make(chan bool,2)
 
-	ch2 := make(chan bool)
+	ch2 := make(chan bool,2)
 
 	go func() {
+		count := 0
+		log.Println("start novel data count")
 		for {
 			listtmp := []novel_chack.List{}
 			pass := "bookmarks_2021_05_18.html"
@@ -42,11 +44,17 @@ func main() {
 			}
 			sort.Slice(listtmp, func(i, j int) bool { return listtmp[i].Lastdate.Unix() > listtmp[j].Lastdate.Unix() })
 			Listdata = listtmp
-			ch2 <- true
+			if count == 0{
+				ch2 <- true
+			}
 			time.Sleep(time.Hour)
+			log.Println("reload novel data")
+			count++
 		}
 	}()
 	go func() {
+		count := 0
+		log.Println("start new book data count")
 		for {
 			t := time.Now()
 			for i := 0; i < 3; i++ {
@@ -63,8 +71,12 @@ func main() {
 				listdata.Comic = GetComicList(listdata.Year, listdata.Month, COMIC)
 				GrobalListData[i] = listdata
 			}
-			ch1 <- true
+			if count == 0{
+				ch1 <- true
+			}
 			time.Sleep(time.Hour * 12)
+			log.Println("reload new book data")
+			count++
 		}
 	}()
 	<-ch1
