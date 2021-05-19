@@ -85,17 +85,20 @@ func chackKakuyomu(url string) List {
 		return output
 	}
 	output.Title = doc.Find("div#workHeader-inner").Find("h1#workTitle").Text()
-	doc.Find("div#table-of-contents").Each(func(i int, s *goquery.Selection) {
-		s.Find("li#widget-toc-episode").Each(func(j int, ss *goquery.Selection) {
-			output.LastStoryT = s.Find("a").Find("span").Text()
-			tmpurl, _ := s.Find("a").Attr("href")
+	// fmt.Println(doc.Find("div.widget-toc-main").Text())
+
+	doc.Find("div.widget-toc-main").Each(func(i int, s *goquery.Selection) {
+		s.Find("li.widget-toc-episode").Each(func(j int, ss *goquery.Selection) {
+			output.LastStoryT = ss.Find("a").Find("span").Text()
+			tmpurl, _ := ss.Find("a").Attr("href")
 			if tmpurl != "" {
 				output.LastUrl = BASE_URL_KAKUYOMU + tmpurl
 			}
-			tmpdate, _ := s.Find("a").Find("time").Attr("datatime")
+			// fmt.Println(ss.Find("a").Find("time").Text())
+			tmpdate, _ := ss.Find("a").Find("time").Attr("datetime")
 			if tmpdate != "" {
-				t, _ := time.Parse("2006/01/02 15:04:05 MST", tmpdate)
-				fmt.Println(t)
+				t, _ := time.Parse("2006-01-02T15:04:05Z", tmpdate)
+				// fmt.Println(t)
 				output.Lastdate = t
 			}
 		})

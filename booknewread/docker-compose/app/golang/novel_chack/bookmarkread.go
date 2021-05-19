@@ -3,6 +3,7 @@ package novel_chack
 import (
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -11,6 +12,23 @@ import (
 type BookBark struct {
 	Title string `json:title`
 	Url   string `json:url`
+}
+
+func chackdabul(data []BookBark) []BookBark {
+	var output []BookBark
+	if len(data) > 1 {
+		back := data[0]
+		output = []BookBark{data[0]}
+		for _, ary := range data[1:] {
+			if back.Url != ary.Url {
+				output = append(output, ary)
+			}
+			back = ary
+		}
+	} else {
+		output = data
+	}
+	return output
 }
 
 func ReadBookBark(path string) []BookBark {
@@ -33,5 +51,7 @@ func ReadBookBark(path string) []BookBark {
 			}
 		}
 	})
+	sort.Slice(output, func(i, j int) bool { return output[i].Url > output[j].Url })
+	output = chackdabul(output)
 	return output
 }

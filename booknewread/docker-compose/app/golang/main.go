@@ -10,6 +10,7 @@ import (
 )
 
 type ListData struct {
+	NowTime   time.Time  `json:Nowtime`
 	Month     string     `json:Month`
 	Year      string     `json:Year`
 	Comic     []BookList `json:Comic`
@@ -23,9 +24,9 @@ var Listdata []novel_chack.List
 func main() {
 	tmp := map[int]ListData{}
 	GrobalListData = tmp
-	ch1 := make(chan bool,2)
+	ch1 := make(chan bool, 2)
 
-	ch2 := make(chan bool,2)
+	ch2 := make(chan bool, 2)
 
 	go func() {
 		count := 0
@@ -36,7 +37,7 @@ func main() {
 			data := novel_chack.ReadBookBark(pass)
 
 			for _, str := range data {
-				tmp := novel_chack.GetSyousetu(str.Url)
+				tmp := novel_chack.ChackUrldata(str.Url)
 				if tmp.Title != "" {
 					listtmp = append(listtmp, tmp)
 					// fmt.Println(tmp)
@@ -44,7 +45,7 @@ func main() {
 			}
 			sort.Slice(listtmp, func(i, j int) bool { return listtmp[i].Lastdate.Unix() > listtmp[j].Lastdate.Unix() })
 			Listdata = listtmp
-			if count == 0{
+			if count == 0 {
 				ch2 <- true
 			}
 			time.Sleep(time.Hour)
@@ -59,6 +60,7 @@ func main() {
 			t := time.Now()
 			for i := 0; i < 3; i++ {
 				var listdata ListData
+				listdata.NowTime = time.Now()
 				if (int(t.Month()) + i) <= 12 {
 					listdata.Month = strconv.Itoa((int(t.Month()) + i))
 					listdata.Year = strconv.Itoa(int(t.Year()))
@@ -71,7 +73,7 @@ func main() {
 				listdata.Comic = GetComicList(listdata.Year, listdata.Month, COMIC)
 				GrobalListData[i] = listdata
 			}
-			if count == 0{
+			if count == 0 {
 				ch1 <- true
 			}
 			time.Sleep(time.Hour * 12)

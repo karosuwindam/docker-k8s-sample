@@ -143,10 +143,14 @@ func getjson(url string) string {
 	return string(body)
 }
 func (t *WebSetupData) json(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method + ":" + r.URL.Path)
+
 	fmt.Fprint(w, getjson("https://books.rakuten.co.jp/event/book/comic/calendar/2021/05/js/booklist.json"))
 }
 
 func (t *WebSetupData) getlocaljson(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method + ":" + r.URL.Path)
+
 	if r.Method == "GET" {
 		jsondata, err := json.Marshal(GrobalListData[0])
 		if err != nil {
