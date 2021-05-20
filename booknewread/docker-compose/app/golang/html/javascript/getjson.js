@@ -127,16 +127,16 @@ function tableb(data){
         }
     }
     output += "<div class='table'>"
-    output +="<table>";
-    if (rajiob[1].checked ){
-        for (var i=0;i<tmp.LiteNobel.length;i++){
-        output += "<tr>"+table_conb(tmp.LiteNobel[i])+"</tr>"
-        }
-    }else{
-        for (var i=0;i<tmp.Comic.length;i++){
-             output += "<tr>"+table_conb(tmp.Comic[i])+"</tr>";
-         }
-    }
-output += "</table>";
+//     output +="<table>";
+//     if (rajiob[1].checked ){
+//         for (var i=0;i<tmp.LiteNobel.length;i++){
+//         output += "<tr>"+table_conb(tmp.LiteNobel[i])+"</tr>"
+//         }
+//     }else{
+//         for (var i=0;i<tmp.Comic.length;i++){
+//              output += "<tr>"+table_conb(tmp.Comic[i])+"</tr>";
+//          }
+//     }
+// output += "</table>";
     return output
 }
