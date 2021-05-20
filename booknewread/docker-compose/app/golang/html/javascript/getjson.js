@@ -96,10 +96,37 @@ function table_conb(data){
     output += "</tr>";
     return output
 }
+function table_conbd(data){
+    var output = ""
+    output += "<div class='block_n1'>"+data.Days+ "</div>";
+    output += "<div class='block_n2'>"+data.Type+ "</div>";
+    output += "<div class='block_title'>"+data.Title+ "</div>";
+    output += "<div class='block_n2'>"+data.Writer+ "</div>";
+    output += "<div class='block_n2'>"+data.Bround+ "</div>";
+    output += "<div class='block_n2'>"+data.Ext+ "</div>";
+    output += "<div class='block_img'>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</div>";
+    return output
+}
 function tableb(data){
     var tmp = JSON.parse(data);
     var rajiob = document.getElementsByName("type");
     var output = tmp.Year +"年" +tmp.Month + "月<br>";
+    output += "</div>"
+    
+    if (rajiob[1].checked ){
+        for (var i=0;i<tmp.LiteNobel.length;i++){
+            output += "<div class='table_line'>"
+            output += table_conbd(tmp.LiteNobel[i])
+            output += "</div>"
+        }
+    }else{
+        for (var i=0;i<tmp.Comic.length;i++){
+            output += "<div class='table_line'>"
+            output += table_conbd(tmp.Comic[i])
+            output += "</div>"
+        }
+    }
+    output += "<div class='table'>"
     output +="<table>";
     if (rajiob[1].checked ){
         for (var i=0;i<tmp.LiteNobel.length;i++){
