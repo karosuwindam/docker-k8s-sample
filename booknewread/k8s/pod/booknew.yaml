@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: booknewread
-        image: bookserver2:31000/karosu/booknewread:0.3
+        image: bookserver2:31000/karosu/booknewread:0.4
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
