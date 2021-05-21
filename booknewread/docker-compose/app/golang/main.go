@@ -17,46 +17,70 @@ type ListData struct {
 	LiteNobel []BookList `json:LiteNobel`
 }
 
+type ReloadFlag struct {
+	BookFlag     bool
+	BookMarkFlag bool
+}
+
+type Status struct {
+	BookNowTIme     time.Time `json:booknowtime`
+	BookStatus      string    `json:bookstatus`
+	BookMarkNowTime time.Time `json:bookmarknowtime`
+	BookMarkStatus  string    `json:bookmarkstatus`
+}
+
 var GrobalListData map[int]ListData
 
 var Listdata []novel_chack.List
 
+var GrobalStatus Status
+
+var Reloadflag ReloadFlag
+
 func main() {
 	tmp := map[int]ListData{}
 	GrobalListData = tmp
-	ch1 := make(chan bool, 2)
-
-	ch2 := make(chan bool, 2)
-
+	GrobalStatus = Status{
+		BookNowTIme:     time.Time{},
+		BookStatus:      "Reload",
+		BookMarkNowTime: time.Time{},
+		BookMarkStatus:  "Reload",
+	}
 	go func() {
-		count := 0
 		log.Println("start novel data count")
 		for {
+			GrobalStatus.BookMarkStatus = "Reload"
+
 			listtmp := []novel_chack.List{}
 			pass := "bookmarks_2021_05_18.html"
 			data := novel_chack.ReadBookBark(pass)
 
-			for _, str := range data {
+			for i, str := range data {
 				tmp := novel_chack.ChackUrldata(str.Url)
 				if tmp.Title != "" {
 					listtmp = append(listtmp, tmp)
 					// fmt.Println(tmp)
 				}
+				GrobalStatus.BookMarkStatus = "Reload:" + strconv.Itoa(i*100/len(data)) + "%"
 			}
 			sort.Slice(listtmp, func(i, j int) bool { return listtmp[i].Lastdate.Unix() > listtmp[j].Lastdate.Unix() })
 			Listdata = listtmp
-			if count == 0 {
-				ch2 <- true
+			GrobalStatus.BookMarkStatus = "OK"
+			GrobalStatus.BookMarkNowTime = time.Now()
+			Reloadflag.BookMarkFlag = false
+			for i := 0; i < 60*60; i++ {
+				if Reloadflag.BookMarkFlag {
+					break
+				}
+				time.Sleep(time.Second)
 			}
-			time.Sleep(time.Hour)
 			log.Println("reload novel data")
-			count++
 		}
 	}()
 	go func() {
-		count := 0
 		log.Println("start new book data count")
 		for {
+			GrobalStatus.BookStatus = "Reload"
 			t := time.Now()
 			for i := 0; i < 3; i++ {
 				var listdata ListData
@@ -73,17 +97,18 @@ func main() {
 				listdata.Comic = GetComicList(listdata.Year, listdata.Month, COMIC)
 				GrobalListData[i] = listdata
 			}
-			if count == 0 {
-				ch1 <- true
+			GrobalStatus.BookStatus = "OK"
+			GrobalStatus.BookNowTIme = time.Now()
+			Reloadflag.BookFlag = false
+			for i := 0; i < 60*60*12; i++ {
+				if Reloadflag.BookFlag {
+					break
+				}
+				time.Sleep(time.Second)
 			}
-			time.Sleep(time.Hour * 12)
 			log.Println("reload new book data")
-			count++
 		}
 	}()
-	<-ch1
-	<-ch2
-	// fmt.Println(GetComicList("", "", LITENOVEL))
 
 	var web WebSetupData
 	err := web.websetup()

@@ -200,6 +200,7 @@ func (t *WebSetupData) webstart() {
 	}
 	fmt.Println(t.Data.Ip + ":" + t.Data.Port + "server start")
 	http.HandleFunc("/", t.viewhtml)
+	http.HandleFunc("/status", t.status)
 	http.HandleFunc("/json", t.json)
 	http.HandleFunc("/jsonb", t.getlocaljson)
 	http.HandleFunc("/jsonnobel", t.getnowdata)
