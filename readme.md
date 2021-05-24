@@ -8,7 +8,6 @@ arm用のgrafana-prometesu監視がすべてできるようにしたファイル
 
 * dockeri2c \
   prometesuが監視できるエージェントセット \
-  様々な、センサーに対応している \
   CPU温度を測定する機能付き
 
 * nextcloud
@@ -19,5 +18,12 @@ arm 用のnextcloud読み込みファイル
 1. raspi-cpu-temp \
   ラズベリーパイのCPU温度図るだけのprometesu拡張ファイル
 
-* pvd
-ディスクの出力用ファイルの集まり
+
+inginx-ingressのインストール
+ ```
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.46.0/deploy/static/provider/baremetal/deploy.yaml
+```
+動作確認
+```
+kubectl get all -n ingress-nginx
+```
