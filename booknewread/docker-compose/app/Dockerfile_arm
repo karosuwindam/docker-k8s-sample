@@ -12,7 +12,7 @@ RUN go get -u github.com/seihmd/openbd &&\
     go get -u github.com/go-sql-driver/mysql &&\
     go get -u github.com/mattn/go-sqlite3
 WORKDIR /app
-ADD . .
+ADD ./golang .
 RUN go build -o app
 FROM multiarch/ubuntu-core:armhf-bionic
 # FROM ubuntu:20.04
@@ -23,9 +23,8 @@ RUN apt-get update && \
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY ./config config
-COPY ./html html
-COPY ./tmp_html tmp_html
+COPY ./golang/config config
+COPY ./golang/html html
 COPY --from=builder /app/app /app
 # COPY ./app /app
 CMD ["./app"]
