@@ -45,7 +45,9 @@ func ChackUrldata(url string) List {
 	}
 	if len(BASE_URL_NOCKU) <= len(url) {
 		if url[:len(BASE_URL_NOCKU)] == BASE_URL_NOCKU {
-			output = chackNokutarn(url)
+			url_tmp := strings.Replace(url, "http", "https", 1)
+
+			output = chackNokutarn(url_tmp)
 		}
 	}
 	if len(BASE_URL_NOCKUS) <= len(url) {
