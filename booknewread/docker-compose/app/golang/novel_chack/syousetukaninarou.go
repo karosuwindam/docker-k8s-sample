@@ -22,7 +22,8 @@ const (
 	BASE_URL_NAROU    = "http://ncode.syosetu.com"
 	BASE_URL_NAROUS   = "https://ncode.syosetu.com"
 	BASE_URL_KAKUYOMU = "https://kakuyomu.jp"
-	BASE_URL_NOCKU    = "https://novel18.syosetu.com"
+	BASE_URL_NOCKU    = "http://novel18.syosetu.com"
+	BASE_URL_NOCKUS   = "https://novel18.syosetu.com"
 )
 
 func ChackUrldata(url string) List {
@@ -44,6 +45,11 @@ func ChackUrldata(url string) List {
 	}
 	if len(BASE_URL_NOCKU) <= len(url) {
 		if url[:len(BASE_URL_NOCKU)] == BASE_URL_NOCKU {
+			output = chackNokutarn(url)
+		}
+	}
+	if len(BASE_URL_NOCKUS) <= len(url) {
+		if url[:len(BASE_URL_NOCKUS)] == BASE_URL_NOCKUS {
 			output = chackNokutarn(url)
 		}
 	}
