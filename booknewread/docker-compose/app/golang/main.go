@@ -95,6 +95,8 @@ func main() {
 
 				listdata.LiteNobel = GetComicList(listdata.Year, listdata.Month, LITENOVEL)
 				listdata.Comic = GetComicList(listdata.Year, listdata.Month, COMIC)
+				listdata.LiteNobel = FilterComicList(listdata.LiteNobel)
+				listdata.Comic = FilterComicList(listdata.Comic)
 				GrobalListData[i] = listdata
 			}
 			GrobalStatus.BookStatus = "OK"

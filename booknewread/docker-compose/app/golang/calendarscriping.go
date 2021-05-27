@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -29,6 +31,21 @@ const (
 	LITENOVEL = 1
 	MAGAZINE  = 2
 )
+
+func FilterComicList(data []BookList) []BookList {
+	output := []BookList{}
+	t := time.Now()
+	for _, tmp := range data {
+		month, _ := strconv.Atoi(tmp.Months)
+		day, _ := strconv.Atoi(tmp.Days)
+		if (month == int(t.Month())) && (day < int(t.Day())-5) {
+
+		} else {
+			output = append(output, tmp)
+		}
+	}
+	return output
+}
 
 func GetComicList(year, month string, booktype int) []BookList {
 	var output []BookList
@@ -57,7 +74,7 @@ func GetComicList(year, month string, booktype int) []BookList {
 	}
 	doc.Find("div#content-inner").Each(func(i int, s *goquery.Selection) {
 		s.Find("tr").Each(func(j int, ss *goquery.Selection) {
-			days := ss.Find("td.day-td").Text()
+			days := strings.TrimSpace(ss.Find("td.day-td").Text())
 			ss.Find("div.div-wrap").Each(func(k int, sss *goquery.Selection) {
 				var tmp BookList
 				tmp.Days = days
