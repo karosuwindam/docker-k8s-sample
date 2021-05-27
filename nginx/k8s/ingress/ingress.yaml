@@ -4,7 +4,7 @@ metadata:
   name: name-virtual-host-ingress
 spec:
   rules:
-  - host: foo.bar.com
+  - host: pi.example.com
     http:
       paths:
       - backend:
