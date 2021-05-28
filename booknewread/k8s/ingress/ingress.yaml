@@ -1,0 +1,13 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: booknewread-ingress
+  namespace: booknew-sp
+spec:
+  rules:
+  - host: ingress.bookserver.local
+    http:
+      paths:
+      - backend:
+          serviceName: booknewread-service
+          servicePort: 8080
