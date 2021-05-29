@@ -55,3 +55,10 @@ func ReadBookBark(path string) []BookBark {
 	output = chackdabul(output)
 	return output
 }
+
+func BookBarkSout(ary []BookBark) []BookBark {
+	tmp := ary
+	sort.Slice(tmp, func(i, j int) bool { return tmp[i].Url > tmp[j].Url })
+	output := chackdabul(tmp)
+	return output
+}

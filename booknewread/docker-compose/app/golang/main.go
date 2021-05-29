@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"./dirread"
 	"./novel_chack"
 )
 
@@ -40,6 +41,8 @@ var Reloadflag ReloadFlag
 func main() {
 	tmp := map[int]ListData{}
 	GrobalListData = tmp
+	var fpass dirread.Dirtype
+	fpass.Setup("bookmark")
 	GrobalStatus = Status{
 		BookNowTIme:     time.Time{},
 		BookStatus:      "Reload",
@@ -49,11 +52,20 @@ func main() {
 	go func() {
 		log.Println("start novel data count")
 		for {
+			data := []novel_chack.BookBark{}
 			GrobalStatus.BookMarkStatus = "Reload"
 
 			listtmp := []novel_chack.List{}
-			pass := "bookmarks_2021_05_18.html"
-			data := novel_chack.ReadBookBark(pass)
+			// pass := "bookmarks_2021_05_18.html"
+			fpass.Read("/")
+			for _, fd := range fpass.Data {
+				pass := fd.RootPath + fd.Name
+				ncr := novel_chack.ReadBookBark(pass)
+				for _, tmpd := range ncr {
+					data = append(data, tmpd)
+				}
+				data = novel_chack.BookBarkSout(data)
+			}
 
 			for i, str := range data {
 				tmp := novel_chack.ChackUrldata(str.Url)
@@ -68,7 +80,7 @@ func main() {
 			GrobalStatus.BookMarkStatus = "OK"
 			GrobalStatus.BookMarkNowTime = time.Now()
 			Reloadflag.BookMarkFlag = false
-			for i := 0; i < 60*60; i++ {
+			for i := 0; i < 60; i++ {
 				if Reloadflag.BookMarkFlag {
 					break
 				}
