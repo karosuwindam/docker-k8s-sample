@@ -80,7 +80,7 @@ func main() {
 			GrobalStatus.BookMarkStatus = "OK"
 			GrobalStatus.BookMarkNowTime = time.Now()
 			Reloadflag.BookMarkFlag = false
-			for i := 0; i < 60; i++ {
+			for i := 0; i < 60*60; i++ {
 				if Reloadflag.BookMarkFlag {
 					break
 				}
