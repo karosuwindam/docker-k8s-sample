@@ -5,7 +5,7 @@ metadata:
   namespace: booknew-sp
 spec:
   rules:
-  - host: ingress.bookserver.local
+  - host: booknewread.bookserver.local
     http:
       paths:
       - backend:
