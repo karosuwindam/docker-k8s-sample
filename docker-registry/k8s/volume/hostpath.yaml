@@ -1,31 +1,29 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "mariadb-pv-volume"
-  namespace: nextcloud
+  name: "registry-pv-volume"
+  namespace: registry
   labels:
     type: "local"
 spec:
-  storageClassName: "mariadb"
+  storageClassName: "manual"
   capacity:
     storage: "20Gi"
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: /home/pi/usb/usb1/mariadb
-  # nfs:
-  #   server: 192.168.0.24
-  #   path: /home/pi/usb/usb0/mariadb
+    path: /home/pi/registry
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mariadb-pv-claim
-  namespace: nextcloud
+  name: registry-pv-claim
+  namespace: registry
 spec:
-  storageClassName: mariadb
+  storageClassName: manual
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 20Gi
+---

@@ -27,28 +27,57 @@ func sqlserch(isbn string) []SqlBookData {
 	}
 	return nil
 }
+func convertDataOtoC(openbd searchapi.NameType, calile searchapi.CalileNameType) searchapi.NameType {
+	tmp := openbd
+	if tmp.Title == "" {
+		tmp.Title = calile.Title
+	}
+	if tmp.Writer == "" {
+		tmp.Writer = calile.Writer
+	}
+	if tmp.Brand == "" {
+		tmp.Brand = calile.Brand
+	}
+	if tmp.Synopsis == "" {
+		tmp.Synopsis = calile.Synopsis
+	}
+	if tmp.Ext == "" {
+		tmp.Ext = calile.Ext
+	}
+	if tmp.Image == "" {
+		tmp.Image = calile.Image
+	}
+	return tmp
+}
 func newserchisbn(isbn string, no int) []SqlBookData {
 	var adata searchapi.AmazonNameType
+	var cdata searchapi.CalileNameType
 	ch1 := make(chan bool)
+	cdata = searchapi.GetPageCalilURL(isbn)
+	if cdata.Title != ""{
+		fmt.Println("Calil get data:"+cdata.Url)
+	}
 	if len(isbn) == 13 {
 		go func() {
 			adata = searchapi.GetPageAmazonURL(isbn)
+			fmt.Println("Amazon get data:"+adata.Url)
 			ch1 <- true
 		}()
 	} else {
-		go func() {
-			ch1 <- true
-		}()
+		ch1 <- true
 	}
 	data := searchapi.GetOpenBdData(isbn)
 	if data.Title == "" || data.Image == "" {
 		fmt.Println("OpenBD not serch data")
-		<-ch1
-		if data.Title == "" {
-			data.Title = adata.Title
-		}
-		if data.Image == "" {
-			data.Image = adata.Image
+		data = convertDataOtoC(data, cdata)
+		if data.Title == "" || data.Image == "" {
+			<-ch1
+			if data.Title == "" {
+				data.Title = adata.Title
+			}
+			if data.Image == "" {
+				data.Image = adata.Image
+			}
 		}
 
 	}

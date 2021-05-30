@@ -2,22 +2,19 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mysql
-  namespace: test
 spec:
   ports:
   - port: 3306
   # deploymentが管理するpodを定義
   # labelsにapp=mysqlと設定されたpodを管理する
-    nodePort: 30100
-  type: LoadBalancer
   selector:
     app: mysql 
+  clusterIP: None
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
   name: mysql
-  namespace: test
 spec:
   selector:
     matchLabels:
@@ -38,17 +35,6 @@ spec:
         env:
         - name: MYSQL_ROOT_PASSWORD
           value: password # 本番ではsecretを使ってねとある
-        - name: MYSQL_DATABASE
-          value: test_database
-        - name: MYSQL_USER
-          value: mysql
-        - name: MYSQL_PASSWORD
-          value: mysql
-        - name: TZ
-          value: 'Asia/Tokyo'
-        args:
-        - --character-set-server=utf8mb4
-        - --collation-server=utf8mb4_unicode_ci
         ports:
         - containerPort: 3306
           name: mysql
