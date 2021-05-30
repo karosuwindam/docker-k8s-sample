@@ -25,6 +25,7 @@ RUN apt-get update && \
 WORKDIR /app
 COPY ./golang/config config
 COPY ./golang/html html
+COPY ./golang/bookmark bookmark
 COPY --from=builder /app/app /app
 # COPY ./app /app
 CMD ["./app"]
