@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpmyadmin-deployment
+  namespace: nextcloud
+  labels:
+    app: phpmyadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phpmyadmin
+  template:
+    metadata:
+      labels:
+        app: phpmyadmin
+    spec:
+      containers:
+        - name: phpmyadmin
+          image: phpmyadmin
+          ports:
+            - containerPort: 80
+          env:
+            - name: PMA_HOST
+              value: 10.244.1.12
+            - name: PMA_PORT
+              value: "3306"
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phpmyadmin
+  namespace: nextcloud
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: phpmyadmin
+  type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: phpmyadmin-ingress
+  namespace: nextcloud
+spec:
+  rules:
+  - host: phpmyadmin.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: phpmyadmin
+          servicePort: 80
