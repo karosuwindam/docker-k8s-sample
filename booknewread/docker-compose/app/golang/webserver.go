@@ -192,6 +192,18 @@ func (t *WebSetupData) getnowdata(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+func (t *WebSetupData) restart(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method + ":" + r.URL.Path)
+
+	if r.Method == "POST" {
+		Reloadflag.BookMarkFlag = true
+		Reloadflag.BookFlag = true
+		fmt.Fprintf(w, "OK")
+	} else {
+		fmt.Fprintf(w, "NG")
+
+	}
+}
 
 func (t *WebSetupData) webstart() {
 	if !t.flag {
@@ -201,6 +213,7 @@ func (t *WebSetupData) webstart() {
 	fmt.Println(t.Data.Ip + ":" + t.Data.Port + "server start")
 	http.HandleFunc("/", t.viewhtml)
 	http.HandleFunc("/status", t.status)
+	http.HandleFunc("/restart", t.restart)
 	http.HandleFunc("/json", t.json)
 	http.HandleFunc("/jsonb", t.getlocaljson)
 	http.HandleFunc("/jsonnobel", t.getnowdata)
