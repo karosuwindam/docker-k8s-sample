@@ -95,7 +95,7 @@ func chackNokutarn(urldata string) List {
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
 			// fmt.Println(t.Local())
-			output.Lastdate = t.Local()
+			output.Lastdate = t.Local().Add( - 9 * time.Hour)
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
@@ -127,7 +127,7 @@ func chackSyousetu(url string) List {
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
 			// fmt.Println(t)
-			output.Lastdate = t.Local()
+			output.Lastdate = t.Local().Add(- 9 * time.Hour)
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")

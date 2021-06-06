@@ -80,6 +80,7 @@ func main() {
 			GrobalStatus.BookMarkStatus = "OK"
 			GrobalStatus.BookMarkNowTime = time.Now()
 			Reloadflag.BookMarkFlag = false
+			log.Println("read novel data end")
 			for i := 0; i < 60*60; i++ {
 				if Reloadflag.BookMarkFlag {
 					break
@@ -114,6 +115,7 @@ func main() {
 			GrobalStatus.BookStatus = "OK"
 			GrobalStatus.BookNowTIme = time.Now()
 			Reloadflag.BookFlag = false
+			log.Println("read new book data end")
 			for i := 0; i < 60*60*12; i++ {
 				if Reloadflag.BookFlag {
 					break
