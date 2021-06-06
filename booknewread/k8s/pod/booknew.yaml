@@ -17,6 +17,9 @@ spec:
       - name: booknewread
         image: bookserver2:31000/karosu/booknewread:0.7
         imagePullPolicy: IfNotPresent
+        env:
+          - name: TZ
+            value: 'Asia/Tokyo'
         ports:
         - containerPort: 8080
 ---

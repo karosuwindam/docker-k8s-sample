@@ -160,8 +160,10 @@ func chackKakuyomu(url string) List {
 			tmpdate, _ := ss.Find("a").Find("time").Attr("datetime")
 			if tmpdate != "" {
 				t, _ := time.Parse("2006-01-02T15:04:05Z", tmpdate)
+				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+
 				// fmt.Println(t)
-				output.Lastdate = t
+				output.Lastdate = t.In(jst)
 			}
 		})
 
