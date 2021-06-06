@@ -94,7 +94,8 @@ func chackNokutarn(urldata string) List {
 				times = times[:strings.Index(times, "（改）")]
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
-			output.Lastdate = t
+			// fmt.Println(t.Local())
+			output.Lastdate = t.Local()
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
@@ -125,7 +126,8 @@ func chackSyousetu(url string) List {
 				times = times[:strings.Index(times, "（改）")]
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
-			output.Lastdate = t
+			// fmt.Println(t)
+			output.Lastdate = t.Local()
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
@@ -160,10 +162,10 @@ func chackKakuyomu(url string) List {
 			tmpdate, _ := ss.Find("a").Find("time").Attr("datetime")
 			if tmpdate != "" {
 				t, _ := time.Parse("2006-01-02T15:04:05Z", tmpdate)
-				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+				// jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 
-				// fmt.Println(t)
-				output.Lastdate = t.In(jst)
+				// fmt.Println(t.Local())
+				output.Lastdate = t.Local()
 			}
 		})
 
