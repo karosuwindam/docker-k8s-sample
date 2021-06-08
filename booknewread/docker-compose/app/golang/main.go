@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"runtime"
 	"sort"
 	"strconv"
 	"time"
@@ -51,7 +52,9 @@ func main() {
 	}
 	go func() {
 		log.Println("start novel data count")
+		ch := novel_chack.Setup()
 		for {
+			starttime := time.Now()
 			data := []novel_chack.BookBark{}
 			GrobalStatus.BookMarkStatus = "Reload"
 
@@ -67,20 +70,60 @@ func main() {
 				data = novel_chack.BookBarkSout(data)
 			}
 
+			//マルチ処理
+			count := 0
+			cpus := runtime.NumCPU()
+			ch_th := make(chan int, cpus)
+			tempdata := make([]novel_chack.List, len(data))
 			for i, str := range data {
-				tmp := novel_chack.ChackUrldata(str.Url)
-				if tmp.Title != "" {
-					listtmp = append(listtmp, tmp)
-					// fmt.Println(tmp)
-				}
-				GrobalStatus.BookMarkStatus = "Reload:" + strconv.Itoa(i*100/len(data)) + "%"
+				// log.Println(str.Url)
+				ch_th <- 1
+				go func(num int, url string) {
+					tempdata[num] = ch.ChackUrldata(url)
+					count += <-ch_th
+				}(i, str.Url)
+				GrobalStatus.BookMarkStatus = "Reload:" + strconv.Itoa(count*100/len(data)) + "%"
+				// time.Sleep(time.Millisecond * 100)
 			}
+			for {
+				GrobalStatus.BookMarkStatus = "Reload:" + strconv.Itoa(count*100/len(data)) + "%"
+				if len(ch_th) == 0 {
+					for _, str := range tempdata {
+						if str.Title != "" {
+							// fmt.Println(str)
+							listtmp = append(listtmp, str)
+						}
+					}
+					break
+				}
+				time.Sleep(time.Millisecond * 100)
+			}
+
+			// // 単独処理
+			// for i, str := range data {
+			// 	tmp := ch.ChackUrldata(str.Url)
+			// 	if tmp.Title != "" {
+			// 		listtmp = append(listtmp, tmp)
+			// 		// fmt.Println(tmp)
+			// 	}
+			// 	GrobalStatus.BookMarkStatus = "Reload:" + strconv.Itoa(i*100/len(data)) + "%"
+			// }
+
+			// for i, str := range data {
+			// 	tmp := novel_chack.ChackUrldata(str.Url)
+			// 	if tmp.Title != "" {
+			// 		listtmp = append(listtmp, tmp)
+			// 		// fmt.Println(tmp)
+			// 	}
+			// 	GrobalStatus.BookMarkStatus = "Reload:" + strconv.Itoa(i*100/len(data)) + "%"
+			// }
 			sort.Slice(listtmp, func(i, j int) bool { return listtmp[i].Lastdate.Unix() > listtmp[j].Lastdate.Unix() })
+			endtime := time.Now()
 			Listdata = listtmp
 			GrobalStatus.BookMarkStatus = "OK"
 			GrobalStatus.BookMarkNowTime = time.Now()
 			Reloadflag.BookMarkFlag = false
-			log.Println("read novel data end")
+			log.Println("read novel data end", (endtime.Sub(starttime)).Seconds(), "s")
 			for i := 0; i < 60*60; i++ {
 				if Reloadflag.BookMarkFlag {
 					break
@@ -93,6 +136,7 @@ func main() {
 	go func() {
 		log.Println("start new book data count")
 		for {
+			starttime := time.Now()
 			GrobalStatus.BookStatus = "Reload"
 			t := time.Now()
 			for i := 0; i < 3; i++ {
@@ -112,10 +156,11 @@ func main() {
 				listdata.Comic = FilterComicList(listdata.Comic)
 				GrobalListData[i] = listdata
 			}
+			endtime := time.Now()
 			GrobalStatus.BookStatus = "OK"
 			GrobalStatus.BookNowTIme = time.Now()
 			Reloadflag.BookFlag = false
-			log.Println("read new book data end")
+			log.Println("read new book data end", (endtime.Sub(starttime)).Seconds(), "s")
 			for i := 0; i < 60*60*12; i++ {
 				if Reloadflag.BookFlag {
 					break

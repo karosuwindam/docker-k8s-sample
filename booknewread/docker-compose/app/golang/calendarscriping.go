@@ -34,7 +34,7 @@ const (
 
 func FilterComicList(data []BookList) []BookList {
 	output := []BookList{}
-	t := time.Now()
+	t := time.Now().Local()
 	for _, tmp := range data {
 		month, _ := strconv.Atoi(tmp.Months)
 		day, _ := strconv.Atoi(tmp.Days)

@@ -2,6 +2,7 @@ package novel_chack
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -26,33 +27,60 @@ const (
 	BASE_URL_NOCKUS   = "https://novel18.syosetu.com"
 )
 
-func ChackUrldata(url string) List {
+type Channel struct {
+	Ch_Narou    chan bool
+	Ch_Kakuyomu chan bool
+	Setup       bool
+}
+
+func Setup() Channel {
+	var output Channel
+	output.Ch_Narou = make(chan bool, 2)
+	output.Ch_Kakuyomu = make(chan bool, 2)
+	output.Setup = true
+	return output
+}
+
+func (t *Channel) ChackUrldata(url string) List {
 	var output List
+	if !t.Setup {
+		log.Println("not Setup")
+		return output
+	}
 	if len(BASE_URL_NAROU) <= len(url) {
 		if url[:len(BASE_URL_NAROU)] == BASE_URL_NAROU {
+			t.Ch_Narou <- true
 			output = chackSyousetu(url)
+			<-t.Ch_Narou
 		}
 	}
 	if len(BASE_URL_NAROUS) <= len(url) {
 		if url[:len(BASE_URL_NAROUS)] == BASE_URL_NAROUS {
+			t.Ch_Narou <- true
 			output = chackSyousetu(url)
+			<-t.Ch_Narou
 		}
 	}
 	if len(BASE_URL_KAKUYOMU) <= len(url) {
 		if url[:len(BASE_URL_KAKUYOMU)] == BASE_URL_KAKUYOMU {
+			t.Ch_Kakuyomu <- true
 			output = chackKakuyomu(url)
+			<-t.Ch_Kakuyomu
 		}
 	}
 	if len(BASE_URL_NOCKU) <= len(url) {
 		if url[:len(BASE_URL_NOCKU)] == BASE_URL_NOCKU {
+			t.Ch_Narou <- true
 			url_tmp := strings.Replace(url, "http", "https", 1)
-
 			output = chackNokutarn(url_tmp)
+			<-t.Ch_Narou
 		}
 	}
 	if len(BASE_URL_NOCKUS) <= len(url) {
 		if url[:len(BASE_URL_NOCKUS)] == BASE_URL_NOCKUS {
+			t.Ch_Narou <- true
 			output = chackNokutarn(url)
+			<-t.Ch_Narou
 		}
 	}
 
@@ -95,7 +123,7 @@ func chackNokutarn(urldata string) List {
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
 			// fmt.Println(t.Local())
-			output.Lastdate = t.Local().Add( - 9 * time.Hour)
+			output.Lastdate = t.Local().Add(-9 * time.Hour)
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
@@ -127,7 +155,7 @@ func chackSyousetu(url string) List {
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
 			// fmt.Println(t)
-			output.Lastdate = t.Local().Add(- 9 * time.Hour)
+			output.Lastdate = t.Local().Add(-9 * time.Hour)
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
