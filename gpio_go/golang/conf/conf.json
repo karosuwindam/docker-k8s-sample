@@ -1,0 +1,14 @@
+[
+    {
+        "Name":"Bookserver2",
+        "Url":"http://192.168.0.21:9140/json"
+    },
+    {
+        "Name":"k8s-worker",
+        "Url":"http://192.168.0.24:9140/json"
+    },
+    {
+        "Name":"Rassberrypi5",
+        "Url":"http://192.168.0.25:9140/json"
+    }
+]

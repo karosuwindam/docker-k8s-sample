@@ -8,10 +8,12 @@ import (
 )
 
 type SennserData struct {
-	Am2320    Am2320
-	Dht       DhtSenser
-	Tsl2561   Tsl2561
-	Co2senser Co2Sennser
+	Am2320  Am2320
+	Dht     DhtSenser
+	Tsl2561 Tsl2561
+	// Co2senser Co2Sennser
+	Co2senser MhZ19c
+	Bme280    Bme280
 }
 
 type RaspberrypiData struct {
@@ -21,12 +23,18 @@ type Co2Data struct {
 	Tmp int
 	Co2 int
 }
+type MulData struct {
+	Tmp   float64
+	Hum   float64
+	Press float64
+}
 type DataType struct {
-	Hum float64
-	Tmp float64
-	Lux int
-	Co2 Co2Data
-	Rpi RaspberrypiData
+	Hum  float64
+	Tmp  float64
+	Lux  int
+	Co2  Co2Data
+	MuDa MulData
+	Rpi  RaspberrypiData
 }
 
 type ServerData struct {
@@ -80,6 +88,18 @@ func (t *ServerData) jsonData(w http.ResponseWriter, r *http.Request) {
 		outdata = append(outdata, tmp)
 		tmp.Type = "tmp"
 		tmp.Data = strconv.Itoa(t.Data.Co2.Tmp)
+		outdata = append(outdata, tmp)
+	}
+	if t.Sennser.Bme280.Flag {
+		tmp.Senser = t.Sennser.Bme280.Name
+		tmp.Type = "hum"
+		tmp.Data = strconv.FormatFloat(t.Data.MuDa.Hum, 'f', 2, 64)
+		outdata = append(outdata, tmp)
+		tmp.Type = "tmp"
+		tmp.Data = strconv.FormatFloat(t.Data.MuDa.Tmp, 'f', 2, 64)
+		outdata = append(outdata, tmp)
+		tmp.Type = "press"
+		tmp.Data = strconv.FormatFloat(t.Data.MuDa.Press, 'f', 2, 64)
 		outdata = append(outdata, tmp)
 	}
 	tmp.Senser = "raspberrypi"
@@ -139,6 +159,19 @@ func (t *ServerData) health(w http.ResponseWriter, r *http.Request) {
 		tmp.Message = "OFF"
 		outdata = append(outdata, tmp)
 	}
+	if t.Sennser.Bme280.Flag {
+		tmp.Sennserdata = t.Sennser.Bme280.Name
+		tmp.Message = t.Sennser.Bme280.Message
+		if tmp.Message != "OK" {
+			code = 405
+		}
+		outdata = append(outdata, tmp)
+
+	} else {
+		tmp.Sennserdata = "Bme Sensor"
+		tmp.Message = "OFF"
+		outdata = append(outdata, tmp)
+	}
 	if len(outdata) < 1 {
 		tmp.Sennserdata = "Raspberrypi"
 		tmp.Message = "OK"
@@ -154,23 +187,32 @@ func (t *ServerData) health(w http.ResponseWriter, r *http.Request) {
 func (t *ServerData) metrics(w http.ResponseWriter, r *http.Request) {
 	output := ""
 	if t.Sennser.Am2320.Flag {
-		output += "senser_data{type=\"tmp\"} " + strconv.FormatFloat(t.Data.Tmp, 'f', 1, 64)
-		output += "\n" + "senser_data{type=\"hum\"} " + strconv.FormatFloat(t.Data.Hum, 'f', 1, 64)
+		output += "senser_data{type=\"tmp\",sennser=\"AM2320\"} " + strconv.FormatFloat(t.Data.Tmp, 'f', 1, 64)
+		output += "\n" + "senser_data{type=\"hum\",sennser=\"AM2320\"} " + strconv.FormatFloat(t.Data.Hum, 'f', 1, 64)
 	} else if t.Sennser.Dht.Flag {
-		output += "senser_data{type=\"tmp\"} " + strconv.FormatFloat(t.Data.Tmp, 'f', 1, 64)
-		output += "\n" + "senser_data{type=\"hum\"} " + strconv.FormatFloat(t.Data.Hum, 'f', 1, 64)
+		output += "senser_data{type=\"tmp\",sennser=\"DHT11\"} " + strconv.FormatFloat(t.Data.Tmp, 'f', 1, 64)
+		output += "\n" + "senser_data{type=\"hum\",sennser=\"DHT11\"} " + strconv.FormatFloat(t.Data.Hum, 'f', 1, 64)
 	}
 	if t.Sennser.Tsl2561.Flag {
 		if output != "" {
 			output += "\n"
 		}
-		output += "senser_data{type=\"lux\"} " + strconv.Itoa(t.Data.Lux)
+		output += "senser_data{type=\"lux\",sennser=\"TSL-2561\"} " + strconv.Itoa(t.Data.Lux)
 	}
 	if t.Sennser.Co2senser.Flag {
 		if output != "" {
 			output += "\n"
 		}
 		output += "senser_data{type=\"co2\"} " + strconv.Itoa(t.Data.Co2.Co2)
+		output += "\n" + "senser_data{type=\"tmp\",sennser=\"co2\"}" + strconv.Itoa(t.Data.Co2.Tmp)
+	}
+	if t.Sennser.Bme280.Flag {
+		if output != "" {
+			output += "\n"
+		}
+		output += "senser_data{type=\"tmp\",sennser=\"BME280\"} " + strconv.FormatFloat(t.Data.MuDa.Tmp, 'f', 2, 64)
+		output += "\n" + "senser_data{type=\"hum\",sennser=\"BME280\"} " + strconv.FormatFloat(t.Data.MuDa.Hum, 'f', 2, 64)
+		output += "\n" + "senser_data{type=\"press\",sennser=\"BME280\"} " + strconv.FormatFloat(t.Data.MuDa.Press, 'f', 2, 64)
 	}
 	if output != "" {
 		output += "\n"

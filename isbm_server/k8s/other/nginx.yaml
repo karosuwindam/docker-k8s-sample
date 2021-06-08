@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: isbn-sp
+  name: nginx-configmap
+data:
+  server.conf: |
+    server {
+      listen              80;
+      server_name         rinoguchi.com;
+      return              301                 https://$host$request_uri;
+    }
+    server {
+      # 443番ポートを許可し、SSL機能をON
+      # listen 80;
+      listen 443 ssl;
+
+      # 証明書を設定
+      ssl_certificate     /etc/nginx/ssl/server.crt;
+      ssl_certificate_key /etc/nginx/ssl/server.key;
+      location /{
+        proxy_pass          http://isbn-service:8080/;
+        proxy_redirect      default;
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: isbn-sp
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 443
+          name: https
+        volumeMounts: # コンテナ内のどのディレクトリにpersistentVolumeをマウントするか
+        - name: nginx-persistent-storage
+          mountPath: /etc/nginx/ssl/
+        - name: nginx-config-vol
+          mountPath: /etc/nginx/conf.d/server.conf
+          subPath: server.conf
+      volumes: #
+      - name: nginx-persistent-storage
+        persistentVolumeClaim:
+          claimName: nginx-pv-claim
+      - name: nginx-config-vol
+        configMap:
+          name: nginx-configmap
+          items:
+            - key: server.conf
+              path: server.conf
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service-http
+  namespace: isbn-sp
+spec:
+  selector:
+    app: nginx
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service-https
+  namespace: isbn-sp
+spec:
+  selector:
+    app: nginx
+  ports:
+    - port: 443
+      targetPort: 443
+      nodePort: 32100
+  type: LoadBalancer
