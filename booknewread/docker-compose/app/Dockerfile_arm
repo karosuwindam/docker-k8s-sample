@@ -16,6 +16,10 @@ ADD ./golang .
 RUN go build -o app
 FROM multiarch/ubuntu-core:armhf-bionic
 # FROM ubuntu:20.04
+LABEL maintainer "karosu <karosuwindam@gmail.com>"
+LABEL version="0.8.1"
+LABEL name="booknewread"
+
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y locales locales-all curl && \
