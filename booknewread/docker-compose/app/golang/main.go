@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"./dirread"
-	"./novel_chack"
+	"book-newread/dirread"
+	"book-newread/novel_chack"
 )
 
 type ListData struct {
