@@ -12,8 +12,8 @@ spec:
       labels:
         app: client
     spec:
-      serviceAccountName: prometheus
-      serviceAccount: prometheus
+      serviceAccountName: client-go
+      serviceAccount: client-go
       containers:
       - name: client
         image: bookserver2:31000/karosu/client-go:0.0.1
