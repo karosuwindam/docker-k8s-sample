@@ -11,6 +11,8 @@ spec:
     metadata:
       labels:
         app: client
+      annotations:
+        podinfo: "client-goによるテスト"
     spec:
       serviceAccountName: client-go
       serviceAccount: client-go
