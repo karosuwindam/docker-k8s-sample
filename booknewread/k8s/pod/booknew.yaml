@@ -7,6 +7,8 @@ spec:
   selector:
     matchLabels:
       app: booknewread
+    annotations:
+      podinf: "本や図書の新刊リストや読み物サイト更新"
   replicas: 1
   template:
     metadata:
