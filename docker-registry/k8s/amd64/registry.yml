@@ -12,6 +12,8 @@ spec:
       labels:
         name: registry
         app: registry
+      annotations:
+        podinfo: "コンテナレジストリサーバ"
     spec:
       affinity:
         nodeAffinity:
