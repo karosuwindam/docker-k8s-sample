@@ -275,7 +275,7 @@ var server WebSetupData
 
 func main() {
 	ch := make(chan bool, 1)
-	t := CSetup(0)
+	t := CSetup(1)
 
 	go func() {
 		for {
@@ -288,14 +288,14 @@ func main() {
 			server.Output = jsond
 			jsondata, _ := json.Marshal(jsond)
 			log.Println(string(jsondata))
-			for _, str := range list {
-				log.Println(str)
-				for _, data := range output {
-					if strings.Index(data.URL, str[1:]) >= 0 {
-						log.Println(data)
-					}
-				}
-			}
+			// for _, str := range list {
+			// 	log.Println(str)
+			// 	for _, data := range output {
+			// 		if strings.Index(data.URL, str[1:]) >= 0 {
+			// 			log.Println(data)
+			// 		}
+			// 	}
+			// }
 			if len(ch) == 0 {
 				ch <- true
 			}

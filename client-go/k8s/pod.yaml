@@ -18,8 +18,10 @@ spec:
       serviceAccount: client-go
       containers:
       - name: client
-        image: bookserver2:31000/karosu/client-go:0.0.1
+        image: bookserver2:31000/karosu/client-go:0.1
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        ports:
+          - containerPort: 8080
