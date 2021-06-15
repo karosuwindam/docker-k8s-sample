@@ -26,6 +26,8 @@ spec:
     metadata:
       labels:
         app: nginx
+      annotations:
+        podinfo: "現時点のIngressリスト"
     spec:
       containers:
       - image: nginx:alpine
