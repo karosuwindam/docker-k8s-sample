@@ -11,6 +11,8 @@ spec:
     metadata:
       labels:
         app: prometheus
+      annotations:
+        podinfo: "Prometheus"
     spec:
       affinity:
         nodeAffinity:
@@ -25,8 +27,31 @@ spec:
       serviceAccount: prometheus
       containers:
         - name: prometheus
-          image: prom/prometheus
+          image: prom/prometheus:v2.24.1
           imagePullPolicy: IfNotPresent
+          #/bin/prometheus
+          #-config.file=/etc/prometheus/prometheus.yml
+          #-storage.tsdb.path=/prometheus
+          #-web.console.libraries=/usr/share/prometheus/console_libraries
+          #-web.console.templates=/usr/share/prometheus/consoles
+          command:
+            - /bin/prometheus
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+            - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+            - "--web.console.templates=/usr/share/prometheus/consoles"
+            - "--storage.tsdb.retention.time=4d"  #保存期間
+            - "--storage.tsdb.min-block-duration=1h"  #ブロック書き出しタイミング時間
+            - "--storage.tsdb.max-block-duration=12h" #
+          # args: [
+          #   "--config.file=/etc/prometheus/prometheus.yml",
+          #   "--storage.tsdb.path=/prometheus",
+          #   # "",
+          #   # "",
+          #   "--web"
+          #   ]
+
           ports:
             - containerPort: 9090
           volumeMounts:

@@ -1,0 +1,4 @@
+# URLのリストを忘れそうだから、indexを作成する
+
+kubectl create cm indexhtml -n index-nginx --from-file index.html
+kubectl delete cm indexhtml -n index-nginx

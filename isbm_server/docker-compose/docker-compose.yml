@@ -1,0 +1,30 @@
+version: '3'
+# docker-compose.yml
+services:
+  # MySQL
+  db: 
+    image: mysql:5.7.29
+    # image: hypriot/rpi-mysql
+    container_name: mysql_host2
+    environment:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: isbn_bookbase
+        MYSQL_USER: bookserver
+        MYSQL_PASSWORD: bookserver
+        TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+        - ~/services/db/data1:/var/lib/mysql
+    ports:
+       - 3306:3306
+  app:
+    build: golang
+    container_name: isbn_goapp
+    environment: 
+        APP_SQL_HOST: mysql_host2
+    command: ./app
+    # command: sleep 100000
+    ports:
+        - 8080:8080
+    links: 
+        - db

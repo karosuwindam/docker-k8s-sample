@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-index
+  namespace: index-nginx
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: index-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+      annotations:
+        podinfo: "nginxのテストindexページの表示"
+    spec:
+      containers:
+      - image: nginx:alpine
+        name: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: index-vol
+            mountPath: /usr/share/nginx/html/index.html
+            subPath: index.html
+      volumes:
+        - name: index-vol
+          configMap:
+            name: indexhtml
+            items:
+              - key: index.html
+                path: index.html
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-index
+  namespace: index-nginx
+spec:
+  rules:
+  - host: index.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: nginx-index
+          servicePort: 80

@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="./css/main.css">
+        <script src="./javascript/getjson.js"></script>
+        <script src="./javascript/sqledit.js"></script>
+        <script>
+            window.onload = function(){
+                getJSONlist('output');
+            }
+            meta_suburl="isbn"
+        </script>
+        <title>list data</title>
+    </head>
+    <body>
+        <div id="answer"></div>
+        <div class="button" onclick="getJSONlist('output');document.getElementById('answer').innerHTML='';">list</div>
+        <div id="output" class="output"></div>
+        <a href="/">Top</a>
+    </body>
+</html>

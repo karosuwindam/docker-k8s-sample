@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booknewread-deploy
+  namespace: booknew-sp
+spec:
+  selector:
+    matchLabels:
+      app: booknewread
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: booknewread
+    spec:
+      containers:
+      - name: booknewread
+        image: bookserver2:31000/karosu/booknewread:0.6
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booknewread-service
+  namespace: booknew-sp
+spec:
+  selector:
+    app: booknewread
+  ports:
+    - port: 8080
+      targetPort: 8080
+      # nodePort: 32200
+  # type: LoadBalancer
+  type: ClusterIP
+

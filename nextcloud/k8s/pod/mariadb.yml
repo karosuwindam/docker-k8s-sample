@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mariadb
+  namespace: nextcloud
 spec:
   selector:
     matchLabels:
@@ -12,6 +13,8 @@ spec:
     metadata:
       labels:
         app: mariadb
+      annotations:
+        podinfo: "NextCloud用のMariadbのPod"
     spec:
       containers:
       - image: turgon37/armhf-mariadb
@@ -39,13 +42,3 @@ spec:
         persistentVolumeClaim:
           claimName: mariadb-pv-claim
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: mariadb
-spec:
-  ports:
-    - port: 3306
-  selector:
-    app: mariadb
-  clusterIP: None

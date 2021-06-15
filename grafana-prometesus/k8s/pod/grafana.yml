@@ -11,16 +11,19 @@ spec:
     metadata:
       labels:
         app: grafana
+      annotations:
+        podinfo: "Grafana"
     spec:
       containers:
         - name: grafana
-          image: grafana/grafana:7.3.6
+          image: grafana/grafana:7.4.3
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
               value: 'Asia/Tokyo'
             # - name: GF_INSTALL_PLUGINS
             #   value: 'grafana-image-renderer'
+              # value: 'nec-baas-iframe-panel'
           ports:
             - containerPort: 3000
           volumeMounts:

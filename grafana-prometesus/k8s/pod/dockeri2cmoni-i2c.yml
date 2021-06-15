@@ -15,6 +15,7 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '9140'
         prometheus.io/path: /metrics
+        podinfo: "Raspberrypi用 Prometeusエージェント"
     spec:
       affinity:
         nodeAffinity:
@@ -38,7 +39,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: dockeri2cmoni
-        image: bookserver2:31000/moni/dockeri2cmoni:0.8
+        image: bookserver2:31000/moni/dockeri2cmoni:0.83
         ports:
         - containerPort: 9140
         resources:
