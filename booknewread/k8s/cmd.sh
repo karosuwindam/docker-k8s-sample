@@ -1,0 +1,1 @@
+kubectl create cm booknewread -n booknew-sp --from-file ../docker-compose/app/golang/bookmarks_2021_05_18.html

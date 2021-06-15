@@ -100,6 +100,7 @@ func (t *WebSetupData) viewhtml(w http.ResponseWriter, r *http.Request) {
 		upath = "/" + upath
 		r.URL.Path = upath
 	}
+	log.Println(r.Method + ":" + r.URL.Path)
 	if upath == "/" {
 		upath += "index.html"
 	}
@@ -142,10 +143,14 @@ func getjson(url string) string {
 	return string(body)
 }
 func (t *WebSetupData) json(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method + ":" + r.URL.Path)
+
 	fmt.Fprint(w, getjson("https://books.rakuten.co.jp/event/book/comic/calendar/2021/05/js/booklist.json"))
 }
 
 func (t *WebSetupData) getlocaljson(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method + ":" + r.URL.Path)
+
 	if r.Method == "GET" {
 		jsondata, err := json.Marshal(GrobalListData[0])
 		if err != nil {
@@ -175,6 +180,18 @@ func (t *WebSetupData) getlocaljson(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+func (t *WebSetupData) getnowdata(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method + ":" + r.URL.Path)
+
+	if r.Method == "GET" {
+		jsondata, err := json.Marshal(Listdata)
+		if err != nil {
+			fmt.Fprint(w, err.Error())
+		} else {
+			fmt.Fprintf(w, "%s", jsondata)
+		}
+	}
+}
 
 func (t *WebSetupData) webstart() {
 	if !t.flag {
@@ -183,7 +200,9 @@ func (t *WebSetupData) webstart() {
 	}
 	fmt.Println(t.Data.Ip + ":" + t.Data.Port + "server start")
 	http.HandleFunc("/", t.viewhtml)
+	http.HandleFunc("/status", t.status)
 	http.HandleFunc("/json", t.json)
 	http.HandleFunc("/jsonb", t.getlocaljson)
+	http.HandleFunc("/jsonnobel", t.getnowdata)
 	http.ListenAndServe(t.Data.Ip+":"+t.Data.Port, nil)
 }

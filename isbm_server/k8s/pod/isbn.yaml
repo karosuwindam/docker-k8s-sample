@@ -27,6 +27,8 @@ spec:
       app: isbnserver
   template:
     metadata:
+      annotations:
+        podinfo: "ISBM検索用のサイト"
       labels:
         app: isbnserver
     spec:

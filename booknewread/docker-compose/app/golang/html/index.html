@@ -1,35 +1,86 @@
 <html>
     <head>
+        <link rel="stylesheet" href="css/data.css">
         <script src="./javascript/getjson.js"></script>
         <script>
             function geturl(){
                 // document.getElementById("output").innerHTML="aa"
                 serchgetJSON("output");
             }
-            function geturlb(){
-                var page = document.getElementById("page").value
+            function geturlb(data){
+                var page = document.getElementById("page").value;
+                if (data != undefined){
+                    document.getElementById("pagetype").value = data.value;
+                    sessionStorage.setItem("pagetype",data.value);
+                }
                 getnewJSON("output",page);
             }
+            function getnewnoble(data){
+                if (data != undefined){
+                    sessionStorage.setItem("pagetype",data.value);
+                    document.getElementById("pagetype").value = data.value;
+                }
+                getnobleJSON("output");
+            }
             function chmonth(data){
+                sessionStorage.setItem("page",data.value);
                 document.getElementById("page").value = data.value;
-                geturlb();
+                if (document.getElementById("pagetype").value=="2"){
+                    getnewnoble();
+                }else{
+                    geturlb();
+                }
             }
             window.onload = function(){
-                getnewJSON("output","0");
+                // getnobleJSON("output");
+                var temp = sessionStorage.getItem('page');
+                var temp2 = sessionStorage.getItem('pagetype');
+                if (temp != null){
+                    document.getElementById("page").value = temp-0;
+                    if ((temp -0) == 0){
+                    }else{
+                        
+                        document.getElementsByName("month")[0].checked = false
+                        document.getElementsByName("month")[temp -0].checked = true
+                    }
+                }
+                if (temp2 != null){
+                    document.getElementById("pagetype").value = temp2-0;
+                    if ((temp2-0)==0) {
+
+                    }else{
+                        
+                        document.getElementsByName("type")[0].checked = false
+                        document.getElementsByName("type")[temp2 -0].checked = true
+
+                    }
+
+                }
+                if (temp2 != "2"){
+                    var page = document.getElementById("page").value
+                    getnewJSON("output",page);
+                }else{
+                    getnobleJSON("output");
+                }
             }
         </script>
         <title>新刊取得</title>
     </head>
     <body>
-        <li><input type="button" value="get" onclick="geturl()"></li>
-        <li><input type="button" value="getb" onclick="geturlb()">
-            <input type="radio" name="type" id="type" value="0" checked oncLick="geturlb()">漫画
-            <input type="radio" name="type" id="type" value="1" oncLick="geturlb()">小説
+        <!-- <li><input type="button" value="get" onclick="geturl()"></li> -->
+        <input type="button" value="status" onclick="statusckJSON('status')">
+        <div id="status" style="float: right;;"></div>
+        <li>
+            <!-- <input type="button" value="getb" onclick="geturlb()"> -->
+            <input type="hidden" name="pagetype" id="pagetype" value="0">
+            <input type="radio" name="type" id="type" value="0" oncLick="geturlb(this)" checked>漫画
+            <input type="radio" name="type" id="type" value="1" oncLick="geturlb(this)">小説
+            <input type="radio" name="type" id="type" value="2" oncLick="getnewnoble(this)" >小説になろう更新
             <input type="hidden" name="page" id="page" value="0">
             <input type="radio" name="month" id="month" value="0" oncLick="chmonth(this)" checked>今月
             <input type="radio" name="month" id="month" value="1" oncLick="chmonth(this)">来月
             <input type="radio" name="month" id="month" value="2" oncLick="chmonth(this)">再来月
         </li>
-        <div id="output"></div>
+        <div id="output" class="output"></div>
     </body>
 </html>

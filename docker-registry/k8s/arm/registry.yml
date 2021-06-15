@@ -12,6 +12,8 @@ spec:
       labels:
         name: registry
         app: registry
+      annotations:
+        podinfo: "コンテナレジストリサーバ"
     spec:
       affinity:
         nodeAffinity:
@@ -54,35 +56,7 @@ spec:
         - name: registry-st
           persistentVolumeClaim:
             claimName: registry-pv-claim
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: "registry-pv-volume"
-  namespace: registry
-  labels:
-    type: "local"
-spec:
-  storageClassName: "manual"
-  capacity:
-    storage: "20Gi"
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: /home/pi/registry
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: registry-pv-claim
-  namespace: registry
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
+            # claimName: registry-nfs-pv-claim
 ---
 apiVersion: v1
 kind: Service

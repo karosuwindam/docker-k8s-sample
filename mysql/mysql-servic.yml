@@ -31,6 +31,8 @@ spec:
     metadata:
       labels:
         app: mysql
+      annotations:
+        podinfo: "MySQLのテストポッド"
     spec:
       containers:
       - image: hypriot/rpi-mysql

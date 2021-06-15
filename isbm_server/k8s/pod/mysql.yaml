@@ -33,6 +33,8 @@ spec:
     metadata:
       labels:
         app: mysqlhost
+      annotations:
+        podinfo: "isbn用のMySQLサーバ"
     spec:
       containers:
       - image: hypriot/rpi-mysql
