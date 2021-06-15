@@ -1,4 +1,4 @@
-module local
+module ingresslist
 
 go 1.16
 
