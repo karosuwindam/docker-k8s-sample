@@ -101,7 +101,7 @@ function table_noble(data){
         output += "<div class='block'>"
         output += "<a href='"+tmp[i].LastUrl+"'>"+tmp[i].LastStoryT+"</a>"
         output += "</div>"
-        output += "<div class='block'>"
+        output += "<div class='block_time'>"
         output += timech(tmp[i].Lastdate)
         output += "</div>"
         output += "</div>"

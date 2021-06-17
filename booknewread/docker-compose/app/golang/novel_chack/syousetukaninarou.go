@@ -33,10 +33,10 @@ type Channel struct {
 	Setup       bool
 }
 
-func Setup() Channel {
+func Setup(count int) Channel {
 	var output Channel
-	output.Ch_Narou = make(chan bool, 2)
-	output.Ch_Kakuyomu = make(chan bool, 2)
+	output.Ch_Narou = make(chan bool, count)
+	output.Ch_Kakuyomu = make(chan bool, count)
 	output.Setup = true
 	return output
 }

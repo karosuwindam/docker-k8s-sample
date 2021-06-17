@@ -10,7 +10,12 @@
 .block {
     display: table-cell;
     border: solid 1px #999;
-    width: 500px;
+    width: 700px;
+}
+.block_time {
+    display: table-cell;
+    border: solid 1px #999;
+    width: 250px;
 }
 
 .block_n1{

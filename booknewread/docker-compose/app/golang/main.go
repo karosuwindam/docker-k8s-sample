@@ -52,7 +52,7 @@ func main() {
 	}
 	go func() {
 		log.Println("start novel data count")
-		ch := novel_chack.Setup()
+		ch := novel_chack.Setup(2)
 		for {
 			starttime := time.Now()
 			data := []novel_chack.BookBark{}
