@@ -7,17 +7,17 @@ spec:
   selector:
     matchLabels:
       app: booknewread
-    annotations:
-      podinf: "本や図書の新刊リストや読み物サイト更新"
   replicas: 1
   template:
     metadata:
       labels:
         app: booknewread
+      annotations:
+        podinfo: "本や図書の新刊リストや読み物サイト更新"
     spec:
       containers:
       - name: booknewread
-        image: bookserver2:31000/karosu/booknewread:0.8.1
+        image: bookserver2:31000/karosu/booknewread:0.8.2
         imagePullPolicy: IfNotPresent
         env:
           - name: TZ
