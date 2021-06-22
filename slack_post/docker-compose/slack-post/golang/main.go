@@ -1,8 +1,9 @@
 package main
 
-import "time"
-import _ "time/tzdata"
-
+import (
+	"time"
+	_ "time/tzdata"
+)
 
 func main() {
 	t := CSetup(1)
