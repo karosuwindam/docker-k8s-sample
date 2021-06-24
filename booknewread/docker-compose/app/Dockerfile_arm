@@ -30,6 +30,8 @@ WORKDIR /app
 COPY ./golang/config config
 COPY ./golang/html html
 COPY ./golang/bookmark bookmark
+COPY ./golang/bookmarks.html ./
+COPY ./golang/run.sh ./
 COPY --from=builder /app/app /app
 # COPY ./app /app
 CMD ["./app"]

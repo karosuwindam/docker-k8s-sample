@@ -24,6 +24,13 @@ spec:
             value: 'Asia/Tokyo'
         ports:
         - containerPort: 8080
+        volumeMounts:
+          - mountPath: /app/bookmark
+            name: booknew-storage
+      volumes:
+        - name: booknew-storage
+          persistentVolumeClaim:
+            claimName: booknewread--pv-claim
 ---
 apiVersion: v1
 kind: Service
