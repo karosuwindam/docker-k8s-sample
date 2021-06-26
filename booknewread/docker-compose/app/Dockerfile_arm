@@ -34,4 +34,4 @@ COPY ./golang/bookmarks.html ./
 COPY ./golang/run.sh ./
 COPY --from=builder /app/app /app
 # COPY ./app /app
-CMD ["./app"]
+CMD ["./run.sh"]
