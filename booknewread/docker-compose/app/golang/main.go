@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"runtime"
 	"sort"
@@ -43,7 +44,15 @@ func main() {
 	tmp := map[int]ListData{}
 	GrobalListData = tmp
 	var fpass dirread.Dirtype
+	readflag := false
+	ch1 := make(chan bool)
+
 	fpass.Setup("bookmark")
+	fpass.Read("/")
+	if len(fpass.Data) == 0 {
+		fmt.Println("err bookmark not file")
+		return
+	}
 	GrobalStatus = Status{
 		BookNowTIme:     time.Time{},
 		BookStatus:      "Reload",
@@ -59,7 +68,6 @@ func main() {
 			GrobalStatus.BookMarkStatus = "Reload"
 
 			listtmp := []novel_chack.List{}
-			// pass := "bookmarks_2021_05_18.html"
 			fpass.Read("/")
 			for _, fd := range fpass.Data {
 				pass := fd.RootPath + fd.Name
@@ -99,27 +107,13 @@ func main() {
 				time.Sleep(time.Millisecond * 100)
 			}
 
-			// // 単独処理
-			// for i, str := range data {
-			// 	tmp := ch.ChackUrldata(str.Url)
-			// 	if tmp.Title != "" {
-			// 		listtmp = append(listtmp, tmp)
-			// 		// fmt.Println(tmp)
-			// 	}
-			// 	GrobalStatus.BookMarkStatus = "Reload:" + strconv.Itoa(i*100/len(data)) + "%"
-			// }
-
-			// for i, str := range data {
-			// 	tmp := novel_chack.ChackUrldata(str.Url)
-			// 	if tmp.Title != "" {
-			// 		listtmp = append(listtmp, tmp)
-			// 		// fmt.Println(tmp)
-			// 	}
-			// 	GrobalStatus.BookMarkStatus = "Reload:" + strconv.Itoa(i*100/len(data)) + "%"
-			// }
 			sort.Slice(listtmp, func(i, j int) bool { return listtmp[i].Lastdate.Unix() > listtmp[j].Lastdate.Unix() })
 			endtime := time.Now()
 			Listdata = listtmp
+			if !readflag {
+				ch1 <- true
+				readflag = true
+			}
 			GrobalStatus.BookMarkStatus = "OK"
 			GrobalStatus.BookMarkNowTime = time.Now()
 			Reloadflag.BookMarkFlag = false
@@ -170,7 +164,7 @@ func main() {
 			log.Println("reload new book data")
 		}
 	}()
-
+	<-ch1
 	var web WebSetupData
 	err := web.websetup()
 	if err == nil {

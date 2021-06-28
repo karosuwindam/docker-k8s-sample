@@ -19,6 +19,11 @@ type List struct {
 	LastUrl    string    `json:lasturl`
 }
 
+type documentdata struct {
+	url  string
+	data *goquery.Document
+}
+
 const (
 	BASE_URL_NAROU    = "http://ncode.syosetu.com"
 	BASE_URL_NAROUS   = "https://ncode.syosetu.com"
@@ -30,6 +35,7 @@ const (
 type Channel struct {
 	Ch_Narou    chan bool
 	Ch_Kakuyomu chan bool
+	Ch_Nocku    chan bool
 	Setup       bool
 }
 
@@ -37,6 +43,7 @@ func Setup(count int) Channel {
 	var output Channel
 	output.Ch_Narou = make(chan bool, count)
 	output.Ch_Kakuyomu = make(chan bool, count)
+	output.Ch_Nocku = make(chan bool, count)
 	output.Setup = true
 	return output
 }
@@ -47,40 +54,73 @@ func (t *Channel) ChackUrldata(url string) List {
 		log.Println("not Setup")
 		return output
 	}
-	if len(BASE_URL_NAROU) <= len(url) {
+	// if len(BASE_URL_NAROU) <= len(url) {
+	// 	if url[:len(BASE_URL_NAROU)] == BASE_URL_NAROU {
+	// 		t.Ch_Narou <- true
+	// 		output = chackSyousetu(url)
+	// 		<-t.Ch_Narou
+	// 	}
+	// }
+	// if len(BASE_URL_NAROUS) <= len(url) {
+	// 	if url[:len(BASE_URL_NAROUS)] == BASE_URL_NAROUS {
+	// 		t.Ch_Narou <- true
+	// 		output = chackSyousetu(url)
+	// 		<-t.Ch_Narou
+	// 	}
+	// }
+	if len(BASE_URL_NAROU) <= len(url) { //なろうのチェック
+		url_tmp := ""
 		if url[:len(BASE_URL_NAROU)] == BASE_URL_NAROU {
+			url_tmp = url
+		} else if len(BASE_URL_NAROUS) <= len(url) {
+			if url[:len(BASE_URL_NAROUS)] == BASE_URL_NAROUS {
+				url_tmp = url
+			}
+		}
+		if url_tmp != "" {
 			t.Ch_Narou <- true
-			output = chackSyousetu(url)
+			data, err := getDocument(url)
 			<-t.Ch_Narou
+			if err != nil {
+				fmt.Println(err.Error())
+				return output
+			} else {
+				return chackSyousetu(data)
+			}
 		}
 	}
-	if len(BASE_URL_NAROUS) <= len(url) {
-		if url[:len(BASE_URL_NAROUS)] == BASE_URL_NAROUS {
-			t.Ch_Narou <- true
-			output = chackSyousetu(url)
-			<-t.Ch_Narou
-		}
-	}
-	if len(BASE_URL_KAKUYOMU) <= len(url) {
+	if len(BASE_URL_KAKUYOMU) <= len(url) { //カクヨムのチェック
 		if url[:len(BASE_URL_KAKUYOMU)] == BASE_URL_KAKUYOMU {
 			t.Ch_Kakuyomu <- true
-			output = chackKakuyomu(url)
+			data, err := getDocument(url)
 			<-t.Ch_Kakuyomu
+			if err != nil {
+				fmt.Println(err.Error())
+				return output
+			} else {
+				return chackKakuyomu(data)
+			}
 		}
 	}
-	if len(BASE_URL_NOCKU) <= len(url) {
+	if len(BASE_URL_NOCKU) <= len(url) { //ノクターンチェック
+		url_tmp := ""
 		if url[:len(BASE_URL_NOCKU)] == BASE_URL_NOCKU {
-			t.Ch_Narou <- true
-			url_tmp := strings.Replace(url, "http", "https", 1)
-			output = chackNokutarn(url_tmp)
-			<-t.Ch_Narou
+			url_tmp = strings.Replace(url, "http", "https", 1)
+		} else if len(BASE_URL_NOCKUS) <= len(url) {
+			if url[:len(BASE_URL_NOCKUS)] == BASE_URL_NOCKUS {
+				url_tmp = url
+			}
 		}
-	}
-	if len(BASE_URL_NOCKUS) <= len(url) {
-		if url[:len(BASE_URL_NOCKUS)] == BASE_URL_NOCKUS {
-			t.Ch_Narou <- true
-			output = chackNokutarn(url)
-			<-t.Ch_Narou
+		if url_tmp != "" {
+			t.Ch_Nocku <- true
+			data, err := getNokutarn(url_tmp)
+			<-t.Ch_Nocku
+			if err != nil {
+				fmt.Println(err.Error())
+				return output
+			} else {
+				return chackNokutarn(data)
+			}
 		}
 	}
 
@@ -88,31 +128,45 @@ func (t *Channel) ChackUrldata(url string) List {
 
 }
 
-//ノクターンノベルのチェック
-func chackNokutarn(urldata string) List {
-	var output List
-	output.Url = urldata
+func getDocument(url string) (documentdata, error) {
+	var output documentdata
+	output.url = url
+	doc, err := goquery.NewDocument(url)
+	if err != nil {
+		return output, err
+	}
+	output.data = doc
+	return output, nil
+}
+
+//ノクターンノベルのゲット
+func getNokutarn(urldata string) (documentdata, error) {
+	var output documentdata
+	output.url = urldata
 	req, err := http.NewRequest(http.MethodPost, urldata, nil)
 	if err != nil {
-		fmt.Println(err.Error())
-		return output
+		return output, err
 	}
-	// req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Cookie", "over18=yes")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Println(err.Error())
-		return output
+		return output, err
 	}
 	defer resp.Body.Close()
-
 	doc, err := goquery.NewDocumentFromResponse(resp)
 	if err != nil {
-		fmt.Println(err.Error())
-		return output
+		return output, err
 	}
-	// fmt.Println(doc.Text())
+	output.data = doc
+	return output, nil
+}
+
+//ノクターンノベルのチェック
+func chackNokutarn(data documentdata) List {
+	var output List
+	output.Url = data.url
+	doc := data.data
 	output.Title = doc.Find("p.novel_title").Text()
 	doc.Find("dl.novel_sublist2").Each(func(i int, s *goquery.Selection) {
 		output.LastStoryT = strings.TrimSpace(s.Find("dd.subtitle").Text())
@@ -123,7 +177,8 @@ func chackNokutarn(urldata string) List {
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
 			// fmt.Println(t.Local())
-			output.Lastdate = t.Local().Add(-9 * time.Hour)
+			// output.Lastdate = t.Local().Add(-9 * time.Hour)
+			output.Lastdate = t.Local()
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
@@ -137,14 +192,10 @@ func chackNokutarn(urldata string) List {
 }
 
 //小説になろうのチェック
-func chackSyousetu(url string) List {
+func chackSyousetu(data documentdata) List {
 	var output List
-	output.Url = url
-	doc, err := goquery.NewDocument(url)
-	if err != nil {
-		fmt.Println(err.Error())
-		return output
-	}
+	output.Url = data.url
+	doc := data.data
 	output.Title = doc.Find("p.novel_title").Text()
 	doc.Find("dl.novel_sublist2").Each(func(i int, s *goquery.Selection) {
 		output.LastStoryT = strings.TrimSpace(s.Find("dd.subtitle").Text())
@@ -155,7 +206,8 @@ func chackSyousetu(url string) List {
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
 			// fmt.Println(t)
-			output.Lastdate = t.Local().Add(-9 * time.Hour)
+			// output.Lastdate = t.Local().Add(-9 * time.Hour)
+			output.Lastdate = t.Local()
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
@@ -168,14 +220,10 @@ func chackSyousetu(url string) List {
 }
 
 //カクヨムのチェック
-func chackKakuyomu(url string) List {
+func chackKakuyomu(data documentdata) List {
 	var output List
-	output.Url = url
-	doc, err := goquery.NewDocument(url)
-	if err != nil {
-		fmt.Println(err.Error())
-		return output
-	}
+	output.Url = data.url
+	doc := data.data
 	output.Title = doc.Find("div#workHeader-inner").Find("h1#workTitle").Text()
 	// fmt.Println(doc.Find("div.widget-toc-main").Text())
 
