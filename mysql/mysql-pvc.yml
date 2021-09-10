@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  namespace: test
+  annotations:
+    "volume.beta.kubernetes.io/storage-class": "slow"
+spec:
+  # storageClassName=manualのPVを探してマウントする
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi # PVが持っている容量のうち20GBを使用する

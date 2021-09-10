@@ -1,0 +1,32 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: registry-nfs-pv-volume # PVの名前
+  namespace: registry
+  labels:
+    type: local
+spec:
+  storageClassName: registry-nfs # PVCと一致させる必要がある
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce # 一つのノードからread/writeでマウントできるモード
+#   hostPath:
+#     path: "/mnt/data"
+  nfs:
+    server: k8s-worker-2
+    path: /home/pi/usb/usb1/nfs/contena
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registry-nfs-pv-claim
+  namespace: registry
+spec:
+  # storageClassName=manualのPVを探してマウントする
+  storageClassName: registry-nfs 
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi # PVが持っている容量のうち20GBを使用する

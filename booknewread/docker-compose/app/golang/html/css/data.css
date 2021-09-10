@@ -1,0 +1,40 @@
+.table_line {
+    display: table;
+    /* width: 1200px; */
+}
+.output {
+    
+    overflow-y:scroll;
+    height: 95%;
+}
+.block {
+    display: table-cell;
+    border: solid 1px #999;
+    width: 700px;
+}
+.block_time {
+    display: table-cell;
+    border: solid 1px #999;
+    width: 250px;
+}
+
+.block_n1{
+    display: table-cell;
+    border: solid 1px #999;
+    width: 30px;
+}
+.block_n2{
+    display: table-cell;
+    border: solid 1px #999;
+    width: 150px;
+}
+.block_title{
+    display: table-cell;
+    border: solid 1px #999;
+    width: 700px;
+}
+.block_img{
+    display: table-cell;
+    border: solid 1px #999;
+    width: 200px;
+}

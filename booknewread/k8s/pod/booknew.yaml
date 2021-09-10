@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booknewread-deploy
+  namespace: booknew-sp
+spec:
+  selector:
+    matchLabels:
+      app: booknewread
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: booknewread
+      annotations:
+        podinfo: "本や図書の新刊リストや読み物サイト更新"
+    spec:
+      containers:
+      - name: booknewread
+        image: bookserver2:31000/karosu/booknewread:0.8.4
+        imagePullPolicy: IfNotPresent
+        # imagePullPolicy: Always
+        env:
+          - name: TZ
+            value: 'Asia/Tokyo'
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - mountPath: /app/bookmark
+            name: booknew-storage
+      volumes:
+        - name: booknew-storage
+          persistentVolumeClaim:
+            claimName: booknewread--pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booknewread-service
+  namespace: booknew-sp
+spec:
+  selector:
+    app: booknewread
+  ports:
+    - port: 8080
+      targetPort: 8080
+      # nodePort: 32200
+  # type: LoadBalancer
+  type: ClusterIP
+

@@ -1,0 +1,56 @@
+<html>
+    <head>
+        <title>slack post</title>
+        <script>
+            function cheaksend(){
+                xhr = new XMLHttpRequest();
+                var URL = "/health";
+                xhr.open('GET',URL,true);
+                xhr.send();
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState == 4){
+                        if(xhr.status == 200){
+                            var data = xhr.responseText;
+                            jsondata = JSON.parse(data)
+                            if (jsondata.Message == "OK"){
+                                senddata()
+                            }else{
+                                document.getElementById("output").innerHTML = jsondata.Message
+                            }
+                        }
+                    }
+                }
+            }
+            function senddata(){
+                xhr = new XMLHttpRequest();
+                var URL = "/postmessage";
+                var mixedDatas = new FormData();
+                mixedDatas.append("message",document.formdata.message.value)
+                xhr.open('POST',URL,true);
+                xhr.send( mixedDatas );
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState == 4){
+                        if(xhr.status == 200){
+                            var data = xhr.responseText;
+                            jsondata = JSON.parse(data)
+                            document.getElementById("output").innerHTML = jsondata.Message
+                            console.log(jsondata);
+                        }else{
+                            var data = xhr.responseText;
+                            jsondata = JSON.parse(data)
+                            document.getElementById("output").innerHTML = jsondata.Message
+                            console.log(jsondata);
+                        }
+                    }
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <form name="formdata">
+            <textarea name="t_message" id="message" cols="30" rows="10"></textarea>
+            <input type="button" value="send" onclick="cheaksend();return false;">    
+        </form>
+        <div id="output"></div>
+    </body>
+</html>
