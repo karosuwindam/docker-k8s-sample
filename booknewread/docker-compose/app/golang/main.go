@@ -32,6 +32,19 @@ type Status struct {
 	BookMarkStatus  string    `json:bookmarkstatus`
 }
 
+//環境変数で操作できる数値周
+type SetupEnvData struct {
+	MaxAccess  int //一つのサイトに対してアクセスできる限界数
+	MaxBackDay int //今日を基準に表示する前日数
+}
+
+//デフォルト
+const (
+	DEF_ACCESS  = 2
+	DEF_BACKDAY = 5
+)
+
+//グローバル数値化
 var GrobalListData map[int]ListData
 
 var Listdata []novel_chack.List
@@ -40,12 +53,30 @@ var GrobalStatus Status
 
 var Reloadflag ReloadFlag
 
+var EnvData SetupEnvData
+
+func SetupEnv() SetupEnvData {
+	var output SetupEnvData
+	if true {
+		output.MaxAccess = 3
+	} else {
+		output.MaxAccess = DEF_ACCESS
+	}
+	if true {
+		output.MaxBackDay = 2
+	} else {
+		output.MaxBackDay = DEF_BACKDAY
+	}
+	return output
+}
+
 func main() {
 	tmp := map[int]ListData{}
 	GrobalListData = tmp
 	var fpass dirread.Dirtype
 	readflag := false
 	ch1 := make(chan bool)
+	EnvData = SetupEnv()
 
 	fpass.Setup("bookmark")
 	fpass.Read("/")
@@ -61,7 +92,7 @@ func main() {
 	}
 	go func() {
 		log.Println("start novel data count")
-		ch := novel_chack.Setup(2)
+		ch := novel_chack.Setup(EnvData.MaxAccess)
 		for {
 			starttime := time.Now()
 			data := []novel_chack.BookBark{}
@@ -146,8 +177,8 @@ func main() {
 
 				listdata.LiteNobel = GetComicList(listdata.Year, listdata.Month, LITENOVEL)
 				listdata.Comic = GetComicList(listdata.Year, listdata.Month, COMIC)
-				listdata.LiteNobel = FilterComicList(listdata.LiteNobel)
-				listdata.Comic = FilterComicList(listdata.Comic)
+				listdata.LiteNobel = FilterComicList(listdata.LiteNobel, EnvData.MaxBackDay)
+				listdata.Comic = FilterComicList(listdata.Comic, EnvData.MaxBackDay)
 				GrobalListData[i] = listdata
 			}
 			endtime := time.Now()

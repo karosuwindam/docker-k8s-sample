@@ -32,13 +32,13 @@ const (
 	MAGAZINE  = 2
 )
 
-func FilterComicList(data []BookList) []BookList {
+func FilterComicList(data []BookList, lastday int) []BookList {
 	output := []BookList{}
 	t := time.Now().Local()
 	for _, tmp := range data {
 		month, _ := strconv.Atoi(tmp.Months)
 		day, _ := strconv.Atoi(tmp.Days)
-		if (month == int(t.Month())) && (day < int(t.Day())-5) {
+		if (month == int(t.Month())) && (day < int(t.Day())-lastday) && (lastday >= 0) {
 
 		} else {
 			output = append(output, tmp)

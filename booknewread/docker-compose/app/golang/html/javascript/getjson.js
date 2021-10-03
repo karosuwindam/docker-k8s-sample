@@ -1,3 +1,10 @@
+function isSmartPhone() {
+    if (navigator.userAgent.match(/iPhone|Android.+Mobile/)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 function timech(timedata){
     // var date = Date.parse(timedata);
     var date = new Date(timedata);
@@ -128,19 +135,19 @@ function table(data){
     output += "</table>";
     return output
 }
-function table_conb(data){
-    var output = "<tr>";
-    output += "<td>"+data.Days+"</td>"
-    output += "<td>"+data.Type+"</td>"
-    output += "<td>"+data.Title+"</td>"
-    output += "<td>"+data.Writer+"</td>"
-    output += "<td>"+data.Bround+"</td>"
-    output += "<td>"+data.Ext+"</td>"
-    output += "<td>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</td>"
+// function table_conb(data){
+//     var output = "<tr>";
+//     output += "<td>"+data.Days+"</td>"
+//     output += "<td>"+data.Type+"</td>"
+//     output += "<td>"+data.Title+"</td>"
+//     output += "<td>"+data.Writer+"</td>"
+//     output += "<td>"+data.Bround+"</td>"
+//     output += "<td>"+data.Ext+"</td>"
+//     output += "<td>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</td>"
 
-    output += "</tr>";
-    return output
-}
+//     output += "</tr>";
+//     return output
+// }
 function table_conbd(data){
     var output = ""
     output += "<div class='block_n1'>"+data.Days+ "</div>";
@@ -152,6 +159,25 @@ function table_conbd(data){
     output += "<div class='block_img'>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</div>";
     return output
 }
+
+function testclick(data,iamgeurl){
+    // alert(data,iamgeurl);
+    data.innerHTML = "<img src='"+ iamgeurl+"' alt='"+iamgeurl+"'>";
+}
+function table_conbd_m(data){
+    var output = ""
+    output += "<div class='block_n1'>"+data.Days+ "</div>";
+    output += "<div class='block_n2'>"+data.Type+ "</div>";
+    output += "<div class='block_title'>"+data.Title+"<br>"+ data.Writer+" "+data.Bround+" "+ data.Ext+ "</div>";
+    // output += "<div class='block_img'>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</div>";
+    if (window.navigator.connection.type == 'cellular'){
+        output += "<div class='block_img' onclick='testclick(this,\""+data.Img+"\")'>"+"onclick<br>image<br>view</div>";
+    }else{
+        output += "<div class='block_img'>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</div>";
+    }
+
+    return output
+}
 function tableb(data){
     var tmp = JSON.parse(data);
     var rajiob = document.getElementsByName("type");
@@ -161,13 +187,21 @@ function tableb(data){
     if (rajiob[1].checked ){
         for (var i=0;i<tmp.LiteNobel.length;i++){
             output += "<div class='table_line'>"
-            output += table_conbd(tmp.LiteNobel[i])
+            if (isSmartPhone()){
+                output += table_conbd_m(tmp.LiteNobel[i])
+            }else{
+                output += table_conbd(tmp.LiteNobel[i])
+            }
             output += "</div>"
         }
     }else{
         for (var i=0;i<tmp.Comic.length;i++){
             output += "<div class='table_line'>"
-            output += table_conbd(tmp.Comic[i])
+            if (isSmartPhone()){
+                output += table_conbd_m(tmp.Comic[i])
+            }else{
+                output += table_conbd(tmp.Comic[i])
+            }
             output += "</div>"
         }
     }
