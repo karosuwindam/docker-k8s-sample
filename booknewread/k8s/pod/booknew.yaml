@@ -17,8 +17,9 @@ spec:
     spec:
       containers:
       - name: booknewread
-        image: bookserver2:31000/karosu/booknewread:0.8.2
+        image: bookserver2:31000/karosu/booknewread:0.8.4
         imagePullPolicy: IfNotPresent
+        # imagePullPolicy: Always
         env:
           - name: TZ
             value: 'Asia/Tokyo'
