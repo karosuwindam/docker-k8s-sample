@@ -203,9 +203,9 @@ func chackNokutarn(data documentdata) List {
 			if strings.Index(times, "（改）") > 0 {
 				times = times[:strings.Index(times, "（改）")]
 			}
-			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
+			t, _ := time.Parse("2006/01/02 15:04:05 JST", times+":00 JST")
 			// fmt.Println(t.Local())
-			output.Lastdate = t.Local().Add(-9 * time.Hour)
+			output.Lastdate = t.UTC().Add(-9 * time.Hour)
 			// output.Lastdate = t.UTC()
 
 		}
@@ -232,9 +232,10 @@ func chackSyousetu(data documentdata) List {
 			if strings.Index(times, "（改）") > 0 {
 				times = times[:strings.Index(times, "（改）")]
 			}
-			t, _ := time.Parse("2006/01/02 15:04:05 MST", times+":00 JST")
+			t, _ := time.Parse("2006/01/02 15:04:05 JST", times+":00 JST")
 			// fmt.Println(t)
-			output.Lastdate = t.Local().Add(-9 * time.Hour)
+			// output.Lastdate = t.Local().Add(-9 * time.Hour)
+			output.Lastdate = t.UTC().Add(-9 * time.Hour)
 			// output.Lastdate = t.UTC()
 
 		}

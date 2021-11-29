@@ -70,7 +70,7 @@ function getnobleJSON(output){
       if(req.readyState == 4 && req.status == 200){
         var data=req.responseText;
         // data = JSON.parse(data);
-        console.log(data);
+        console.log(JSON.parse(data));
         document.getElementById(output).innerHTML = table_noble(data);
         // document.getElementById(output).innerHTML = data;
       }
@@ -84,7 +84,7 @@ function getnewJSON(output,page){
       if(req.readyState == 4 && req.status == 200){
         var data=req.responseText;
         // data = JSON.parse(data);
-        console.log(data);
+        console.log(JSON.parse(data));
         document.getElementById(output).innerHTML = tableb(data);
         // document.getElementById(output).innerHTML = data;
       }
@@ -181,29 +181,60 @@ function table_conbd_m(data){
 function tableb(data){
     var tmp = JSON.parse(data);
     var rajiob = document.getElementsByName("type");
+    var rajiom = document.getElementsByName("month");
     var output = tmp.Year +"年" +tmp.Month + "月<br>";
     output += "</div>"
-    
-    if (rajiob[1].checked ){
+    if (rajiom[rajiom.length-1].checked){
+        var date = new Date()
+        var day = date.getDate()
+        for (var i=0;i<tmp.Comic.length;i++){
+            output += "<div class='table_line'>"
+            if (isSmartPhone()){
+                if (tmp.Comic[i].Days==day){
+                    output += table_conbd_m(tmp.Comic[i])
+                }
+            }else{
+                if (tmp.Comic[i].Days==day){
+                    output += table_conbd(tmp.Comic[i])
+                }
+            }
+            output += "</div>"
+        }
         for (var i=0;i<tmp.LiteNobel.length;i++){
             output += "<div class='table_line'>"
             if (isSmartPhone()){
-                output += table_conbd_m(tmp.LiteNobel[i])
+                if (tmp.LiteNobel[i].Days==day){
+                    output += table_conbd_m(tmp.LiteNobel[i])
+                }
             }else{
-                output += table_conbd(tmp.LiteNobel[i])
+                if (tmp.LiteNobel[i].Days==day){
+                    output += table_conbd(tmp.LiteNobel[i])
+                }
             }
             output += "</div>"
         }
     }else{
-        for (var i=0;i<tmp.Comic.length;i++){
-            output += "<div class='table_line'>"
-            if (isSmartPhone()){
-                output += table_conbd_m(tmp.Comic[i])
-            }else{
-                output += table_conbd(tmp.Comic[i])
+        if (rajiob[1].checked ){
+            for (var i=0;i<tmp.LiteNobel.length;i++){
+                output += "<div class='table_line'>"
+                if (isSmartPhone()){
+                    output += table_conbd_m(tmp.LiteNobel[i])
+                }else{
+                    output += table_conbd(tmp.LiteNobel[i])
+                }
+                output += "</div>"
             }
-            output += "</div>"
-        }
+        }else{
+            for (var i=0;i<tmp.Comic.length;i++){
+                output += "<div class='table_line'>"
+                if (isSmartPhone()){
+                    output += table_conbd_m(tmp.Comic[i])
+                }else{
+                    output += table_conbd(tmp.Comic[i])
+                }
+                output += "</div>"
+            }
+        }    
     }
     output += "<div class='table'>"
 //     output +="<table>";

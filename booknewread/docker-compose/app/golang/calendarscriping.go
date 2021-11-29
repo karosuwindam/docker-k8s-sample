@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -34,15 +32,15 @@ const (
 
 func FilterComicList(data []BookList, lastday int) []BookList {
 	output := []BookList{}
-	t := time.Now().Local()
+	// t := time.Now().Local()
 	for _, tmp := range data {
-		month, _ := strconv.Atoi(tmp.Months)
-		day, _ := strconv.Atoi(tmp.Days)
-		if (month == int(t.Month())) && (day < int(t.Day())-lastday) && (lastday >= 0) {
+		// month, _ := strconv.Atoi(tmp.Months)
+		// day, _ := strconv.Atoi(tmp.Days)
+		// if (month == int(t.Month())) && (day < int(t.Day())-lastday) && (lastday >= 0) {
 
-		} else {
-			output = append(output, tmp)
-		}
+		// } else {
+		output = append(output, tmp)
+		// }
 	}
 	return output
 }
