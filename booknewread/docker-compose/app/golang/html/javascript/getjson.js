@@ -1,3 +1,5 @@
+var JSON_DATA = ["","",""]
+
 function isSmartPhone() {
     if (navigator.userAgent.match(/iPhone|Android.+Mobile/)) {
       return true;
@@ -79,11 +81,28 @@ function getnobleJSON(output){
     req.send();
 }
 function getnewJSON(output,page){
+    var rajiom = document.getElementsByName("month");
+    if (rajiom[rajiom.length-1].checked){
+        if (JSON_DATA[0] != "") {
+            document.getElementById(output).innerHTML = tableb(JSON_DATA[0]);
+            return
+        }
+    }else{
+        if (JSON_DATA[page-0] != "") {
+            document.getElementById(output).innerHTML = tableb(JSON_DATA[page-0]);
+            return
+        }    
+    }
     var req = new window.XMLHttpRequest();
     req.onreadystatechange = function(){
       if(req.readyState == 4 && req.status == 200){
         var data=req.responseText;
         // data = JSON.parse(data);
+        if (rajiom[rajiom.length-1].checked){
+            JSON_DATA[0] = data
+        }else{
+            JSON_DATA[page-0] = data
+        }
         console.log(JSON.parse(data));
         document.getElementById(output).innerHTML = tableb(data);
         // document.getElementById(output).innerHTML = data;

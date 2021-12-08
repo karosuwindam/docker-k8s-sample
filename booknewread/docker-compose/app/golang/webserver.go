@@ -149,7 +149,19 @@ func (t *WebSetupData) json(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *WebSetupData) getlocaljson(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Method + ":" + r.URL.Path)
+	form_data := ""
+	r.ParseForm()
+	for cnt, strs := range r.Form {
+		form_data += " " + cnt + ":"
+		for i, str := range strs {
+			if i == 0 {
+				form_data += str
+			} else {
+				form_data += "," + str
+			}
+		}
+	}
+	log.Println(r.Method + ":" + r.URL.Path + " " + form_data)
 
 	if r.Method == "GET" {
 		jsondata, err := json.Marshal(GrobalListData[0])
