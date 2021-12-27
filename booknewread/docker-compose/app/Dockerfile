@@ -7,7 +7,7 @@ RUN go build -o app
 
 FROM debian:unstable-slim
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.10.1"
+LABEL version="0.10.2"
 LABEL name="booknewread"
 # RUN <<EOF
 # apt-get update
