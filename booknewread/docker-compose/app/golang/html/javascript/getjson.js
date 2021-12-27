@@ -1,3 +1,12 @@
+var JSON_DATA = ["","",""]
+
+function isSmartPhone() {
+    if (navigator.userAgent.match(/iPhone|Android.+Mobile/)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 function timech(timedata){
     // var date = Date.parse(timedata);
     var date = new Date(timedata);
@@ -63,7 +72,7 @@ function getnobleJSON(output){
       if(req.readyState == 4 && req.status == 200){
         var data=req.responseText;
         // data = JSON.parse(data);
-        console.log(data);
+        console.log(JSON.parse(data));
         document.getElementById(output).innerHTML = table_noble(data);
         // document.getElementById(output).innerHTML = data;
       }
@@ -72,12 +81,29 @@ function getnobleJSON(output){
     req.send();
 }
 function getnewJSON(output,page){
+    var rajiom = document.getElementsByName("month");
+    if (rajiom[rajiom.length-1].checked){
+        if (JSON_DATA[0] != "") {
+            document.getElementById(output).innerHTML = tableb(JSON_DATA[0]);
+            return
+        }
+    }else{
+        if (JSON_DATA[page-0] != "") {
+            document.getElementById(output).innerHTML = tableb(JSON_DATA[page-0]);
+            return
+        }    
+    }
     var req = new window.XMLHttpRequest();
     req.onreadystatechange = function(){
       if(req.readyState == 4 && req.status == 200){
         var data=req.responseText;
         // data = JSON.parse(data);
-        console.log(data);
+        if (rajiom[rajiom.length-1].checked){
+            JSON_DATA[0] = data
+        }else{
+            JSON_DATA[page-0] = data
+        }
+        console.log(JSON.parse(data));
         document.getElementById(output).innerHTML = tableb(data);
         // document.getElementById(output).innerHTML = data;
       }
@@ -101,8 +127,8 @@ function table_noble(data){
         output += "<div class='block'>"
         output += "<a href='"+tmp[i].LastUrl+"'>"+tmp[i].LastStoryT+"</a>"
         output += "</div>"
-        output += "<div class='block'>"
-        output += tmp[i].Lastdate
+        output += "<div class='block_time'>"
+        output += timech(tmp[i].Lastdate)
         output += "</div>"
         output += "</div>"
     }
@@ -128,19 +154,19 @@ function table(data){
     output += "</table>";
     return output
 }
-function table_conb(data){
-    var output = "<tr>";
-    output += "<td>"+data.Days+"</td>"
-    output += "<td>"+data.Type+"</td>"
-    output += "<td>"+data.Title+"</td>"
-    output += "<td>"+data.Writer+"</td>"
-    output += "<td>"+data.Bround+"</td>"
-    output += "<td>"+data.Ext+"</td>"
-    output += "<td>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</td>"
+// function table_conb(data){
+//     var output = "<tr>";
+//     output += "<td>"+data.Days+"</td>"
+//     output += "<td>"+data.Type+"</td>"
+//     output += "<td>"+data.Title+"</td>"
+//     output += "<td>"+data.Writer+"</td>"
+//     output += "<td>"+data.Bround+"</td>"
+//     output += "<td>"+data.Ext+"</td>"
+//     output += "<td>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</td>"
 
-    output += "</tr>";
-    return output
-}
+//     output += "</tr>";
+//     return output
+// }
 function table_conbd(data){
     var output = ""
     output += "<div class='block_n1'>"+data.Days+ "</div>";
@@ -152,24 +178,82 @@ function table_conbd(data){
     output += "<div class='block_img'>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</div>";
     return output
 }
+
+function testclick(data,iamgeurl){
+    // alert(data,iamgeurl);
+    data.innerHTML = "<img src='"+ iamgeurl+"' alt='"+iamgeurl+"'>";
+}
+function table_conbd_m(data){
+    var output = ""
+    output += "<div class='block_n1'>"+data.Days+ "</div>";
+    output += "<div class='block_n2'>"+data.Type+ "</div>";
+    output += "<div class='block_title'>"+data.Title+"<br>"+ data.Writer+" "+data.Bround+" "+ data.Ext+ "</div>";
+    // output += "<div class='block_img'>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</div>";
+    if (window.navigator.connection.type == 'cellular'){
+        output += "<div class='block_img' onclick='testclick(this,\""+data.Img+"\")'>"+"onclick<br>image<br>view</div>";
+    }else{
+        output += "<div class='block_img'>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</div>";
+    }
+
+    return output
+}
 function tableb(data){
     var tmp = JSON.parse(data);
     var rajiob = document.getElementsByName("type");
+    var rajiom = document.getElementsByName("month");
     var output = tmp.Year +"年" +tmp.Month + "月<br>";
     output += "</div>"
-    
-    if (rajiob[1].checked ){
+    if (rajiom[rajiom.length-1].checked){
+        var date = new Date()
+        var day = date.getDate()
+        for (var i=0;i<tmp.Comic.length;i++){
+            output += "<div class='table_line'>"
+            if (isSmartPhone()){
+                if (tmp.Comic[i].Days==day){
+                    output += table_conbd_m(tmp.Comic[i])
+                }
+            }else{
+                if (tmp.Comic[i].Days==day){
+                    output += table_conbd(tmp.Comic[i])
+                }
+            }
+            output += "</div>"
+        }
         for (var i=0;i<tmp.LiteNobel.length;i++){
             output += "<div class='table_line'>"
-            output += table_conbd(tmp.LiteNobel[i])
+            if (isSmartPhone()){
+                if (tmp.LiteNobel[i].Days==day){
+                    output += table_conbd_m(tmp.LiteNobel[i])
+                }
+            }else{
+                if (tmp.LiteNobel[i].Days==day){
+                    output += table_conbd(tmp.LiteNobel[i])
+                }
+            }
             output += "</div>"
         }
     }else{
-        for (var i=0;i<tmp.Comic.length;i++){
-            output += "<div class='table_line'>"
-            output += table_conbd(tmp.Comic[i])
-            output += "</div>"
-        }
+        if (rajiob[1].checked ){
+            for (var i=0;i<tmp.LiteNobel.length;i++){
+                output += "<div class='table_line'>"
+                if (isSmartPhone()){
+                    output += table_conbd_m(tmp.LiteNobel[i])
+                }else{
+                    output += table_conbd(tmp.LiteNobel[i])
+                }
+                output += "</div>"
+            }
+        }else{
+            for (var i=0;i<tmp.Comic.length;i++){
+                output += "<div class='table_line'>"
+                if (isSmartPhone()){
+                    output += table_conbd_m(tmp.Comic[i])
+                }else{
+                    output += table_conbd(tmp.Comic[i])
+                }
+                output += "</div>"
+            }
+        }    
     }
     output += "<div class='table'>"
 //     output +="<table>";
