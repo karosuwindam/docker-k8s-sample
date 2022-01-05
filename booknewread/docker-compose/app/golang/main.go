@@ -93,20 +93,23 @@ func main() {
 	go func() {
 		log.Println("start novel data count")
 		ch := novel_chack.Setup(EnvData.MaxAccess)
+		data := []novel_chack.BookBark{}
 		for {
 			starttime := time.Now()
-			data := []novel_chack.BookBark{}
 			GrobalStatus.BookMarkStatus = "Reload"
 
 			listtmp := []novel_chack.List{}
 			fpass.Read("/")
-			for _, fd := range fpass.Data {
-				pass := fd.RootPath + fd.Name
-				ncr := novel_chack.ReadBookBark(pass)
-				for _, tmpd := range ncr {
-					data = append(data, tmpd)
+			if len(fpass.Data) != 0 {
+				data = []novel_chack.BookBark{}
+				for _, fd := range fpass.Data {
+					pass := fd.RootPath + fd.Name
+					ncr := novel_chack.ReadBookBark(pass)
+					for _, tmpd := range ncr {
+						data = append(data, tmpd)
+					}
+					data = novel_chack.BookBarkSout(data)
 				}
-				data = novel_chack.BookBarkSout(data)
 			}
 
 			//マルチ処理
