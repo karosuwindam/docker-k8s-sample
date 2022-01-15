@@ -1,4 +1,4 @@
-FROM arm32v7/nextcloud
+FROM nextcloud
 RUN apt-get update&& apt-get upgrade -y
 RUN apt-get install smbclient -y
 RUN apt-get autoremove -y
