@@ -13,3 +13,9 @@ spec:
       - backend:
           serviceName: booknewread-service
           servicePort: 8080
+  - host: booknewread.bookserver.home
+    http:
+      paths:
+      - backend:
+          serviceName: booknewread-service
+          servicePort: 8080
