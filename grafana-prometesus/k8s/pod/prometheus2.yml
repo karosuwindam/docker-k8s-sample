@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus
+  name: prometheus2
   namespace: gf-space
 spec:
   selector:
     matchLabels:
-      app: prometheus
+      app: prometheus2
   template:
     metadata:
       labels:
-        app: prometheus
+        app: prometheus2
     spec:
       affinity:
         nodeAffinity:
@@ -20,11 +20,11 @@ spec:
                 - key: kubernetes.io/hostname
                   operator: In
                   values:
-                    - "k8s-worker-2"
+                    - "raspberrypi5"
       serviceAccountName: prometheus
       serviceAccount: prometheus
       containers:
-        - name: prometheus
+        - name: prometheus2
           image: prom/prometheus:v2.24.1
           imagePullPolicy: IfNotPresent
           #/bin/prometheus
@@ -62,11 +62,11 @@ spec:
       volumes:
         - name: config-vol
           configMap:
-            name: prometheus-configmap
+            name: prometheus-configmap2
             items:
               - key: prometheus.yml
                 path: prometheus.yml
         - name: prometheus-vol
           persistentVolumeClaim:
-            claimName: prometheus-pv-claim
+            claimName: prometheus-pv-claim2
     

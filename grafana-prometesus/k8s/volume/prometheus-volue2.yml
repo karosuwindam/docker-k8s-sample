@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "prometheus-pv-volume"
+  name: "prometheus-pv-volume2"
   namespace: gf-space
   labels:
     type: "local"
 spec:
-  storageClassName: "prometheus"
+  storageClassName: "prometheus2"
   persistentVolumeReclaimPolicy: Retain
   capacity:
     storage: "20Gi"
@@ -18,10 +18,10 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: prometheus-pv-claim
+  name: prometheus-pv-claim2
   namespace: gf-space
 spec:
-  storageClassName: prometheus
+  storageClassName: prometheus2
   accessModes:
   - ReadWriteOnce
   resources:
