@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   namespace: gf-space
-  name: prometheus-configmap
+  name: prometheus-configmap2
 data:
   prometheus.yml: |
     global:
@@ -18,13 +18,13 @@ data:
     # Here it's Prometheus itself.
     scrape_configs:
       # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-      - job_name: 'prometheus'
+      # - job_name: 'prometheus'
       
-      # Override the global default and scrape targets from this job every 5 seconds.
-        scrape_interval: 5s
+      # # Override the global default and scrape targets from this job every 5 seconds.
+      #   scrape_interval: 5s
       
-        static_configs:
-          - targets: ['localhost:9090']
+      #   static_configs:
+      #     - targets: ['localhost:9090']
       # - job_name: 'cadvisor'
       #   static_configs:
       #     - targets:
@@ -79,16 +79,16 @@ data:
       #   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       #   kubernetes_sd_configs:
       #     - role: endpoints
-      - job_name: 'kube-state-metrics'
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        kubernetes_sd_configs:
-          - role: pod
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_container_name]
-            regex: kube-state-metrics
-            action: keep
+      # - job_name: 'kube-state-metrics'
+      #   tls_config:
+      #     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      #   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      #   kubernetes_sd_configs:
+      #     - role: pod
+      #   relabel_configs:
+      #     - source_labels: [__meta_kubernetes_pod_container_name]
+      #       regex: kube-state-metrics
+      #       action: keep
       - job_name: 'kubernetes-pods'
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
@@ -97,7 +97,7 @@ data:
           - role: pod
         relabel_configs:
           - source_labels: [__meta_kubernetes_pod_container_name]
-            regex: cadvisor|exporter|dockeri2cmoni|speaker
+            regex: dockeri2cmoni
             action: keep
           # - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           #   action: keep
@@ -132,7 +132,7 @@ data:
     #remote_read:
     #  - url: "http://192.168.0.21:8086/api/v1/prom/read?db=prometheus"
     remote_write:
-      - url: "http://192.168.0.6:8086/api/v1/prom/write?db=testdata"
+      - url: "http://192.168.0.6:8086/api/v1/prom/write?db=senser"
       #- url: "http://192.168.0.6:8086/api/v1/prom/write?db=test&u=karosu&p=windam1314"
         queue_config:
           max_shards: 500
@@ -147,6 +147,6 @@ data:
       #     batch_send_deadline: 30s
       
     remote_read:
-     - url: "http://192.168.0.6:8086/api/v1/prom/read?db=testdata"
+     - url: "http://192.168.0.6:8086/api/v1/prom/read?db=senser"
     #  - url: "http://192.168.0.6:8086/api/v1/prom/read?db=test&u=karosu&p=windam1314"
 
