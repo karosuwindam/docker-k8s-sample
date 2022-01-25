@@ -97,7 +97,7 @@ data:
           - role: pod
         relabel_configs:
           - source_labels: [__meta_kubernetes_pod_container_name]
-            regex: cadvisor|exporter|dockeri2cmoni
+            regex: cadvisor|exporter|dockeri2cmoni|speaker
             action: keep
           # - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           #   action: keep

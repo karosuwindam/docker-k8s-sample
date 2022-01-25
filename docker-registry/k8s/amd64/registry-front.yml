@@ -12,6 +12,8 @@ spec:
       labels:
         name: registry-front
         app: registry-front
+      annotations:
+        podinfo: "コンテナレジストリサーバフロント"
     spec:
       affinity:
         nodeAffinity:

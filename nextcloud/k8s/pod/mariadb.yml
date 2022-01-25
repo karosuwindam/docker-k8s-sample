@@ -13,6 +13,8 @@ spec:
     metadata:
       labels:
         app: mariadb
+      annotations:
+        podinfo: "NextCloud用のMariadbのPod"
     spec:
       containers:
       - image: turgon37/armhf-mariadb

@@ -11,6 +11,8 @@ spec:
     metadata:
       labels:
         app: prometheus
+      annotations:
+        podinfo: "Prometheus"
     spec:
       affinity:
         nodeAffinity:

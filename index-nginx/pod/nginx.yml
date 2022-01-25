@@ -26,6 +26,8 @@ spec:
     metadata:
       labels:
         app: nginx
+      annotations:
+        podinfo: "nginxのテストindexページの表示"
     spec:
       containers:
       - image: nginx:alpine
@@ -51,7 +53,7 @@ metadata:
   namespace: index-nginx
 spec:
   rules:
-  - host: index.bookserver.local
+  - host: index.example.com
     http:
       paths:
       - backend:
