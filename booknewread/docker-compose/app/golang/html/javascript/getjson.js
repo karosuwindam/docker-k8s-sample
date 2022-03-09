@@ -8,11 +8,8 @@ var serche = function(keyword,output){
     if ((page == 3)||(pagetype == 2)) {
         return
     }
-    if (JSON_DATA[0] == ""){
-
-    }
-    if (JSON_DATA[1] == ""){
-
+    if (JSON_DATA[page-0] == ""){
+        getnewJSON(output,page)
     }
     if (keyword == ""){
         // console.log(tableb(JSON_DATA[page-0]));
