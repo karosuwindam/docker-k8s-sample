@@ -149,7 +149,9 @@ func GetPodIngres(t ClientGo) []OutputData {
 		log.Fatal(err)
 	}
 	// _ = SetPoddata(pods)
-	ingresses, err := t.Client.ExtensionsV1beta1().Ingresses("").List(context.TODO(), meta_v1.ListOptions{})
+	ingresses, err := t.Client.NetworkingV1().Ingresses("").List(context.TODO(), meta_v1.ListOptions{})
+	// ingresses, err := t.Client.ExtensionsV1beta1().Ingresses("").List(context.TODO(), meta_v1.ListOptions{})
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -176,7 +178,7 @@ func GetPodIngres(t ClientGo) []OutputData {
 					tmp.Namespace = ingress.Namespace
 					tmp.Host = rule.Host
 					tmp.Path = path.Path
-					tmp.Sselector = path.Backend.ServiceName
+					tmp.Sselector = path.Backend.Service.Name
 					ingressTmp = append(ingressTmp, tmp)
 					// fmt.Println(rule.Host, path.Path, path.Backend.ServiceName)
 				}
@@ -273,9 +275,14 @@ func MargeData(data []OutputData, list []string) []ListOutputData {
 
 var server WebSetupData
 
+const (
+	KUBECONFIG_ON  = 0
+	KUBECONFIG_OFF = 1
+)
+
 func main() {
 	ch := make(chan bool, 1)
-	t := CSetup(1)
+	t := CSetup(KUBECONFIG_OFF)
 
 	go func() {
 		for {
