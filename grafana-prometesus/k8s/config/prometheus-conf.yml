@@ -131,13 +131,13 @@ data:
       
     #remote_read:
     #  - url: "http://192.168.0.21:8086/api/v1/prom/read?db=prometheus"
-    remote_write:
-      - url: "http://192.168.0.6:8086/api/v1/prom/write?db=testdata"
+    #remote_write:
+    #  - url: "http://192.168.0.6:8086/api/v1/prom/write?db=testdata"
       #- url: "http://192.168.0.6:8086/api/v1/prom/write?db=test&u=karosu&p=windam1314"
-        queue_config:
-          max_shards: 500
-          max_samples_per_send: 10000
-          batch_send_deadline: 15s
+        #queue_config:
+        #  max_shards: 500
+        #  max_samples_per_send: 10000
+        #  batch_send_deadline: 15s
       #- url: "http://35.184.47.193:8086/api/v2/write?org=windam&bucket=prometheus&precision=ns"
       #  bearer_token: Sr--IgqbKT357R3mDaFzQNMLjCpdg1oEuxiKdKVMjXzFIfKLVIxhINjrywZSaplavMH7bzQ_3gZI_XBKOX1lJA==
       # - url: "http://34.67.208.161:8086/api/v1/prom/write?db=prometheus&u=karosuwindam&p=1qaz2wsx3edc"
@@ -146,7 +146,7 @@ data:
       #     max_samples_per_send: 90000
       #     batch_send_deadline: 30s
       
-    remote_read:
-     - url: "http://192.168.0.6:8086/api/v1/prom/read?db=testdata"
+    #remote_read:
+    # - url: "http://192.168.0.6:8086/api/v1/prom/read?db=testdata"
     #  - url: "http://192.168.0.6:8086/api/v1/prom/read?db=test&u=karosu&p=windam1314"
 

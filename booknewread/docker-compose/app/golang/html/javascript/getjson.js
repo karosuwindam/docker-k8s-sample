@@ -1,4 +1,80 @@
 var JSON_DATA = ["","",""]
+var timer = ""
+
+var serche = function(keyword,output){
+    console.log(keyword,document.getElementById("page").value,document.getElementById("pagetype").value)
+    var page = document.getElementById("page").value -0;
+    var pagetype = document.getElementById("pagetype").value -0;
+    if ((page == 3)||(pagetype == 2)) {
+        return
+    }
+    if (JSON_DATA[page-0] == ""){
+        getnewJSON(output,page)
+    }
+    if (keyword == ""){
+        // console.log(tableb(JSON_DATA[page-0]));
+        document.getElementById(output).innerHTML = tableb(JSON_DATA[page-0]);
+    }else {
+        // console.log(serche_table(JSON_DATA[page-0],keyword.toUpperCase() ))
+        document.getElementById(output).innerHTML = serche_table(JSON_DATA[page-0],keyword.toUpperCase() )
+        // document.getElementById(output).innerHTML = tableb(JSON_DATA[0]);
+    }
+}
+
+function serche_table(data,keyword) {
+    var output = ""
+    var tmp = JSON.parse(data)
+    var tmp_data = []
+    
+    for (var i=0;i<tmp.Comic.length;i++){
+        if (data_ck(keyword,tmp.Comic[i])){
+            tmp_data.push(tmp.Comic[i])
+        }
+    }
+    for (var i=0;i<tmp.LiteNobel.length;i++){
+        if (data_ck(keyword,tmp.LiteNobel[i])){
+            tmp_data.push(tmp.LiteNobel[i])
+        }
+    }
+    var output = tmp.Year +"年" +tmp.Month + "月<br>";
+    output += "</div>"
+    for (var i=0;i<tmp_data.length;i++){
+        output += "<div class='table_line'>"
+        output += table_conbd(tmp_data[i])
+        output += "</div>"
+    }
+    output += "<div class='table'>"
+    return output
+}
+function hankaku2Zenkaku(str) {
+    return str.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    });
+}
+
+function data_ck(keyword,data){
+    var output = false
+    var ckdata = [data.Bround ,data.Ext ,data.Title ,data.Writer ]
+    for(var i=0;i<ckdata.length;i++){
+        if (ckdata[i] == ""){
+            continue
+        }
+        str = hankaku2Zenkaku( ckdata[i])
+        if (str.indexOf(keyword) != -1) {
+            output = true;
+            break;
+        }    
+    }
+    return output
+}
+
+function serche_keyword(keyword,output){
+    if (timer != "") {
+        clearTimeout(timer)
+    }
+    timer = setTimeout(serche, 500, keyword,output)
+
+}
 
 function isSmartPhone() {
     if (navigator.userAgent.match(/iPhone|Android.+Mobile/)) {

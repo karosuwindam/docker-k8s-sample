@@ -40,6 +40,14 @@
                     geturlb();
                 }
             }
+            function clearSerch(){
+                document.getElementById("text2").value = ""
+                serche_keyword("",'output')
+            }
+            function keySerch(){
+                var keydata = document.getElementById("text2").value
+                serche_keyword(keydata,'output')
+            }
             function reload(){
                 var req = new window.XMLHttpRequest();
                 req.onreadystatechange = function(){
@@ -100,6 +108,16 @@
         <input type="button" value="status" onclick="statusckJSON('status')" class="c-button">
         <input type="button" value="reload" onclick="reload()" class="c-button">
         <div id="status" style="float: right;;"></div>
+        <div class="group">
+            <label for="text2">検索</label>
+            <div class="search_bar">
+               <i class="fas fa-search search_icon"></i>
+               <input id="text2" type="text" placeholder="キーワードを入力" onkeyup="serche_keyword(this.value,'output')">
+               <i class="fas fa-times search_icon"></i>
+               <input type="button" value="検索" onclick="keySerch()" class="c-button">
+               <input type="button" value="Clear" onclick="clearSerch()" class="c-button">
+            </div>
+         </div>
         <li class="cg_button">
             <!-- <input type="button" value="getb" onclick="geturlb()"> -->
             <input type="hidden" name="pagetype" id="pagetype" value="0">
