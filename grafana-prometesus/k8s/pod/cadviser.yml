@@ -15,6 +15,7 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8080'
         prometheus.io/path: /metrics
+        podinfo: "cAdviser Prometeusエージェント"
     spec:
       affinity:
         nodeAffinity:

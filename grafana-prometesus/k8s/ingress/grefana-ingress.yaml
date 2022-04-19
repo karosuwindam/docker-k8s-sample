@@ -15,3 +15,13 @@ spec:
             name: grafana-service
             port:
               number: 3000
+  - host: grafana.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-service
+            port:
+              number: 3000

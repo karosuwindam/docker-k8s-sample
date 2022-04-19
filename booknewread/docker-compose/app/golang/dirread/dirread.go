@@ -44,9 +44,30 @@ func (t *Dirtype) Read(s string) int {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if len(files) == 0 {
+		var tmp2 []filedata
+		for _, f := range tmp {
+			if f.RootPath == t.path+s {
+
+			} else {
+				tmp2 = append(tmp2, f)
+			}
+		}
+		t.Data = tmp2
+		return 0
+	}
 	for _, f := range files {
+		flag := true
 		tmp2 := filedata{s + f.Name(), f.IsDir(), f.Size(), f.ModTime(), t.path + s}
-		tmp = append(tmp, tmp2)
+		for _, ff := range tmp {
+			if (ff.Name == tmp2.Name) && (ff.RootPath == tmp2.RootPath) {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			tmp = append(tmp, tmp2)
+		}
 	}
 	t.Data = tmp
 	return 0
