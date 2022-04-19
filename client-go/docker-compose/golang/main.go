@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -113,6 +114,7 @@ func SetPoddata(inputData PodtoSertoIng) []OutputData {
 		output = append(output, tmp)
 	}
 	ch := make(chan bool, 4)
+	suboutput := []OutputData{}
 	for i, data := range output {
 		ch <- true
 		// num := i
@@ -121,10 +123,17 @@ func SetPoddata(inputData PodtoSertoIng) []OutputData {
 			for _, service := range services {
 				if (service.Aselector == datatmp.Selector) && (service.Namespace == datatmp.Namespace) {
 					output[num].SName = service.Name
+					backup_output := output[num]
+					count := 0
 					for _, ingress := range ingresses {
 						if (ingress.Sselector == service.Name) && (ingress.Namespace == datatmp.Namespace) {
-							output[num].URL = ingress.Host + ingress.Path
-							break
+							if count != 0 {
+								backup_output.URL = ingress.Host + ingress.Path
+								suboutput = append(suboutput, backup_output)
+							} else {
+								output[num].URL = ingress.Host + ingress.Path
+							}
+							count++
 						}
 					}
 					break
@@ -139,6 +148,7 @@ func SetPoddata(inputData PodtoSertoIng) []OutputData {
 		}
 		time.Sleep(time.Nanosecond)
 	}
+	output = append(output, suboutput...)
 	return output
 }
 
@@ -273,6 +283,21 @@ func MargeData(data []OutputData, list []string) []ListOutputData {
 	return output
 }
 
+func ckdata(a, b []OutputData) bool {
+	sort.Slice(a, func(i, j int) bool { return a[i].PName < a[j].PName })
+	sort.Slice(b, func(i, j int) bool { return b[i].PName < b[j].PName })
+	if len(a) != len(b) {
+		return false
+	} else {
+		for num, tmp := range a {
+			if tmp.PName != b[num].PName {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 var server WebSetupData
 
 const (
@@ -283,6 +308,7 @@ const (
 func main() {
 	ch := make(chan bool, 1)
 	t := CSetup(KUBECONFIG_OFF)
+	output_bak := []OutputData{}
 
 	go func() {
 		for {
@@ -294,7 +320,9 @@ func main() {
 			jsond := MargeData(output, list)
 			server.Output = jsond
 			jsondata, _ := json.Marshal(jsond)
-			log.Println(string(jsondata))
+			if !ckdata(output, output_bak) {
+				log.Println(string(jsondata))
+			}
 			// for _, str := range list {
 			// 	log.Println(str)
 			// 	for _, data := range output {
@@ -307,6 +335,7 @@ func main() {
 				ch <- true
 			}
 			time.Sleep(time.Second * 10)
+			output_bak = output
 		}
 	}()
 	err := server.websetup()
