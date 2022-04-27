@@ -4,6 +4,7 @@ metadata:
   name: grafana-ingress
   namespace: gf-space
 spec:
+  ingressClassName: nginx
   rules:
   - host: grafana.bookserver.local
     http:

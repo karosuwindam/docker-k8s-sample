@@ -6,6 +6,7 @@ metadata:
   labels:
     name: client
 spec:
+  ingressClassName: nginx
   rules:
   - host: index.bookserver.local
     http:
