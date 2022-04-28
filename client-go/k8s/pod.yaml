@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-go
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+      annotations:
+        podinfo: "client-goによるテスト"
+    spec:
+      serviceAccountName: client-go
+      serviceAccount: client-go
+      containers:
+      - name: client
+        image: bookserver2:31000/karosu/client-go:0.2.1
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+          - containerPort: 8080

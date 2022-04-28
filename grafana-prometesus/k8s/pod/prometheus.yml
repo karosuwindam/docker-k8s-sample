@@ -11,6 +11,8 @@ spec:
     metadata:
       labels:
         app: prometheus
+      annotations:
+        podinfo: "Prometheus"
     spec:
       affinity:
         nodeAffinity:
@@ -20,7 +22,7 @@ spec:
                 - key: kubernetes.io/hostname
                   operator: In
                   values:
-                    - "raspberrypi5"
+                    - "k8s-worker-2"
       serviceAccountName: prometheus
       serviceAccount: prometheus
       containers:

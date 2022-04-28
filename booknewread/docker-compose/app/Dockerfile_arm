@@ -17,7 +17,7 @@ RUN go build -o app
 FROM multiarch/ubuntu-core:armhf-bionic
 # FROM ubuntu:20.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.8.4"
+LABEL version="0.11.0"
 LABEL name="booknewread"
 
 RUN apt-get update && \

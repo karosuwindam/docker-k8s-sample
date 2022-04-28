@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         app: nextcloud
+      annotations:
+        podinfo: "NextCloudサービス"
     spec:
       containers:
       - name: nextcloud

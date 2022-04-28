@@ -4,6 +4,7 @@ metadata:
   name: myingress
   namespace: nextcloud
 spec:
+  ingressClassName: nginx
   rules:
   - host: nextcloud.bookserver.local
     http:

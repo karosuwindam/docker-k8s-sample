@@ -4,6 +4,7 @@ metadata:
   name: promethus-ingress
   namespace: gf-space
 spec:
+  ingressClassName: nginx
   rules:
   - host: prometheus.bookserver.local
     http:

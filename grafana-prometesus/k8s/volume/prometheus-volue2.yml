@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "prometheus-pv-volume2"
+  namespace: gf-space
+  labels:
+    type: "local"
+spec:
+  storageClassName: "prometheus2"
+  persistentVolumeReclaimPolicy: Retain
+  capacity:
+    storage: "20Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/pi/usb/usb1/prometheus/data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pv-claim2
+  namespace: gf-space
+spec:
+  storageClassName: prometheus2
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi

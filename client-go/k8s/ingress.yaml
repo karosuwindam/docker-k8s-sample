@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: client
+  namespace: gf-space
+  labels:
+    name: client
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: index.bookserver.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: client
+            port: 
+              number: 8080
