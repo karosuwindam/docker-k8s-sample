@@ -35,7 +35,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: cadvisor
-        image: zcube/cadvisor:v0.37.5
+        image: zcube/cadvisor:v0.39.3
         ports:
         - containerPort: 8080
         resources:
