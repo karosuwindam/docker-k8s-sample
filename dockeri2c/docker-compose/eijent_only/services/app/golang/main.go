@@ -18,12 +18,20 @@ var (
 func senserDataCk(server *ServerData) {
 	if server.Sennser.Am2320.Flag {
 		hum, tmp := server.Sennser.Am2320.Read()
-		server.Data.Hum = float64(hum)
-		server.Data.Tmp = float64(tmp)
+		if hum==tmp && hum==-1 {
+
+		}else{
+			server.Data.Hum = float64(hum)
+			server.Data.Tmp = float64(tmp)	
+		}
 	} else if server.Sennser.Dht.Flag {
 		hum, tmp := server.Sennser.Dht.Read()
-		server.Data.Hum = float64(hum)
-		server.Data.Tmp = float64(tmp)
+		if hum==tmp && hum==-1 {
+
+		}else{
+			server.Data.Hum = float64(hum)
+			server.Data.Tmp = float64(tmp)
+		}
 	}
 	if server.Sennser.Tsl2561.Flag {
 		lux := server.Sennser.Tsl2561.ReadVisibleLux()

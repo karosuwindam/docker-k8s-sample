@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -6,11 +6,15 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: nginx
   rules:
-  - host: foo.bar.com
+  - host: foo.example.com
     http:
       paths:
-      - path: /
+      - pathType: Prefix
+        path: "/"
         backend:
-          serviceName: booknewread-service
-          servicePort: 8080
+          service:
+            name: booknewread-service
+            port:
+              number: 8080

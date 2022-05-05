@@ -36,7 +36,8 @@ spec:
         effect: NoSchedule
       containers:
       - name: exporter
-        image: prom/node-exporter:v1.1.2
+        # image: prom/node-exporter:v1.1.2
+        image: prom/node-exporter:v1.3.1
         ports:
         - containerPort: 9100
         resources:
