@@ -18,6 +18,16 @@ spec:
             name: isbn-service
             port:
               number: 8080
+  - host: isbn.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: isbn-service
+            port:
+              number: 8080
 
     # https:
     #   paths:

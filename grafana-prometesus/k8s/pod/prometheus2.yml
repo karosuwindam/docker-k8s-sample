@@ -11,6 +11,8 @@ spec:
     metadata:
       labels:
         app: prometheus2
+      annotations:
+        podinfo: "Prometheus データ収集用"
     spec:
       affinity:
         nodeAffinity:
@@ -25,7 +27,8 @@ spec:
       serviceAccount: prometheus
       containers:
         - name: prometheus2
-          image: prom/prometheus:v2.24.1
+          # image: prom/prometheus:v2.24.1
+          image: prom/prometheus:v2.35.0
           imagePullPolicy: IfNotPresent
           #/bin/prometheus
           #-config.file=/etc/prometheus/prometheus.yml
