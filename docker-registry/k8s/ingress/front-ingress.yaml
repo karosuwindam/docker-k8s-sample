@@ -16,3 +16,11 @@ spec:
             name: registry-front
             port:
               number: 80
+      # - pathType: Prefix
+      #   path: "/v2/"
+      #   backend:
+      #     service:
+      #       name: registry
+      #       port:
+      #         number: 5000
+

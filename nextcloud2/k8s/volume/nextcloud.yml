@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "nextcloud-pv-volume2"
+  namespace: nextcloud
+  labels:
+    type: "local"
+spec:
+  storageClassName: "nextcloud2"
+  capacity:
+    storage: "128Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/pi/usb/usb1/nextcloud
+  # nfs:
+    # server: 192.168.0.24
+    # path: /home/pi/usb/usb0/nextcloud
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nextcloud-pv-claim2
+  namespace: nextcloud
+spec:
+  storageClassName: nextcloud2
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 128Gi
