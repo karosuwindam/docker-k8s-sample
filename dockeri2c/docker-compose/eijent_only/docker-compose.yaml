@@ -23,7 +23,9 @@ services:
       - 9100:9100
   #golang
   golang:
-    build: services/app
+    build:
+      context: services/app
+      dockerfile: Dockerfile
     restart: always
     container_name: golang
     # devices:
