@@ -25,6 +25,15 @@ data:
       
         static_configs:
           - targets: ['localhost:9090']
+      - job_name: 'NAS'
+        scrape_interval: 5s
+        static_configs:
+          - targets:
+            - 192.168.0.6:49153
+        relabel_configs:
+        - source_labels: ["NAS32582A"]
+          replacement: NAS32582A
+          target_label: node_name
       # - job_name: 'cadvisor'
       #   static_configs:
       #     - targets:

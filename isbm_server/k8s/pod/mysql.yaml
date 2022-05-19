@@ -36,8 +36,21 @@ spec:
       annotations:
         podinfo: "isbn用のMySQLサーバ"
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm
       containers:
-      - image: hypriot/rpi-mysql
+      - image: hypriot/rpi-mysql    ##arm32用のみのコンテナ
         name: mysqlhost
         env:
         - name: MYSQL_ROOT_PASSWORD

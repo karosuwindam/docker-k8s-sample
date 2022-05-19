@@ -30,6 +30,7 @@ spec:
                   operator: In
                   values:
                     - arm
+                    - arm64
                 - key: i2c
                   operator: In
                   values:
