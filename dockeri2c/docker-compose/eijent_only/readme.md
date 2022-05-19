@@ -1,3 +1,5 @@
+ver 0.9
+加速度センサMA8452Qについて対応
 ver 0.85
 ビルド用のgoのバージョンを1.18.2に変更
 ver 0.84
@@ -32,3 +34,6 @@ I2cが初回で検出できない場合はエージェント動かさないよ�
 
 実行参考
  https://www.denshi.club/pc/raspi/5raspberry-pi-zeroiot27-1-i2c-tls2561.html
+
+* MMA8452Q搭載 三軸加速度センサモジュール \
+ https://www.switch-science.com/catalog/1927/

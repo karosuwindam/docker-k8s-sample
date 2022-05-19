@@ -1,5 +1,5 @@
 # TAG = 24.0.0-fpm-alpine
-TAG = 0.85
+TAG = 0.9
 DOCKER = docker
 NAME = bookserver2:31000/moni/dockeri2cmoni
 
