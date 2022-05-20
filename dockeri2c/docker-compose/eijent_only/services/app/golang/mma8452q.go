@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+    "fmt"
 
 	"github.com/davecheney/i2c"
 )
@@ -46,6 +46,7 @@ func (t *Mma8452q) Init() {
 	t.Name = "MMA8452Q"
 	if t.up() != nil {
 		t.Flag = false
+		return
 	}
 	t.Flag = true
 }
@@ -128,8 +129,14 @@ func (t *Mma8452q) Ch_data_to_accel(x, y, z int) (float64, float64, float64) {
 	return tmp[0] / 512.0, tmp[1] / 512.0, tmp[2] / 512.0
 }
 
-func (t *Mma8452q) Test() { //未完成
-	str := t.ReadByte(MMA8452Q_WHO_AM_I, 40)
-	fmt.Println(str)
-
+func (t *Mma8452q) Test() bool { //未完成
+	x,y,z := t.ReadData()
+	if x==0 && y == 0 && z == 0 {
+		fmt.Printf("MM8452Q Not Fontd")
+		t.Flag = false
+		return t.Flag
+	}
+	t.Flag = true
+	fmt.Printf("Read Data",x,y,z)
+	return t.Flag
 }
