@@ -14,7 +14,7 @@ ADD ./golang/ ./
 RUN go build .
 FROM multiarch/ubuntu-core:armhf-bionic
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.85"
+LABEL version="0.9"
 LABEL docker_arch="arm"
 LABEL name="senser eijent"
 LABEL go_version="1.18.2"
