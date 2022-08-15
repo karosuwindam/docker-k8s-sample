@@ -33,6 +33,8 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
       containers:
       - name: exporter
         image: prom/node-exporter:v1.3.1

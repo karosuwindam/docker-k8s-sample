@@ -31,6 +31,8 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
       containers:
       - name: registry
         image: registry:2.7.1
