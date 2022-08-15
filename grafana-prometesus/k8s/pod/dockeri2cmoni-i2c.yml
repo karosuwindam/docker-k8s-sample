@@ -38,6 +38,8 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
       containers:
       - name: dockeri2cmoni
         image: bookserver2:31000/moni/dockeri2cmoni:0.9

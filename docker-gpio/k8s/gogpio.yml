@@ -35,6 +35,8 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
       containers:
       - name: gogpio
         image: bookserver2:31000/test/gogpio:runtest3 #prom/node-exporter
