@@ -29,7 +29,7 @@ data:
         scrape_interval: 5s
         static_configs:
           - targets:
-            - 192.168.0.6:49153
+            - 192.168.0.6:49154
         relabel_configs:
         - source_labels: ["NAS32582A"]
           replacement: NAS32582A
