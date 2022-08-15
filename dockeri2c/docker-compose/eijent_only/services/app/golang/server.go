@@ -10,6 +10,7 @@ import (
 type SennserData struct {
 	Am2320  Am2320
 	Dht     DhtSenser
+	Mma8452 Mma8452q
 	Tsl2561 Tsl2561
 	// Co2senser Co2Sennser
 	Co2senser MhZ19c
@@ -33,8 +34,14 @@ type DataType struct {
 	Tmp  float64
 	Lux  int
 	Co2  Co2Data
+	Acc  AccelData
 	MuDa MulData
 	Rpi  RaspberrypiData
+}
+type AccelData struct {
+	Accele_x float64
+	Accele_y float64
+	Accele_z float64
 }
 
 type ServerData struct {
@@ -100,6 +107,18 @@ func (t *ServerData) jsonData(w http.ResponseWriter, r *http.Request) {
 		outdata = append(outdata, tmp)
 		tmp.Type = "press"
 		tmp.Data = strconv.FormatFloat(t.Data.MuDa.Press, 'f', 2, 64)
+		outdata = append(outdata, tmp)
+	}
+	if t.Sennser.Mma8452.Flag {
+		tmp.Senser = t.Sennser.Mma8452.Name
+		tmp.Type = "ax"
+		tmp.Data = strconv.FormatFloat(t.Data.Acc.Accele_x, 'f', 2, 64)
+		outdata = append(outdata, tmp)
+		tmp.Type = "ay"
+		tmp.Data = strconv.FormatFloat(t.Data.Acc.Accele_y, 'f', 2, 64)
+		outdata = append(outdata, tmp)
+		tmp.Type = "az"
+		tmp.Data = strconv.FormatFloat(t.Data.Acc.Accele_z, 'f', 2, 64)
 		outdata = append(outdata, tmp)
 	}
 	tmp.Senser = "raspberrypi"
@@ -172,6 +191,19 @@ func (t *ServerData) health(w http.ResponseWriter, r *http.Request) {
 		tmp.Message = "OFF"
 		outdata = append(outdata, tmp)
 	}
+	if t.Sennser.Mma8452.Flag {
+		tmp.Sennserdata = t.Sennser.Mma8452.Name
+		tmp.Message = t.Sennser.Mma8452.Message
+		if tmp.Message != "OK" {
+			code = 405
+		}
+		outdata = append(outdata, tmp)
+	} else {
+		tmp.Sennserdata = "Accel Sensor"
+		tmp.Message = "OFF"
+		outdata = append(outdata, tmp)
+
+	}
 	if len(outdata) < 1 {
 		tmp.Sennserdata = "Raspberrypi"
 		tmp.Message = "OK"
@@ -213,6 +245,14 @@ func (t *ServerData) metrics(w http.ResponseWriter, r *http.Request) {
 		output += "senser_data{type=\"tmp\",sennser=\"BME280\"} " + strconv.FormatFloat(t.Data.MuDa.Tmp, 'f', 2, 64)
 		output += "\n" + "senser_data{type=\"hum\",sennser=\"BME280\"} " + strconv.FormatFloat(t.Data.MuDa.Hum, 'f', 2, 64)
 		output += "\n" + "senser_data{type=\"press\",sennser=\"BME280\"} " + strconv.FormatFloat(t.Data.MuDa.Press, 'f', 2, 64)
+	}
+	if t.Sennser.Mma8452.Flag {
+		if output != "" {
+			output += "\n"
+		}
+		output += "senser_data{type=\"ax\",sennser=\"MMA8452Q\"} " + strconv.FormatFloat(t.Data.Acc.Accele_x, 'f', 2, 64)
+		output += "\n" + "senser_data{type=\"ay\",sennser=\"MMA8452Q\"} " + strconv.FormatFloat(t.Data.Acc.Accele_y, 'f', 2, 64)
+		output += "\n" + "senser_data{type=\"az\",sennser=\"MMA8452Q\"} " + strconv.FormatFloat(t.Data.Acc.Accele_z, 'f', 2, 64)
 	}
 	if output != "" {
 		output += "\n"

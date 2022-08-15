@@ -18,17 +18,17 @@ var (
 func senserDataCk(server *ServerData) {
 	if server.Sennser.Am2320.Flag {
 		hum, tmp := server.Sennser.Am2320.Read()
-		if hum==tmp && hum==-1 {
+		if hum == tmp && hum == -1 {
 
-		}else{
+		} else {
 			server.Data.Hum = float64(hum)
-			server.Data.Tmp = float64(tmp)	
+			server.Data.Tmp = float64(tmp)
 		}
 	} else if server.Sennser.Dht.Flag {
 		hum, tmp := server.Sennser.Dht.Read()
-		if hum==tmp && hum==-1 {
+		if hum == tmp && hum == -1 {
 
-		}else{
+		} else {
 			server.Data.Hum = float64(hum)
 			server.Data.Tmp = float64(tmp)
 		}
@@ -41,12 +41,17 @@ func senserDataCk(server *ServerData) {
 		co2ppm, temp := server.Sennser.Co2senser.Read()
 		if co2ppm > 0 {
 			server.Data.Co2.Co2 = co2ppm
-			server.Data.Co2.Tmp = temp	
+			server.Data.Co2.Tmp = temp
 		}
 	}
 	if server.Sennser.Bme280.Flag {
 		press, temp, hum := server.Sennser.Bme280.ReadData()
 		server.Data.MuDa = MulData{Tmp: temp, Hum: hum, Press: press}
+	}
+	if server.Sennser.Mma8452.Flag {
+		x, y, z := server.Sennser.Mma8452.ReadData()
+		ax, ay, az := server.Sennser.Mma8452.Ch_data_to_accel(x, y, z)
+		server.Data.Acc = AccelData{Accele_x: ax, Accele_y: ay, Accele_z: az}
 	}
 	server.Data.Rpi.cpu_tmp = cpuTmp()
 }
@@ -80,6 +85,7 @@ func main() {
 	}
 
 	server.Sennser.Bme280.Init()
+	server.Sennser.Mma8452.Init()
 
 	senserDataCk(&server)
 

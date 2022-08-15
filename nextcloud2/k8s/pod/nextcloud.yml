@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-deployment2
+  namespace: nextcloud
+spec:
+  selector:
+    matchLabels:
+      app: nextcloud2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nextcloud2
+      annotations:
+        podinfo: "NextCloudサービス"
+    spec:
+      containers:
+      - name: nextcloud2
+        # image: arm32v7/nextcloud
+        # image: nextcloud_app
+        image: bookserver2:31000/karosu/nextcloud:24.0.0
+        # image: nextcloud:24.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 2
+            memory: 1.5Gi
+          requests:
+            cpu: 1
+            memory: 400Mi
+        env:
+        - name: MYSQL_HOST
+          value: mariadb2
+        - name: MYSQL_PASSWORD
+          value: root
+        - name: MYSQL_DATABASE
+          value: nextcloud
+        - name: MYSQL_USER
+          value: nextcloud
+        volumeMounts:
+        - name: nextcloud-st
+          mountPath: /var/www/html/
+      nodeSelector:
+        type: k8s-worker-2
+      volumes:
+      - name: nextcloud-st
+        persistentVolumeClaim:
+          claimName: nextcloud-pv-claim2
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-service2
+  namespace: nextcloud
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: nextcloud2
+  # type: LoadBalancer
+  clusterIP: None
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nextcloudtwo
+  namespace: nextcloud
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: nextcloud2.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: nextcloud-service2
+            port: 
+              number: 80
