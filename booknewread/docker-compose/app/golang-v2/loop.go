@@ -110,6 +110,10 @@ func ckNobelloop(cfg *LoopData) {
 	log.Println("start novel data count")
 	ch := novel_chack.Setup(cfg.EnvData.MaxAccess)
 	data := []novel_chack.BookBark{}
+	if len(data) == 0 {
+		log.Println("No bookmark")
+		return
+	}
 	for {
 		starttime := time.Now()
 		cfg.GrobalStatus.BookMarkStatus = "Reload"
