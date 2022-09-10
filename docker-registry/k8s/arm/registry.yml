@@ -32,7 +32,7 @@ spec:
                 - key: kubernetes.io/hostname
                   operator: In
                   values:
-                    - bookserver2
+                    - k8s-worker-1
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule

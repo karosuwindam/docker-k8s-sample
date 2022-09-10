@@ -35,6 +35,8 @@ spec:
         effect: NoSchedule
       - key: node-role.kubernetes.io/control-plane
         effect: NoSchedule
+      - effect: NoSchedule
+        operator: Exists
       containers:
       - name: cadvisor
         image: zcube/cadvisor:v0.39.3
