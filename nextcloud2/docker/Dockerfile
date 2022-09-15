@@ -1,7 +1,7 @@
-FROM nextcloud:24.0.0
+FROM nextcloud:TAG
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="24.0.0"
-LABEL arch="armv7l"
+LABEL version="24.0.5"
+LABEL arch="arm"
 LABEL name="nextcloud"
 # RUN apk add --no-cache --virtual smbclient 
 RUN apt-get update && \

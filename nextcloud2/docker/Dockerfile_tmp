@@ -1,7 +1,7 @@
 FROM nextcloud:TAG
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="TAG"
-LABEL arch="ARCH"
+LABEL version="%TAG%"
+LABEL arch="%ARCH%"
 LABEL name="nextcloud"
 # RUN apk add --no-cache --virtual smbclient 
 RUN apt-get update && \
