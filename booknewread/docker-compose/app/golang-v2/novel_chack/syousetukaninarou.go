@@ -30,12 +30,15 @@ const (
 	BASE_URL_KAKUYOMU = "https://kakuyomu.jp"
 	BASE_URL_NOCKU    = "http://novel18.syosetu.com"
 	BASE_URL_NOCKUS   = "https://novel18.syosetu.com"
+	BASE_URL_ALPHA    = "http://www.alphapolis.co.jp"
+	BASE_URL_ALPHAS   = "https://www.alphapolis.co.jp"
 )
 
 type Channel struct {
 	Ch_Narou    chan bool
 	Ch_Kakuyomu chan bool
 	Ch_Nocku    chan bool
+	Ch_Alpha    chan bool
 	Setup       bool
 }
 
@@ -43,10 +46,13 @@ func Setup(count int) Channel {
 	var output Channel
 	if count > 2 {
 		output.Ch_Narou = make(chan bool, 2)
+		output.Ch_Alpha = make(chan bool, 2)
 	} else {
 		output.Ch_Narou = make(chan bool, count)
+		output.Ch_Alpha = make(chan bool, count)
 	}
 	output.Ch_Kakuyomu = make(chan bool, count)
+
 	output.Ch_Nocku = make(chan bool, count)
 	output.Setup = true
 	return output
@@ -72,7 +78,7 @@ func (t *Channel) ChackUrldata(url string) List {
 	// 		<-t.Ch_Narou
 	// 	}
 	// }
-	if len(BASE_URL_NAROU) <= len(url) { //なろうのチェック
+	if len(BASE_URL_NAROU)+1 < len(url) { //なろうのチェック
 		url_tmp := ""
 		if url[:len(BASE_URL_NAROU)] == BASE_URL_NAROU {
 			// url_tmp = url
@@ -94,7 +100,7 @@ func (t *Channel) ChackUrldata(url string) List {
 			}
 		}
 	}
-	if len(BASE_URL_KAKUYOMU) <= len(url) { //カクヨムのチェック
+	if len(BASE_URL_KAKUYOMU)+1 < len(url) { //カクヨムのチェック
 		if url[:len(BASE_URL_KAKUYOMU)] == BASE_URL_KAKUYOMU {
 			t.Ch_Kakuyomu <- true
 			// data, err := getDocument(url)
@@ -108,7 +114,7 @@ func (t *Channel) ChackUrldata(url string) List {
 			}
 		}
 	}
-	if len(BASE_URL_NOCKU) <= len(url) { //ノクターンチェック
+	if len(BASE_URL_NOCKU)+1 < len(url) { //ノクターンチェック
 		url_tmp := ""
 		if url[:len(BASE_URL_NOCKU)] == BASE_URL_NOCKU {
 			url_tmp = strings.Replace(url, "http", "https", 1)
@@ -126,6 +132,27 @@ func (t *Channel) ChackUrldata(url string) List {
 				return output
 			} else {
 				return chackNokutarn(data)
+			}
+		}
+	}
+	if len(BASE_URL_ALPHA)+1 < len(url) { //アルファポリス
+		url_tmp := ""
+		if url[:len(BASE_URL_ALPHA)] == BASE_URL_ALPHA {
+			url_tmp = strings.Replace(url, "http", "https", 1)
+		} else if len(BASE_URL_ALPHAS) <= len(url) {
+			if url[:len(BASE_URL_ALPHAS)] == BASE_URL_ALPHAS {
+				url_tmp = url
+			}
+		}
+		if url_tmp != "" {
+			t.Ch_Nocku <- true
+			data, err := getDocument(url_tmp)
+			<-t.Ch_Nocku
+			if err != nil {
+				fmt.Println(err.Error())
+				return output
+			} else {
+				return chackAlpha(data)
 			}
 		}
 	}
@@ -277,6 +304,36 @@ func chackKakuyomu(data documentdata) List {
 	})
 	return output
 
+}
+
+//アルファポリスのチェック
+func chackAlpha(data documentdata) List {
+	var output List
+	output.Url = data.url
+	doc := data.data
+	output.Title = doc.Find("h1.title").Text()
+	doc.Find("div.episode ").Each(func(i int, s *goquery.Selection) {
+		output.LastStoryT = strings.TrimSpace(s.Find("span.title").Text())
+		times := strings.TrimSpace(s.Find("span.open-date").Text())
+		if times != "" {
+			// if strings.Index(times, "（改）") > 0 {
+			// 	times = times[:strings.Index(times, "（改）")]
+			// }
+			// t, _ := time.Parse("2006/01/02 15:04:05 JST", times+":00 JST")
+			t, _ := time.Parse("2006.01.02 15:04:05 JST", times+":00 JST")
+			// fmt.Println(t)
+			// output.Lastdate = t.Local().Add(-9 * time.Hour)
+			output.Lastdate = t.UTC().Add(-9 * time.Hour)
+			// output.Lastdate = t.UTC()
+
+		}
+		tmp, _ := s.Find("a").Attr("href")
+		if tmp != "" {
+			output.LastUrl = BASE_URL_ALPHAS + tmp
+		}
+		output.Count = i + 1
+	})
+	return output
 }
 
 //無効にする
