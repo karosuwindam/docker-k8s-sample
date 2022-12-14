@@ -50,7 +50,8 @@ spec:
                   values:
                     - arm
       containers:
-      - image: hypriot/rpi-mysql    ##arm32用のみのコンテナ
+      #- image: hypriot/rpi-mysql    ##arm32用のみのコンテナ
+      - image: biarms/mysql
         name: mysqlhost
         env:
         - name: MYSQL_ROOT_PASSWORD
