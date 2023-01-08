@@ -85,3 +85,8 @@ kubectl apply -f isbm_server/k8s/ingress/
 kubectl apply -f nextcloud/k8s/namespace/
 kubectl apply -f nextcloud2/k8s/volume/
 kubectl apply -f nextcloud2/k8s/pod/
+
+kubectl apply -f loki/account
+kubectl apply -f loki/configmap
+kubectl apply -f loki/volume
+kubectl apply -f loki/pod

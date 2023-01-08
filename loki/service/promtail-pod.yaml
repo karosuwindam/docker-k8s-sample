@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: promtail-pod
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      name: promtail-pod
+  template:
+    metadata:
+      labels:
+        name: promtail-pod
+      annotations:
+        podinfo: "pod用のpromtail"
+    spec:
+      # serviceAccountName: promtail
+      serviceAccount: promtail
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
+      containers:
+      - name: promtail-pod
+        image: grafana/promtail:2.0.0
+        # image: grafana/promtail
+        args:
+        - --config.file=/etc/promtail/config.yaml
+        # - --config.file=/etc/promtail/config.yml
+        env: 
+        - name: 'HOSTNAME' # needed when using kubernetes_sd_configs
+          valueFrom:
+            fieldRef:
+              fieldPath: 'spec.nodeName'
+        ports:
+        - containerPort: 9080
+        # resources:
+        #   limits:
+        #     memory: 200Mi
+        #   requests:
+        #     cpu: 100m
+        #     memory: 200Mi
+        volumeMounts:
+        - name: config-vol
+          mountPath: /etc/promtail/config.yaml
+          subPath: config.yaml
+        - name: log
+          mountPath: /var/log
+        - mountPath: /var/lib/docker/containers
+          name: varlibdockercontainers
+          readOnly: true
+      volumes:
+      - name: config-vol
+        configMap:
+          name: promtail-configmap-pod
+          items:
+            - key: config.yaml
+              path: config.yaml
+      - hostPath:
+          path: /var/log
+        name: log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
