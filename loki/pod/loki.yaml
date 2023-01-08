@@ -12,6 +12,15 @@ spec:
       labels:
         app: loki
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - "k8s-worker-1"
       containers:
         - name: loki
           image: grafana/loki:1.6.0
@@ -26,7 +35,7 @@ spec:
       volumes:
         - name: grafana-vol
           persistentVolumeClaim:
-            claimName: myclaim
+            claimName: loki-pvc
 ---
 apiVersion: v1
 kind: Service

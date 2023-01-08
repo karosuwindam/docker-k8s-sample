@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "loki-pv-volume"
+  namespace: gf-space
+  labels:
+    type: "local"
+spec:
+  storageClassName: "loki"
+  persistentVolumeReclaimPolicy: Retain
+  capacity:
+    storage: "20Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/pi/usb/usb1/loki/data
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: loki-pvc
+  namespace: gf-space
+spec:
+  storageClassName: loki
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
