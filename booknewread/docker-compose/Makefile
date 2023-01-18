@@ -8,6 +8,7 @@ TARGET = ./app/Dockerfile_arm
 TARGET_FILE = ./app
 GO_VERSION = 1.18.2
 ARCH = ${shell docker version --format '{{.Server.Arch}}'}
+OPT = "--privileged"
 
 all: build push
 create:
@@ -18,5 +19,7 @@ build: create
 	${DOCKER} build -t ${NAME}:${TAG} -f ${TARGET} ${TARGET_FILE}
 push:
 	${DOCKER} push ${NAME}:${TAG}
+run:
+	${DOCKER} run --rm --name=booknewread -p 18080:8080 ${NAME}:${TAG}
 help:
 	@echo "make |all|create|build|push"
