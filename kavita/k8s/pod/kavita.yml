@@ -12,7 +12,7 @@ spec:
       labels:
         app: kavita
       annotations:
-        podinfo: "kavita"
+        podinfo: "kavita:ZIPやPDFの自炊書籍管理ソフト"
     spec:
       containers:
         - name: kavita
