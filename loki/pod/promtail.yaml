@@ -12,7 +12,7 @@ spec:
       labels:
         name: promtail
       annotations:
-        podinfo: "pod用のpromtail"
+        podinfo: "各ノード内のPodや本体のデータ監視用のpromtail"
     spec:
       serviceAccountName: promtail
       serviceAccount: promtail

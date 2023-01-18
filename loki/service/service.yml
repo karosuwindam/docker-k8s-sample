@@ -5,8 +5,8 @@ metadata:
   namespace: gf-space
 spec:
   selector:
-    name: promtail-pod
-    # name: promtail
+    # name: promtail-pod
+    name: promtail
   ports:
     - port: 9080
       targetPort: 9080

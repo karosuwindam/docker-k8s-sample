@@ -28,6 +28,13 @@ inginx-ingressのインストール
 kubectl get all -n ingress-nginx
 ```
 
+32bitのOSだとDockerの時刻取得に失敗するので以下のコマンドで本体に導入する
+```
+wget https://ftp.debian.org/debian/pool/main/libs/libseccomp/libseccomp2_2.5.4-1+b2_armhf.deb
+sudo dpkg -i libseccomp2_2.5.4-1+b2_armhf.deb 
+rm -rf libseccomp2_2.5.4-1+b2_armhf.deb
+```
+
 
 ## 復旧手順について
 kubectl label node/bookserver2 node-role.kubernetes.io/master=bookserver2
