@@ -1,0 +1,95 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: buildkitd
+  name: buildkitd
+  namespace: registry
+spec:
+  selector:
+    matchLabels:
+      app: buildkitd
+  template:
+    metadata:
+      labels:
+        app: buildkitd
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      containers:
+      - image: moby/buildkit
+        args:
+        - --addr
+        - tcp://0.0.0.0:1234
+        name: buildkitd
+        ports:
+        - containerPort: 1234
+        securityContext:
+          privileged: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: buildkitd
+    namespace: registry
+spec:
+  selector:
+    app: buildkitd
+  ports:
+    - port: 1234
+      targetPort: 1234
+  # type: ClusterIP
+  clusterIP: None
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+data:
+  1234: "registry/buildkitd:1234"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: buildkitd
+  namespace: registry
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: buildkit.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: buildkitd
+            port:
+              number: 1234
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: buildkitd
+#   namespace: registry
+# spec:
+#   rules:
+#   - host: buildkit.bookserver.home
+#       service:
+#         name: buildkitd
+#         port:
+#           number: 1234
