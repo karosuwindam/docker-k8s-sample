@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: kavita
-          image: kizaing/kavita:nightly-0.6.1.29
+          image: kizaing/kavita:nightly-0.6.1.37
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
