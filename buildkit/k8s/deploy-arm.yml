@@ -32,10 +32,10 @@ spec:
       - image: moby/buildkit
         args:
         - --addr
-        - tcp://0.0.0.0:1234
+        - tcp://0.0.0.0:1235
         name: buildkitd-arm
         ports:
-        - containerPort: 1234
+        - containerPort: 1235
         securityContext:
           privileged: true
 ---
@@ -48,8 +48,8 @@ spec:
   selector:
     app: buildkitd-arm
   ports:
-    - port: 1234
-      targetPort: 1234
+    - port: 1235
+      targetPort: 1235
   # type: ClusterIP
   clusterIP: None
 ---
@@ -72,7 +72,7 @@ spec:
           service:
             name: buildkitd-arm
             port:
-              number: 1234
+              number: 1235
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
 # metadata:

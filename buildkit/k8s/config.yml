@@ -6,4 +6,4 @@ metadata:
 data:
   # 1234: "registry/*:1234"
   1234: "registry/buildkitd:1234"
-  # 1234: "registry/buildkitd-arm:1234"
+  1235: "registry/buildkitd-arm:1235"
