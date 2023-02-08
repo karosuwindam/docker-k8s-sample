@@ -3,17 +3,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: buildkitd
-  name: buildkitd
+    app: buildkitd-arm
+  name: buildkitd-arm
   namespace: registry
 spec:
   selector:
     matchLabels:
-      app: buildkitd
+      app: buildkitd-arm
   template:
     metadata:
       labels:
-        app: buildkitd
+        app: buildkitd-arm
     spec:
       affinity:
         nodeAffinity:
@@ -27,13 +27,13 @@ spec:
                 - key: kubernetes.io/arch
                   operator: In
                   values:
-                    - arm64
+                    - arm
       containers:
       - image: moby/buildkit
         args:
         - --addr
         - tcp://0.0.0.0:1234
-        name: buildkitd
+        name: buildkitd-arm
         ports:
         - containerPort: 1234
         securityContext:
@@ -42,11 +42,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-    name: buildkitd
+    name: buildkitd-arm
     namespace: registry
 spec:
   selector:
-    app: buildkitd
+    app: buildkitd-arm
   ports:
     - port: 1234
       targetPort: 1234
@@ -56,21 +56,21 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: buildkitd
+  name: buildkitd-arm
   namespace: registry
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
   ingressClassName: nginx
   rules:
-  - host: buildkit.bookserver.home
+  - host: buildkitd-arm.bookserver.home
     http:
       paths:
       - pathType: Prefix
         path: "/"
         backend:
           service:
-            name: buildkitd
+            name: buildkitd-arm
             port:
               number: 1234
 # apiVersion: networking.k8s.io/v1

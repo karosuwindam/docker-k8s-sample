@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kavita-pv-amazon
+spec:
+  storageClassName: kavita-amazon
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.0.6
+    path: /Booknew/amazon
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kavita-pvc-amazon
+  namespace: kavita
+spec:
+  storageClassName: kavita-amazon
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Gi

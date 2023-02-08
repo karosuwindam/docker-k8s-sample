@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+data:
+  # 1234: "registry/*:1234"
+  1234: "registry/buildkitd:1234"
+  # 1234: "registry/buildkitd-arm:1234"
