@@ -11,6 +11,7 @@ export BUILDKIT_HOST=tcp://buildkit-arm.bookserver.home:1235
 
 
 buildctl build --output type=image,name=bookserver2:31000/karosu/test:0.1,push=true,registry.insecure=true --frontend=dockerfile.v0 --local context=. --local dockerfile=.
+buildctl --addr tcp://buildkit.bookserver.home:1234 build --output type=image,name=bookserver2:31000/karosu/test:0.1,push=true,registry.insecure=true --frontend=dockerfile.v0 --local context=. --local dockerfile=.
 buildctl build --output type=image,name=bookserver2:31000/karosu/test:0.1,push=true,registry.insecure=true --frontend=dockerfile.v0 --local context=./nginx/docker-compose/ --local dockerfile=./nginx/docker-compose/
 ```
 
