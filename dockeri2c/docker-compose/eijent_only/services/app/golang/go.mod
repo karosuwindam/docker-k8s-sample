@@ -6,6 +6,7 @@ require (
 	github.com/d2r2/go-dht v0.0.0-20200119175940-4ba96621a218
 	github.com/davecheney/i2c v0.0.0-20140823063045-caf08501bef2
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
+	golang.org/x/sync v0.1.0
 )
 
 require (
