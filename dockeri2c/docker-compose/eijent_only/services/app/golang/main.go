@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"time"
+	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"log"
-	"fmt"
+	"time"
+
 	"golang.org/x/sync/errgroup"
 )
 
@@ -103,7 +104,7 @@ func main() {
 		go func() {
 			for {
 				senserDataCk(&server)
-	
+
 				time.Sleep(15 * time.Second)
 			}
 		}()
@@ -111,7 +112,7 @@ func main() {
 		return nil
 	})
 	<-ctx.Done()
-	if err := eg.Wait() ;err != nil {
+	if err := eg.Wait(); err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
