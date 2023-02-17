@@ -19,7 +19,7 @@ spec:
       - name: nextcloud2
         # image: arm32v7/nextcloud
         # image: nextcloud_app
-        image: bookserver2:31000/karosu/nextcloud:24.0.5
+        image: bookserver2:31000/karosu/nextcloud:25.0.3
         # image: nextcloud:24.0.0
         imagePullPolicy: IfNotPresent
         ports:
@@ -84,7 +84,9 @@ metadata:
   namespace: nextcloud
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-
+    #nginx.ingress.kubernetes.io/client-body-buffer-size: "1m"
+    #nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+    #nginx.ingress.kubernetes.io/proxy-max-temp-file-size: "4096M"
 spec:
   ingressClassName: nginx
   rules:

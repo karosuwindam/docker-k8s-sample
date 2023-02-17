@@ -24,7 +24,7 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: myclaim
+  name: loki-pvc
   namespace: gf-space
   annotations:
     volume.beta.kubernetes.io/persistent-volume: iscsi-pv

@@ -1,0 +1,1 @@
+32bitと64bit arm混合のkubernetes環境で使用できない設定YAMLなおどをここに

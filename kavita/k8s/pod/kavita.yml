@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kavita
+  namespace: kavita
+spec:
+  selector:
+    matchLabels:
+      app: kavita
+  template:
+    metadata:
+      labels:
+        app: kavita
+      annotations:
+        podinfo: "kavita:ZIPやPDFの自炊書籍管理ソフト"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      containers:
+        - name: kavita
+          image: kizaing/kavita:nightly-0.6.1.37
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: config
+              mountPath: /kavita/config
+            - name: manga
+              mountPath: /manga
+            - name: amazon
+              mountPath: /amazon
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: kavita-pvc-config 
+        - name: manga
+          persistentVolumeClaim:
+            claimName: kavita-pvc-manga
+        - name: amazon
+          persistentVolumeClaim:
+            claimName: kavita-pvc-amazon 
+---

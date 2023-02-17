@@ -1,0 +1,18 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kube-web-view
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: webview.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-web-view
+            port:
+              number: 8080

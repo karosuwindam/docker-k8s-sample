@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caliber-web
+  namespace: caliber-web
+spec:
+  selector:
+    matchLabels:
+      app: caliber-web
+  template:
+    metadata:
+      labels:
+        app: caliber-web
+      annotations:
+        podinfo: "caliber-web:Amazonの自炊書籍管理ソフト"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      containers:
+        - name: caliber-web
+          image: lscr.io/linuxserver/calibre-web:nightly-14d14637-ls43
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - configMapRef:
+              name: caliber-env-web
+          ports:
+            - containerPort: 8083
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: book
+              mountPath: /books
+          resources:
+            limits:
+              memory: 3Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: caliber-pvc-config 
+        - name: book
+          persistentVolumeClaim:
+            claimName: caliber-pvc-library
+---

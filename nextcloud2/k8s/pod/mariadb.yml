@@ -17,7 +17,8 @@ spec:
         podinfo: "NextCloud用のMariadbのPod"
     spec:
       containers:
-      - image: turgon37/armhf-mariadb
+      # - image: turgon37/armhf-mariadb
+      - image: mariadb:10.9.5
         imagePullPolicy: IfNotPresent
         name: mariadb2
         env:
@@ -54,4 +55,5 @@ spec:
   selector:
     app: mariadb2
   # type: LoadBalancer
-  clusterIP: None
+  type: ClusterIP
+  # clusterIP: None

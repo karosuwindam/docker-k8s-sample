@@ -3,9 +3,11 @@ package main
 import (
 	"booknewread/textread"
 	"booknewread/webserver"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -32,7 +34,7 @@ func viewhtml(w http.ResponseWriter, r *http.Request) {
 	}
 	if !textread.Exists(ROUTE + upath) {
 		w.WriteHeader(404)
-		log.Printf("ERROR request:%v\n", r.URL.Path)
+		log.Printf("ERROR request:%v %v\n", r.URL.Path, ROUTE+upath)
 		return
 	} else {
 		for _, data := range textdata {
@@ -58,6 +60,10 @@ func setupbaseRoute() (Htmldata, error) {
 	var err error
 	output := Htmldata{}
 	output.Loopdata, err = loopSetup()
+	if f, err := os.Stat(ROUTE); os.IsNotExist(err) || !f.IsDir() {
+		errtext := ROUTE + "フォルダが見つかりません。"
+		return output, errors.New(errtext)
+	}
 	if err != nil {
 		return output, err
 	}

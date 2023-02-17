@@ -25,8 +25,8 @@ func main() {
 	go func() {
 		ckBooklloop(cc.Loopdata)
 	}()
-	loopWait(cc.Loopdata)
 	cc.setupRoute(cfg)
+	loopWait(cc.Loopdata)
 	s, err := cfg.NewServer()
 	if err != nil {
 		log.Println(err)
