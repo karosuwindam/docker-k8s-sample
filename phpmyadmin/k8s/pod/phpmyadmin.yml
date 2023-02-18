@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpmyadmin
+spec:
+  selector:
+    matchLabels:
+      app: phpmyadmin
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: phpmyadmin
+      annotations:
+        podinfo: "MySQLの確認プログラム"
+    spec:
+      containers:
+      - name: phpmyadmin
+        # image: phpmyadmin:5.2.0-fpm
+        image: linuxserver/phpmyadmin:5.2.0-ls76
+        imagePullPolicy: IfNotPresent
+        # imagePullPolicy: Always
+        env:
+          - name: TZ
+            value: 'Asia/Tokyo'
+          - name: PMA_ARBITRARY
+            value: "1"
+          - name: PMA_ABSOLUTE_URI
+            value: "http://phpmyadmin.bookserver.home"
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - mountPath: /config
+            name: config
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: phpmyadmin

@@ -28,6 +28,13 @@ inginx-ingressのインストール
 kubectl get all -n ingress-nginx
 ```
 
+32bitのOSだとDockerの時刻取得に失敗するので以下のコマンドで本体に導入する
+```
+wget https://ftp.debian.org/debian/pool/main/libs/libseccomp/libseccomp2_2.5.4-1+b2_armhf.deb
+sudo dpkg -i libseccomp2_2.5.4-1+b2_armhf.deb 
+rm -rf libseccomp2_2.5.4-1+b2_armhf.deb
+```
+
 
 ## 復旧手順について
 kubectl label node/bookserver2 node-role.kubernetes.io/master=bookserver2
@@ -82,7 +89,7 @@ kubectl apply -f isbm_server/k8s/volume/
 kubectl apply -f isbm_server/k8s/pod/
 kubectl apply -f isbm_server/k8s/ingress/
 
-kubectl apply -f nextcloud/k8s/namespace/
+kubectl apply -f nextcloud2/k8s/namespace/
 kubectl apply -f nextcloud2/k8s/volume/
 kubectl apply -f nextcloud2/k8s/pod/
 
@@ -90,3 +97,7 @@ kubectl apply -f loki/account
 kubectl apply -f loki/configmap
 kubectl apply -f loki/volume
 kubectl apply -f loki/pod
+
+kubectl apply -f buildkit/k8s
+
+kubectl apply -f kube-web-view/k8s

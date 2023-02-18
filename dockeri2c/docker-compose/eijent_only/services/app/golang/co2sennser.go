@@ -90,7 +90,7 @@ func (t *MhZ19c) Read() (int, int) {
 		} else {
 			t.Message = "Read CO2 Error"
 		}
-		fmt.Println("count:", i+1)
+		// fmt.Println("count:", i+1)
 		t.port.Close()
 		time.Sleep(500 * time.Microsecond)
 		t.port, _ = serial.OpenPort(c)
@@ -105,7 +105,7 @@ func (t *MhZ19c) ReadChack() bool {
 	tmp := []byte{}
 	go func() {
 		n, err := s.Write(READ_DATA)
-		log.Printf("WriteData %v:%q", len(READ_DATA), READ_DATA)
+		// log.Printf("WriteData %v:%q", len(READ_DATA), READ_DATA)
 		if err != nil {
 			log.Printf(err.Error())
 		}
@@ -113,7 +113,9 @@ func (t *MhZ19c) ReadChack() bool {
 			buf := make([]byte, 128)
 			n, err = s.Read(buf)
 			if err != nil {
-				log.Printf(err.Error())
+				if n != 0 {
+					log.Println(n, err.Error())
+				}
 				break
 			}
 			if n > 0 {
@@ -136,7 +138,7 @@ func (t *MhZ19c) ReadChack() bool {
 		}
 		time.Sleep(time.Millisecond * 10)
 	}
-	log.Printf("ReadData %v:%q,flag:%v", len(tmp), tmp, flag)
+	// log.Printf("ReadData %v:%q,flag:%v", len(tmp), tmp, flag)
 	return flag
 
 }

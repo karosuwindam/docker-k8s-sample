@@ -1,7 +1,15 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type AM2320Data struct {
@@ -88,14 +96,25 @@ func main() {
 	server.Sennser.Mma8452.Init()
 
 	senserDataCk(&server)
+	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.Go(func() error {
+		go func() {
+			for {
+				senserDataCk(&server)
 
-	go func() {
-		for {
-			senserDataCk(&server)
-
-			time.Sleep(15 * time.Second)
-		}
-	}()
-	server.ServerStart()
-
+				time.Sleep(15 * time.Second)
+			}
+		}()
+		server.ServerStart()
+		return nil
+	})
+	<-ctx.Done()
+	if err := eg.Wait(); err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println("end")
 }

@@ -1,39 +1,40 @@
+---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: kavita-config
+  name: jellyfin-pv-config
 spec:
-  storageClassName: kavita-config
+  storageClassName: jellyfin-config
   capacity:
-    storage: 10Gi
+    storage: 100Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
   nfs:
     server: k8s-worker-2
-    path: /home/pi/usb/usb1/nfs/kavita-config
+    path: /home/pi/usb/usb1/nfs/kubernetes/jellyfin-config
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: kavita-pvc-config
-  namespace: kavita
+  name: jellyfin-pvc-config
+  namespace: jellyfin
 spec:
-  storageClassName: kavita-config
+  storageClassName: jellyfin-config
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
-      storage: 10Gi
+      storage: 100Gi
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: kavita-pv-manga
+  name: jellyfin-pv-movies
 spec:
-  storageClassName: kavita-manga
+  storageClassName: jellyfin-movies
   capacity:
-    storage: 100Gi
+    storage: 500Gi
   accessModes:
     - ReadOnlyMany
   persistentVolumeReclaimPolicy: Retain
@@ -41,17 +42,17 @@ spec:
     - nfsvers=4.1
   nfs:
     server: 192.168.0.6
-    path: /Booknew/scan_data
+    path: /video
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: kavita-pvc-manga
-  namespace: kavita
+  name: jellyfin-pvc-movies
+  namespace: jellyfin
 spec:
-  storageClassName: kavita-manga
+  storageClassName: jellyfin-movies
   accessModes:
     - ReadOnlyMany
   resources:
     requests:
-      storage: 100Gi
+      storage: 500Gi
