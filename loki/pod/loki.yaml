@@ -11,6 +11,11 @@ spec:
     metadata:
       labels:
         app: loki
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '3100'
+        prometheus.io/path: /metrics
+        podinfo: "logを収集する Grafana Loki"
     spec:
       affinity:
         nodeAffinity:
