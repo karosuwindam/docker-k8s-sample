@@ -12,6 +12,7 @@ BUILD = buildctl
 BUILD_ADDR = tcp://buildkit.bookserver.home:1234 #arm64
 BUILD_ADDR_ARM = tcp://buildkit-arm.bookserver.home:1235 #arm
 BUILD_OPTION = "type=image,push=true,registry.insecure=true"
+GO_VERSION = 1.18.2
 DOCKERFILE_FOLDER = .
 
 all: build push

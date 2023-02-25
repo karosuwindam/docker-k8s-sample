@@ -1,0 +1,129 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vscode-go
+spec:
+  selector:
+    matchLabels:
+      app: vscode-go
+  template:
+    metadata:
+      labels:
+        app: vscode-go
+      annotations:
+        podinfo: "VSCode,goinstallのweb版"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      shareProcessNamespace: true
+      containers:
+      - image: bookserver2:31000/karosu/vscode-go:1.75.1
+        name: vscode-go
+        ports:
+        - name: http
+          containerPort: 3000
+        - name: app
+          containerPort: 8080
+        volumeMounts:
+          - mountPath: /home/workspace
+            name: vscode-go-storage
+      volumes:
+        - name: vscode-go-storage
+          persistentVolumeClaim:
+            claimName: vscode-go-pvc-claim
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vscode-go-pv-claim
+spec:
+  storageClassName: vscodego-config
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: k8s-worker-2
+    path: /home/pi/usb/usb1/nfs/kubernetes/vscode-data-go
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vscode-go-pvc-claim
+spec:
+  storageClassName: vscodego-config
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: vscode-go
+spec:
+  selector:
+    app: vscode-go
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+    - name: app
+      port: 8080
+      targetPort: 8080
+  # type: ClusterIP
+  clusterIP: None
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vscode-go
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: vscode-go.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: vscode-go
+            port:
+              number: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vscode-go-app
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: vscode-app.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: vscode-go
+            port:
+              number: 8080

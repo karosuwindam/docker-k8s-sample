@@ -9,8 +9,11 @@ spec:
   capacity:
     storage: 10Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
+  mountOptions:
+    - hard
+    - nfsvers=4.1
   nfs:
     server: k8s-worker-2
     path: /home/pi/usb/usb1/nfs/kubernetes/pv0001
@@ -25,8 +28,11 @@ spec:
   capacity:
     storage: 10Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
+  mountOptions:
+    - hard
+    - nfsvers=4.1
   nfs:
     server: k8s-worker-2
     path: /home/pi/usb/usb1/nfs/kubernetes/pv0002
@@ -41,8 +47,11 @@ spec:
   capacity:
     storage: 10Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
+  mountOptions:
+    - hard
+    - nfsvers=4.1
   nfs:
     server: k8s-worker-2
     path: /home/pi/usb/usb1/nfs/kubernetes/pv0003
@@ -73,8 +82,11 @@ spec:
   capacity:
     storage: 10Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
+  mountOptions:
+    - hard
+    - nfsvers=4.1
   nfs:
     server: k8s-worker-2
     path: /home/pi/usb/usb1/nfs/kubernetes/pv0005
@@ -89,8 +101,11 @@ spec:
   capacity:
     storage: 10Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
+  mountOptions:
+    - hard
+    - nfsvers=4.1
   nfs:
     server: k8s-worker-2
     path: /home/pi/usb/usb1/nfs/kubernetes/pv0006
@@ -105,8 +120,11 @@ spec:
   capacity:
     storage: 10Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
+  mountOptions:
+    - hard
+    - nfsvers=4.1
   nfs:
     server: k8s-worker-2
     path: /home/pi/usb/usb1/nfs/kubernetes/pv0007
@@ -137,8 +155,11 @@ spec:
   capacity:
     storage: 10Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
+  mountOptions:
+    - hard
+    - nfsvers=4.1
   nfs:
     server: k8s-worker-2
     path: /home/pi/usb/usb1/nfs/kubernetes/pv0009

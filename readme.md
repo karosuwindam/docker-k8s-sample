@@ -44,6 +44,8 @@ kubectl label node/k8s-worker-1 node-role.kubernetes.io/worker=k8s-worker-1
 kubectl label node/k8s-worker-1 type=k8s-worker-1
 kubectl label node/k8s-worker-2 node-role.kubernetes.io/worker=k8s-worker-2
 kubectl label node/k8s-worker-2 type=k8s-worker-2
+kubectl label node/k8s-worker-3 type=k8s-worker-3
+kubectl label node/k8s-worker-3 node-role.kubernetes.io/worker=k8s-worker-3
 kubectl label node/raspberrypi5 node-role.kubernetes.io/worker=raspberrypi5
 kubectl label node/raspberrypi5 type=raspberrypi5
 ```
