@@ -28,6 +28,8 @@ spec:
                   values:
                     - arm64
       shareProcessNamespace: true
+      serviceAccountName: vscode-user
+      serviceAccount: vscode-user
       containers:
       - image: bookserver2:31000/karosu/vscode-go:1.75.1
         name: vscode-go
@@ -39,6 +41,12 @@ spec:
         volumeMounts:
           - mountPath: /home/workspace
             name: vscode-go-storage
+        resources:
+          limits:
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 1Gi
       volumes:
         - name: vscode-go-storage
           persistentVolumeClaim:

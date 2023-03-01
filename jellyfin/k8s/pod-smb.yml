@@ -45,6 +45,9 @@ spec:
             - name: other
               mountPath: /data/other
               readOnly: true
+            - name: music
+              mountPath: /data/music
+              readOnly: true
           resources:
             limits:
               memory: 4Gi
@@ -58,6 +61,9 @@ spec:
         - name: movies
           persistentVolumeClaim:
             claimName: jellyfin-pvc-movies 
+        - name: music
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-smb-music 
         - name: other
           persistentVolumeClaim:
             claimName: jellyfin-pvc-smb-other 

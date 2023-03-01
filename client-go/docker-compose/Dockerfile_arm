@@ -15,7 +15,7 @@ RUN go build -o app
 FROM multiarch/ubuntu-core:armhf-bionic
 # FROM ubuntu:20.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.2.1"
+LABEL version="0.3.0"
 LABEL name="client-go"
 RUN apt-get update && \
     apt-get upgrade -y && \
