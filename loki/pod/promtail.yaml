@@ -24,7 +24,7 @@ spec:
       containers:
       - name: promtail
         # image: grafana/promtail:1.6.0
-        image: grafana/promtail:2.7.3
+        image: grafana/promtail:2.7.4
         # image: grafana/promtail
         args:
         - --config.file=/etc/promtail/config.yaml
@@ -39,12 +39,13 @@ spec:
               fieldPath: 'spec.nodeName'
         ports:
         - containerPort: 9080
-        # resources:
-        #   limits:
-        #     memory: 200Mi
-        #   requests:
-        #     cpu: 100m
-        #     memory: 200Mi
+        resources:
+          limits:
+            cpu: 200m
+            memory: 600Mi
+          requests:
+            cpu: 100m
+            memory: 300Mi
         volumeMounts:
         - name: log
           mountPath: /var/log

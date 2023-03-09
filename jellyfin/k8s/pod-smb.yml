@@ -48,12 +48,16 @@ spec:
             - name: music
               mountPath: /data/music
               readOnly: true
+            - name: nextcloud
+              mountPath: /data/nextcloud
+              readOnly: true
           resources:
             limits:
+              cpu: 1.5
               memory: 4Gi
             requests:
               cpu: 1
-              memory: 1Gi
+              memory: 2Gi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -67,4 +71,7 @@ spec:
         - name: other
           persistentVolumeClaim:
             claimName: jellyfin-pvc-smb-other 
+        - name: nextcloud
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-smb-pi 
 ---

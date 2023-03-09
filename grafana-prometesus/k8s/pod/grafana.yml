@@ -18,7 +18,7 @@ spec:
         - name: grafana
           # image: grafana/grafana:7.4.3
           # image: grafana/grafana:8.5.2
-          image: grafana/grafana:9.3.6
+          image: grafana/grafana:9.4.3
           # image: grafana/grafana:8.2.3
           imagePullPolicy: IfNotPresent
           env:
@@ -29,6 +29,13 @@ spec:
               # value: 'nec-baas-iframe-panel'
           ports:
             - containerPort: 3000
+          resources:
+            limits:
+              cpu: 200m
+              memory: 400Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
           volumeMounts:
             - name: config-vol
               mountPath: /etc/grafana/grafana.ini
