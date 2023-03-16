@@ -44,6 +44,8 @@ spec:
           #   value: "registry:5000"
           - name: ENABLE_DELETE_IMAGES
             value: "true"
+          - name: PUBLIC_REGISTRY_URL
+            value: "registry.bookserver.home"
           # - name: REGISTRY_TITLE
           #   value: "My registry"
         ports:

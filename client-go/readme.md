@@ -2,6 +2,9 @@ clinet-goを使用した、
 Pod情報を取得するプログラム
 
 アクセスするURLなどや、Pod情報Kuberentesから収集する
+ver 0.3.1
+localアクセスだとLinuxでおかしくなるので特定DNSに変更
+
 ver 0.3
 Serviceと連携があるClusterIPを表示する
 

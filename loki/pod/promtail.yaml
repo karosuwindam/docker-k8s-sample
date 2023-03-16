@@ -12,6 +12,9 @@ spec:
       labels:
         name: promtail
       annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9080'
+        prometheus.io/path: /metrics
         podinfo: "各ノード内のPodや本体のデータ監視用のpromtail"
     spec:
       serviceAccountName: promtail

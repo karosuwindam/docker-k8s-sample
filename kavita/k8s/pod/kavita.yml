@@ -29,7 +29,8 @@ spec:
                     - arm64
       containers:
         - name: kavita
-          image: kizaing/kavita:nightly-0.6.1.45
+          # image: kizaing/kavita:nightly-0.6.1.45
+          image: kizaing/kavita:nightly-0.7.1.16
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
@@ -42,7 +43,6 @@ spec:
               mountPath: /amazon
           resources:
             limits:
-              cpu: 1
               memory: 4Gi
             requests:
               cpu: 1

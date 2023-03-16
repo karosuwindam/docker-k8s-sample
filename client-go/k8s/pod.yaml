@@ -12,13 +12,13 @@ spec:
       labels:
         app: client
       annotations:
-        podinfo: "client-goによるテスト"
+        podinfo: "client-goによるIngressやService連携リスト"
     spec:
       serviceAccountName: client-go
       serviceAccount: client-go
       containers:
       - name: client
-        image: bookserver2:31000/karosu/client-go:0.3.0
+        image: bookserver2:31000/karosu/client-go:0.3.1
         resources:
           limits:
             memory: "128Mi"
