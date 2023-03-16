@@ -32,7 +32,7 @@ spec:
                 - key: kubernetes.io/hostname
                   operator: In
                   values:
-                    - bookserver2
+                    - k8s-worker-1
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -40,14 +40,18 @@ spec:
         effect: NoSchedule
       containers:
       - name: registry
-        image: registry:2.7.1
+        image: registry:2.8.1
+        env:
+        - name: REGISTRY_STORAGE_DELETE_ENABLED
+          value: "true"
         ports:
         - containerPort: 5000
         resources:
           limits:
+            cpu: 0.6
             memory: 1Gi
           requests:
-            cpu: 0.5
+            cpu: 0.3
             memory: 200Mi
         volumeMounts:
           - name: registry-st

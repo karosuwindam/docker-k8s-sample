@@ -48,6 +48,9 @@ function table(json){
                 }
 
             }
+            if (tmp[i].Data[j].ClusterIP != "") {
+                output += " ClusterIP :"+tmp[i].Data[j].ClusterIP
+            }
             output += "</div>"        }
     }
     

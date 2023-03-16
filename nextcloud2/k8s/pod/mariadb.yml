@@ -17,7 +17,8 @@ spec:
         podinfo: "NextCloud用のMariadbのPod"
     spec:
       containers:
-      - image: turgon37/armhf-mariadb
+      # - image: turgon37/armhf-mariadb
+      - image: mariadb:10.9.5
         imagePullPolicy: IfNotPresent
         name: mariadb2
         env:
@@ -32,6 +33,13 @@ spec:
         ports:
         - containerPort: 3306
           name: mariadb2
+        resources:
+          limits:
+            cpu: 0.4
+            memory: 600Mi
+          requests:
+            cpu: 0.2
+            memory: 300Mi
         volumeMounts:
         - name: mariadb-persistent-storage
           mountPath: /var/lib/mysql
@@ -54,4 +62,5 @@ spec:
   selector:
     app: mariadb2
   # type: LoadBalancer
-  clusterIP: None
+  type: ClusterIP
+  # clusterIP: None

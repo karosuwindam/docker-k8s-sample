@@ -332,6 +332,16 @@ spec:
     port: 443
     protocol: TCP
     targetPort: https
+  - appProtocol: buildkit
+    name: buildkit
+    port: 1234
+    protocol: TCP
+    targetPort: 1234
+  - appProtocol: buildkit-arm
+    name: buildkit-arm
+    port: 1235
+    protocol: TCP
+    targetPort: 1235
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
@@ -401,6 +411,7 @@ spec:
         - --validating-webhook=:8443
         - --validating-webhook-certificate=/usr/local/certificates/cert
         - --validating-webhook-key=/usr/local/certificates/key
+        - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
         env:
         - name: POD_NAME
           valueFrom:
@@ -437,6 +448,12 @@ spec:
         - containerPort: 443
           name: https
           protocol: TCP
+        - containerPort: 1234
+          name: buildkit
+          protocol: TCP
+        - containerPort: 1235
+          name: buildkit-arm
+          protocol: TCP
         - containerPort: 8443
           name: webhook
           protocol: TCP
@@ -452,8 +469,8 @@ spec:
           timeoutSeconds: 1
         resources:
           requests:
-            cpu: 100m
-            memory: 90Mi
+            cpu: 200m
+            memory: 180Mi
         securityContext:
           allowPrivilegeEscalation: true
           capabilities:

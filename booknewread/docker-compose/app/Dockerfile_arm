@@ -1,23 +1,30 @@
-FROM multiarch/ubuntu-core:armhf-bionic As builder
-#RUN apt update && apt upgrade -y
-RUN apt update && apt upgrade -y && \
-    apt install -y curl gcc git locales locales-all &&\
+# FROM multiarch/ubuntu-core:armhf-bionic As builder
+# FROM balenalib/raspberrypi3-debian As builder
+FROM ubuntu:22.04 As builder
+# RUN apt update && apt upgrade -y
+# RUN apt-key adv --keyserver ports.ubuntu.com --recv-keys 871920D1991BC93C
+# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y curl gcc git locales locales-all &&\
     locale-gen ja_JP.UTF-8
-RUN curl -OL https://dl.google.com/go/go1.16.5.linux-armv6l.tar.gz &&\
-    tar -C /usr/local -xzf go1.16.5.linux-armv6l.tar.gz &&\
-    rm -rf go1.16.5.linux-armv6l.tar.gz
+RUN curl -OL https://dl.google.com/go/go1.18.2.linux-armv6l.tar.gz &&\
+    tar -C /usr/local -xzf go1.18.2.linux-armv6l.tar.gz &&\
+    rm -rf go1.18.2.linux-armv6l.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
-RUN go get -u github.com/seihmd/openbd &&\
-    go get -u github.com/PuerkitoBio/goquery &&\
-    go get -u github.com/go-sql-driver/mysql &&\
-    go get -u github.com/mattn/go-sqlite3
+# RUN go get -u github.com/seihmd/openbd &&\
+#     go get -u github.com/PuerkitoBio/goquery &&\
+#     go get -u github.com/go-sql-driver/mysql &&\
+#     go get -u github.com/mattn/go-sqlite3
 WORKDIR /app
-ADD ./golang .
+ADD ./golang-v2 .
 RUN go build -o app
-FROM multiarch/ubuntu-core:armhf-bionic
-# FROM ubuntu:20.04
+# FROM multiarch/ubuntu-core:armhf-bionic
+# FROM balenalib/raspberrypi3-debian
+FROM ubuntu:22.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.11.0"
+LABEL version="0.13.0"
+LABEL docker_arch="arm"
+LABEL go_version="1.18.2"
 LABEL name="booknewread"
 
 RUN apt-get update && \
@@ -27,11 +34,11 @@ RUN apt-get update && \
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY ./golang/config config
-COPY ./golang/html html
-COPY ./golang/bookmark bookmark
-COPY ./golang/bookmarks.html ./
-COPY ./golang/run.sh ./
+COPY ./golang-v2/bookmarks.html ./
+COPY ./golang-v2/html html
+COPY ./golang-v2/bookmark bookmark
+COPY ./golang-v2/run.sh ./
 COPY --from=builder /app/app /app
+RUN chmod +x run.sh
 # COPY ./app /app
 CMD ["./run.sh"]

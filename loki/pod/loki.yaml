@@ -11,22 +11,44 @@ spec:
     metadata:
       labels:
         app: loki
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '3100'
+        prometheus.io/path: /metrics
+        podinfo: "logを収集する Grafana Loki"
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - "k8s-worker-1"
       containers:
         - name: loki
-          image: grafana/loki:1.6.0
+          # image: grafana/loki:1.6.0
+          image: grafana/loki:2.7.4
           imagePullPolicy: IfNotPresent
           args:
           - --config.file=/etc/loki/local-config.yaml       #   command: ["-config.file=/etc/loki/local-config.yaml"]
           ports:
             - containerPort: 3100
+          resources:
+            limits:
+              cpu: 400m
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 0.5Gi
           volumeMounts:
             - name: grafana-vol
               mountPath: /loki
       volumes:
         - name: grafana-vol
           persistentVolumeClaim:
-            claimName: myclaim
+            claimName: loki-pvc
 ---
 apiVersion: v1
 kind: Service

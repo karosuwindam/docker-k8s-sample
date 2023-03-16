@@ -18,3 +18,14 @@ spec:
             name: client
             port: 
               number: 8080
+  - host: index.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: client
+            port: 
+              number: 8080
+

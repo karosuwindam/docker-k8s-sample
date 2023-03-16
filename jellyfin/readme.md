@@ -1,0 +1,1 @@
+kubectl -n jellyfin create secret generic smbcreds --from-literal username=USERNAME --from-literal password="PASSWORD"

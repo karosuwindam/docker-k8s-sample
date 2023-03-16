@@ -42,11 +42,12 @@ spec:
         effect: NoSchedule
       containers:
       - name: dockeri2cmoni
-        image: bookserver2:31000/moni/dockeri2cmoni:0.9
+        image: bookserver2:31000/moni/dockeri2cmoni:0.10
         ports:
         - containerPort: 9140
         resources:
           limits:
+            cpu: 300m
             memory: 400Mi
           requests:
             cpu: 200m

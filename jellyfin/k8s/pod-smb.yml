@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+      annotations:
+        podinfo: "jellyfin:マルチメディアの総合管理"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      containers:
+        - name: jellyfin
+          image: lscr.io/linuxserver/jellyfin:10.8.9
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - configMapRef:
+              name: jellyfin-env
+          ports:
+            - containerPort: 8096
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: movies
+              mountPath: /data/movies
+              readOnly: true
+            - name: other
+              mountPath: /data/other
+              readOnly: true
+            - name: music
+              mountPath: /data/music
+              readOnly: true
+            - name: nextcloud
+              mountPath: /data/nextcloud
+              readOnly: true
+          resources:
+            limits:
+              cpu: 1.5
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-config 
+        - name: movies
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-movies 
+        - name: music
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-smb-music 
+        - name: other
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-smb-other 
+        - name: nextcloud
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-smb-pi 
+---

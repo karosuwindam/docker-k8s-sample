@@ -1,0 +1,88 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vscode
+spec:
+  selector:
+    matchLabels:
+      app: vscode
+  template:
+    metadata:
+      labels:
+        app: vscode
+      annotations:
+        podinfo: "VSCodeのweb版"
+    spec:
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #         - matchExpressions:
+      #           - key: kubernetes.io/os
+      #             operator: In
+      #             values:
+      #               - linux
+      #           - key: kubernetes.io/arch
+      #             operator: In
+      #             values:
+      #               - arm64
+      shareProcessNamespace: true
+      containers:
+      - image: gitpod/openvscode-server:1.75.1
+        name: vscode
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+          - mountPath: /home/workspace
+            name: vscode-storage
+      volumes:
+        - name: vscode-storage
+          persistentVolumeClaim:
+            claimName: vscode-pv-claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vscode-pv-claim
+  annotations:
+    "volume.beta.kubernetes.io/storage-class": "slow"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: vscode
+spec:
+  selector:
+    app: vscode
+  ports:
+    - port: 3000
+      targetPort: 3000
+  # type: ClusterIP
+  clusterIP: None
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vscode
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: vscode.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: vscode
+            port:
+              number: 3000

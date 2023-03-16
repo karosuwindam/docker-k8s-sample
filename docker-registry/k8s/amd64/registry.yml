@@ -35,7 +35,10 @@ spec:
         effect: NoSchedule
       containers:
       - name: registry
-        image: registry:2.7.1
+        image: registry:2.8.1
+        env:
+        - name: REGISTRY_STORAGE_DELETE_ENABLED
+          value: "true"
         ports:
         - containerPort: 5000
         resources:

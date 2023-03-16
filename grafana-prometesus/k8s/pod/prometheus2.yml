@@ -28,7 +28,8 @@ spec:
       containers:
         - name: prometheus2
           # image: prom/prometheus:v2.24.1
-          image: prom/prometheus:v2.35.0
+          # image: prom/prometheus:v2.35.0
+          image: prom/prometheus:v2.42.0
           imagePullPolicy: IfNotPresent
           #/bin/prometheus
           #-config.file=/etc/prometheus/prometheus.yml
@@ -55,6 +56,13 @@ spec:
 
           ports:
             - containerPort: 9090
+          resources:
+            limits:
+              cpu: 400m
+              memory: 1600Mi
+            requests:
+              cpu: 200m
+              memory: 800Mi
           volumeMounts:
             - name: config-vol
               mountPath: /etc/prometheus/prometheus.yml

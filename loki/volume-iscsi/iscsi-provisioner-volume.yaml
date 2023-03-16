@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: iscsi-pv
+  namespace: gf-space
+spec:
+  capacity:
+    storage: 10Gi
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+  iscsi:
+    targetPortal: 192.168.0.23:3260
+    iqn: iqn.2020-10.local:k8s-worker-1.target01
+    lun: 1
+    # fsType: ext4
+    fsType: xfs
+    chapAuthDiscovery: true 
+    chapAuthSession: true
+    readOnly: false 
+    secretRef:
+      name: iscsi-targetd-chap-secret
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: loki-pvc
+  namespace: gf-space
+  annotations:
+    volume.beta.kubernetes.io/persistent-volume: iscsi-pv
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

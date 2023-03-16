@@ -31,6 +31,7 @@ type ServiceData struct {
 	Name      string
 	Namespace string
 	Aselector string
+	ClusterIP string
 }
 
 type IngressData struct {
@@ -53,6 +54,7 @@ type OutputData struct {
 	Podinfo     string   `json:podinfo`
 	Port        []string `json:port`
 	Ip          string   `json:ip`
+	ClusterIP   string   `json:ClusterIP`
 	HostNetwork bool     `json:hostnetwork`
 	SName       string   `json:servicename`
 	Selector    string   `json:selector`
@@ -123,6 +125,7 @@ func SetPoddata(inputData PodtoSertoIng) []OutputData {
 			for _, service := range services {
 				if (service.Aselector == datatmp.Selector) && (service.Namespace == datatmp.Namespace) {
 					output[num].SName = service.Name
+					output[num].ClusterIP = service.ClusterIP
 					backup_output := output[num]
 					count := 0
 					for _, ingress := range ingresses {
@@ -201,6 +204,9 @@ func GetPodIngres(t ClientGo) []OutputData {
 			var tmp ServiceData
 			tmp.Name = service.ObjectMeta.Name
 			tmp.Namespace = service.Namespace
+			if service.Spec.ClusterIP != "None" {
+				tmp.ClusterIP = service.Spec.ClusterIP
+			}
 			tmp.Aselector = service.Spec.Selector["app"]
 			servicesTmp = append(servicesTmp, tmp)
 			// fmt.Println(service.ObjectMeta.Name, service.Spec.Selector["app"])
