@@ -15,9 +15,9 @@ type Bme280 struct {
 }
 
 type Bme280_Vaule struct {
-	Press float64
-	Temp  float64
-	Hum   float64
+	Press string
+	Temp  string
+	Hum   string
 }
 
 type bme280_cal struct {

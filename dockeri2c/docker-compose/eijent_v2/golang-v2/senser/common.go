@@ -1,6 +1,9 @@
 package senser
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 var (
 	I2C_BUS = 1
@@ -32,7 +35,7 @@ func SennserSetup() {
 
 func SenserRead() {
 	press, temp, hum := SennserData.Bme280_data.ReadData()
-	SennserDataValue.Bme280.Press = press
-	SennserDataValue.Bme280.Temp = temp
-	SennserDataValue.Bme280.Hum = hum
+	SennserDataValue.Bme280.Press = strconv.FormatFloat(press, 'f', 2, 64)
+	SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
+	SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
 }
