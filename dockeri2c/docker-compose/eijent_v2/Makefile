@@ -9,7 +9,7 @@ BUILD_ADDR_ARM = tcp://buildkit-arm.bookserver.home:1235 #arm
 BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 
 TARGET = ./Dockerfile
-TARGET_FILE = ./golang
+TARGET_FILE = ./golang-v2
 GO_VERSION = 1.18.2
 DOCKERFILE_FOLDER = .
 

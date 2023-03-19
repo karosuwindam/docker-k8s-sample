@@ -10,7 +10,7 @@ ENV PATH $PATH:/usr/local/go/bin
 # RUN go get -u github.com/tarm/serial
 # RUN go get -u 
 WORKDIR /app
-ADD ./golang/ ./
+ADD ./ ./
 RUN go build .
 FROM multiarch/ubuntu-core:armhf-bionic
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
