@@ -15,8 +15,7 @@ RUN go build .
 FROM multiarch/ubuntu-core:armhf-bionic
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
 LABEL version="TAG"
-LABEL docker_arch="ARCH"
-LABEL name="senser eijent"
+LABEL name="LABEL_NAME"
 LABEL go_version="GO_VERSION"
 RUN apt-get update && \
     apt-get upgrade -y && \

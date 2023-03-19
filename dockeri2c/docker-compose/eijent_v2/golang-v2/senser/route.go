@@ -61,6 +61,14 @@ func jsonData(w http.ResponseWriter, r *http.Request) {
 		outdata = append(outdata, createAddJsonData(tmpdata.DhtSenser_data.Name, "hum", tmpvaule.DhtSenser.Hum))
 		outdata = append(outdata, createAddJsonData(tmpdata.DhtSenser_data.Name, "tmp", tmpvaule.DhtSenser.Temp))
 	}
+	if tmpdata.Mma8452q_data.Flag {
+		outdata = append(outdata, createAddJsonData(tmpdata.Mma8452q_data.Name, "ax", tmpvaule.Mma8452q.X))
+		outdata = append(outdata, createAddJsonData(tmpdata.Mma8452q_data.Name, "ay", tmpvaule.Mma8452q.Y))
+		outdata = append(outdata, createAddJsonData(tmpdata.Mma8452q_data.Name, "az", tmpvaule.Mma8452q.Z))
+		outdata = append(outdata, createAddJsonData(tmpdata.Mma8452q_data.Name, "zero_x", tmpvaule.Mma8452q.Zero_X))
+		outdata = append(outdata, createAddJsonData(tmpdata.Mma8452q_data.Name, "zero_y", tmpvaule.Mma8452q.Zero_Y))
+		outdata = append(outdata, createAddJsonData(tmpdata.Mma8452q_data.Name, "zero_z", tmpvaule.Mma8452q.Zero_Z))
+	}
 	outdata = append(outdata, createAddJsonData("localhost", "cpu_tmp", tmpvaule.CpuTmp))
 	output, _ := json.Marshal(outdata)
 	fmt.Fprintf(w, "%s", string(output))
@@ -89,20 +97,24 @@ func health(w http.ResponseWriter, r *http.Request) {
 	if tmp, tcode := healthadd(SennserData.Bme280_data.Flag, SennserData.Bme280_data.Name, SennserData.Bme280_data.Message); tcode != 404 {
 		outdata = append(outdata, tmp)
 	}
-	//BME280のチェック
+	//AM2320のチェック
 	if tmp, tcode := healthadd(SennserData.Am2320_data.Flag, SennserData.Am2320_data.Name, SennserData.Am2320_data.Message); tcode != 404 {
 		outdata = append(outdata, tmp)
 	}
-	//BME280のチェック
+	//TSL2561のチェック
 	if tmp, tcode := healthadd(SennserData.Tsl2561_data.Flag, SennserData.Tsl2561_data.Name, SennserData.Tsl2561_data.Message); tcode != 404 {
 		outdata = append(outdata, tmp)
 	}
-	//BME280のチェック
+	//CO2Sensorのチェック
 	if tmp, tcode := healthadd(SennserData.CO2Sensor_data.Flag, SennserData.CO2Sensor_data.Name, SennserData.CO2Sensor_data.Message); tcode != 404 {
 		outdata = append(outdata, tmp)
 	}
-	//BME280のチェック
+	//DHTSenserのチェック
 	if tmp, tcode := healthadd(SennserData.DhtSenser_data.Flag, SennserData.DhtSenser_data.Name, SennserData.DhtSenser_data.Message); tcode != 404 {
+		outdata = append(outdata, tmp)
+	}
+	//MMA8452Qのチェック
+	if tmp, tcode := healthadd(SennserData.Mma8452q_data.Flag,SennserData.Mma8452q_data.Name, SennserData.Mma8452q_data.Message) ; tcode !~ 404 {
 		outdata = append(outdata, tmp)
 	}
 	tmpdata, _ := json.Marshal(outdata)
@@ -145,6 +157,14 @@ func metrics(w http.ResponseWriter, r *http.Request) {
 	if tmpdata.DhtSenser_data.Flag {
 		output = append(output, createLineMetrics(tmpdata.DhtSenser_data.Name, "hum", tmpvaule.DhtSenser.Hum))
 		output = append(output, createLineMetrics(tmpdata.DhtSenser_data.Name, "tmp", tmpvaule.DhtSenser.Temp))
+	}
+	if tmpdata.Mma8452q_data.Flag {
+		output = append(output, createLineMetrics(tmpdata.Mma8452q_data.Name, "ax", tmpvaule.Mma8452q.X))
+		output = append(output, createLineMetrics(tmpdata.Mma8452q_data.Name, "ay", tmpvaule.Mma8452q.Y))
+		output = append(output, createLineMetrics(tmpdata.Mma8452q_data.Name, "az", tmpvaule.Mma8452q.Z))
+		output = append(output, createLineMetrics(tmpdata.Mma8452q_data.Name, "zero_x", tmpvaule.Mma8452q.Zero_X))
+		output = append(output, createLineMetrics(tmpdata.Mma8452q_data.Name, "zero_y", tmpvaule.Mma8452q.Zero_Y))
+		output = append(output, createLineMetrics(tmpdata.Mma8452q_data.Name, "zero_z", tmpvaule.Mma8452q.Zero_Z))
 	}
 	output = append(output, createLineMetrics("", "cpu_tmp", tmpvaule.CpuTmp))
 	for _, line := range output {
