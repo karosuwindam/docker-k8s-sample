@@ -31,6 +31,7 @@ func Config(cfg *webserver.SetupServer) error {
 
 func Run(ctx context.Context) error {
 	cfg, err := webserver.NewSetup()
+	ch1 := make(chan bool)
 	if err != nil {
 		return err
 	}
@@ -42,9 +43,17 @@ func Run(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		fmt.Println("Start Read Sennser")
+		chdata := false
 		for {
 			senser.SenserRead()
-			fmt.Println(senser.SennserDataValue)
+			if senser.SennserData.Bme280_data.Flag {
+				fmt.Println(senser.SennserDataValue.Bme280)
+			}
+			fmt.Println(senser.SennserDataValue.CpuTmp)
+			if !chdata {
+				chdata = true
+				ch1 <- true
+			}
 			time.Sleep(5 * time.Second)
 		}
 		return nil
@@ -56,7 +65,7 @@ func Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
+	<-ch1
 	return s.Run(ctx)
 }
 func EndRun() {}

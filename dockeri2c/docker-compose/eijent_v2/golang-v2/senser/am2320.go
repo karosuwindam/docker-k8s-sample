@@ -17,8 +17,14 @@ type Am2320 struct {
 	Message string
 }
 
-func (t *Am2320) Init() {
+type Am2320_Vaule struct {
+	Hum  string
+	Temp string
+}
+
+func (t *Am2320) Init() bool {
 	t.Name = "AM2320"
+	return t.Test()
 }
 
 func (t *Am2320) Test() bool {
@@ -57,7 +63,7 @@ func (t *Am2320) Test() bool {
 	return true
 }
 
-func (t *Am2320) Read() (float32, float32) {
+func (t *Am2320) Read() (float64, float64) {
 	i2c, err := i2c.New(AM2320, I2C_BUS)
 	if err != nil {
 		t.Message = err.Error()
@@ -83,8 +89,8 @@ func (t *Am2320) Read() (float32, float32) {
 		t.Message = err.Error()
 		// return -1, -1
 	}
-	hum := float32((uint(buf[2])<<8)|uint(buf[3])) / 10 //湿度
-	tmp := float32((uint(buf[4])<<8)|uint(buf[5])) / 10 //温度
+	hum := float64((uint(buf[2])<<8)|uint(buf[3])) / 10 //湿度
+	tmp := float64((uint(buf[4])<<8)|uint(buf[5])) / 10 //温度
 	t.Message = "OK"
 	return hum, tmp
 }

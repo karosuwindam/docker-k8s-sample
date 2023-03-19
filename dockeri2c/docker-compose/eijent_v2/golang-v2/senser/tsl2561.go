@@ -2,6 +2,7 @@ package senser
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/davecheney/i2c"
@@ -101,27 +102,47 @@ type Tsl2561 struct {
 	Message string
 }
 
-func (t *Tsl2561) Init() {
-	t.Name = "tsl256"
-	t.Up()
-	t.WriteByte(INTERRUPT, 0)
-	t.Down()
+type Tsl2561_Vaule struct {
+	Lux string
 }
 
-func (t *Tsl2561) WriteByte(command, data byte) {
+func (t *Tsl2561) Init() bool {
+	flag := true
+	t.Name = "tsl256"
+	t.Up()
+	if err := t.WriteByte(INTERRUPT, 0); err != nil {
+		log.Println(err)
+		flag = false
+	}
+	t.Down()
+	if flag {
+		flag = false
+		for i := 0; i < 3; i++ {
+			if t.Test() {
+				flag = true
+				break
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+
+	return flag
+}
+
+func (t *Tsl2561) WriteByte(command, data byte) error {
 	i2c, err := i2c.New(TSL2561, I2C_BUS)
 	if err != nil {
 		t.Message = err.Error()
-		return
+		return err
 	}
 	defer i2c.Close()
 	_, err = i2c.Write([]byte{command, data})
 	if err != nil {
 		t.Message = err.Error()
-		return
+		return err
 	}
 	t.Message = "OK"
-
+	return nil
 }
 func (t *Tsl2561) ReadByte(command byte, size int) []byte {
 	i2c, err := i2c.New(TSL2561, I2C_BUS)

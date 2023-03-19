@@ -3,7 +3,7 @@ package senser
 import (
 	"fmt"
 	"os"
-	"strconv"
+	"time"
 
 	"github.com/d2r2/go-dht"
 )
@@ -16,9 +16,14 @@ type DhtSenser struct {
 	pin         int
 }
 
+type DhtSenser_Vaule struct {
+	Hum  string
+	Temp string
+}
+
 func (t *DhtSenser) Test() bool {
 	_, _, _, err :=
-		dht.ReadDHTxxWithRetry(t.sennserType, t.pin, false, 10)
+		dht.ReadDHTxxWithRetry(t.sennserType, t.pin, false, 2)
 	if err != nil {
 		fmt.Println(err.Error())
 		t.Message = err.Error()
@@ -30,8 +35,9 @@ func (t *DhtSenser) Test() bool {
 	return true
 }
 
-func (t *DhtSenser) Init() {
+func (t *DhtSenser) Init(pin int) bool {
 	tmp := dht.DHT11
+	flag := true
 	if int(tmp) != 0 {
 	}
 	t.sennserType = dht.DHT11
@@ -50,13 +56,17 @@ func (t *DhtSenser) Init() {
 			break
 		}
 	}
-	t.pin = 12
-	if str := os.Getenv("DHT11_PORT"); str != "" {
-		tmp, err := strconv.Atoi(str)
-		if err == nil {
-			t.pin = tmp
+	t.pin = pin
+
+	for i := 0; i < 3; i++ {
+		flag = false
+		if t.Test() {
+			flag = true
+			break
 		}
+		time.Sleep(500 * time.Millisecond)
 	}
+	return flag
 }
 
 func (t *DhtSenser) Read() (float64, float64) {

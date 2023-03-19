@@ -42,13 +42,24 @@ type Mma8452q struct {
 	Message string
 }
 
-func (t *Mma8452q) Init() {
+type Mma8452q_Vaule struct {
+	X string
+	Y string
+	Z string
+	Zero_X string
+	Zero_Y string
+	Zero_Z string
+}
+
+func (t *Mma8452q) Init() bool {
 	t.Name = "MMA8452Q"
 	if t.up() != nil {
 		t.Flag = false
-		return
+		return false
 	}
 	t.Flag = true
+
+	return t.Test()
 }
 
 func (t *Mma8452q) Close() {

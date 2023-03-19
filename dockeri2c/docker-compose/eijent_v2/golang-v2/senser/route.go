@@ -22,6 +22,7 @@ var Route []webserver.WebConfig = []webserver.WebConfig{
 	{Pass: "/metrics", Handler: metrics},
 	{Pass: "/health", Handler: health},
 	{Pass: "/json", Handler: jsonData},
+	{Pass: "/reset", Handler: reset},
 	{Pass: "/", Handler: rootdate},
 }
 
@@ -36,13 +37,33 @@ func createAddJsonData(name, typev, value string) JsonSenser {
 // JSONDataのHTTP出力
 func jsonData(w http.ResponseWriter, r *http.Request) {
 	var outdata []JsonSenser
-	if SennserData.Bme280_data.Flag {
-		outdata = append(outdata, createAddJsonData(SennserData.Bme280_data.Name, "hum", SennserDataValue.Bme280.Hum))
-		outdata = append(outdata, createAddJsonData(SennserData.Bme280_data.Name, "press", SennserDataValue.Bme280.Press))
-		outdata = append(outdata, createAddJsonData(SennserData.Bme280_data.Name, "tmp", SennserDataValue.Bme280.Temp))
+	tmpdata := SennserData
+	SennserDataValue.Mu.Lock()
+	tmpvaule := SennserDataValue
+	SennserDataValue.Mu.Unlock()
+	if tmpdata.Bme280_data.Flag {
+		outdata = append(outdata, createAddJsonData(tmpdata.Bme280_data.Name, "hum", tmpvaule.Bme280.Hum))
+		outdata = append(outdata, createAddJsonData(tmpdata.Bme280_data.Name, "press", tmpvaule.Bme280.Press))
+		outdata = append(outdata, createAddJsonData(tmpdata.Bme280_data.Name, "tmp", tmpvaule.Bme280.Temp))
 	}
-	tmpdata, _ := json.Marshal(outdata)
-	fmt.Fprintf(w, "%s", string(tmpdata))
+	if tmpdata.Am2320_data.Flag {
+		outdata = append(outdata, createAddJsonData(tmpdata.Am2320_data.Name, "hum", tmpvaule.Am2320.Hum))
+		outdata = append(outdata, createAddJsonData(tmpdata.Am2320_data.Name, "tmp", tmpvaule.Am2320.Temp))
+	}
+	if tmpdata.Tsl2561_data.Flag {
+		outdata = append(outdata, createAddJsonData(tmpdata.Tsl2561_data.Name, "lux", tmpvaule.Tsl2561.Lux))
+	}
+	if tmpdata.CO2Sensor_data.Flag {
+		outdata = append(outdata, createAddJsonData(tmpdata.CO2Sensor_data.Name, "co2", tmpvaule.CO2.Co2))
+		outdata = append(outdata, createAddJsonData(tmpdata.CO2Sensor_data.Name, "tmp", tmpvaule.CO2.Temp))
+	}
+	if tmpdata.DhtSenser_data.Flag {
+		outdata = append(outdata, createAddJsonData(tmpdata.DhtSenser_data.Name, "hum", tmpvaule.DhtSenser.Hum))
+		outdata = append(outdata, createAddJsonData(tmpdata.DhtSenser_data.Name, "tmp", tmpvaule.DhtSenser.Temp))
+	}
+	outdata = append(outdata, createAddJsonData("localhost", "cpu_tmp", tmpvaule.CpuTmp))
+	output, _ := json.Marshal(outdata)
+	fmt.Fprintf(w, "%s", string(output))
 }
 
 //Healthチェックのデータ追加のフラグ
@@ -68,23 +89,64 @@ func health(w http.ResponseWriter, r *http.Request) {
 	if tmp, tcode := healthadd(SennserData.Bme280_data.Flag, SennserData.Bme280_data.Name, SennserData.Bme280_data.Message); tcode != 404 {
 		outdata = append(outdata, tmp)
 	}
+	//BME280のチェック
+	if tmp, tcode := healthadd(SennserData.Am2320_data.Flag, SennserData.Am2320_data.Name, SennserData.Am2320_data.Message); tcode != 404 {
+		outdata = append(outdata, tmp)
+	}
+	//BME280のチェック
+	if tmp, tcode := healthadd(SennserData.Tsl2561_data.Flag, SennserData.Tsl2561_data.Name, SennserData.Tsl2561_data.Message); tcode != 404 {
+		outdata = append(outdata, tmp)
+	}
+	//BME280のチェック
+	if tmp, tcode := healthadd(SennserData.CO2Sensor_data.Flag, SennserData.CO2Sensor_data.Name, SennserData.CO2Sensor_data.Message); tcode != 404 {
+		outdata = append(outdata, tmp)
+	}
+	//BME280のチェック
+	if tmp, tcode := healthadd(SennserData.DhtSenser_data.Flag, SennserData.DhtSenser_data.Name, SennserData.DhtSenser_data.Message); tcode != 404 {
+		outdata = append(outdata, tmp)
+	}
 	tmpdata, _ := json.Marshal(outdata)
 	w.WriteHeader(code)
 	fmt.Fprintf(w, "%s", string(tmpdata))
 }
 
 func createLineMetrics(name, types, value string) string {
+	if name == "" {
+		return "senser_data{type=\"" + types + "\"} " + value
+
+	}
 	return "senser_data{type=\"" + types + "\",sennser=\"" + name + "\"} " + value
 }
 
 // metricsの結果確認
 func metrics(w http.ResponseWriter, r *http.Request) {
 	var output []string
-	if SennserData.Bme280_data.Flag {
-		output = append(output, createLineMetrics(SennserData.Bme280_data.Name, "hum", SennserDataValue.Bme280.Hum))
-		output = append(output, createLineMetrics(SennserData.Bme280_data.Name, "press", SennserDataValue.Bme280.Press))
-		output = append(output, createLineMetrics(SennserData.Bme280_data.Name, "tmp", SennserDataValue.Bme280.Temp))
+	tmpdata := SennserData
+	SennserDataValue.Mu.Lock()
+	tmpvaule := SennserDataValue
+	SennserDataValue.Mu.Unlock()
+
+	if tmpdata.Bme280_data.Flag {
+		output = append(output, createLineMetrics(tmpdata.Bme280_data.Name, "hum", tmpvaule.Bme280.Hum))
+		output = append(output, createLineMetrics(tmpdata.Bme280_data.Name, "press", tmpvaule.Bme280.Press))
+		output = append(output, createLineMetrics(tmpdata.Bme280_data.Name, "tmp", tmpvaule.Bme280.Temp))
 	}
+	if tmpdata.Am2320_data.Flag {
+		output = append(output, createLineMetrics(tmpdata.Am2320_data.Name, "hum", tmpvaule.Am2320.Hum))
+		output = append(output, createLineMetrics(tmpdata.Am2320_data.Name, "tmp", tmpvaule.Am2320.Temp))
+	}
+	if tmpdata.Tsl2561_data.Flag {
+		output = append(output, createLineMetrics(tmpdata.Tsl2561_data.Name, "lux", tmpvaule.Tsl2561.Lux))
+	}
+	if tmpdata.CO2Sensor_data.Flag {
+		output = append(output, createLineMetrics(tmpdata.CO2Sensor_data.Name, "co2", tmpvaule.CO2.Co2))
+		output = append(output, createLineMetrics(tmpdata.CO2Sensor_data.Name, "tmp", tmpvaule.CO2.Temp))
+	}
+	if tmpdata.DhtSenser_data.Flag {
+		output = append(output, createLineMetrics(tmpdata.DhtSenser_data.Name, "hum", tmpvaule.DhtSenser.Hum))
+		output = append(output, createLineMetrics(tmpdata.DhtSenser_data.Name, "tmp", tmpvaule.DhtSenser.Temp))
+	}
+	output = append(output, createLineMetrics("", "cpu_tmp", tmpvaule.CpuTmp))
 	for _, line := range output {
 		fmt.Fprintf(w, "%s\n", line)
 	}
@@ -94,4 +156,17 @@ func metrics(w http.ResponseWriter, r *http.Request) {
 func rootdate(w http.ResponseWriter, r *http.Request) {
 	output := "<html><body><a href=\"/metrics\">metrics</a></body></html>"
 	fmt.Fprintf(w, "%s", output)
+}
+
+func reset(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		SennserResetSet(true)
+		output := "<html><body><a href=\"/\">index</a></body></html>"
+		fmt.Fprintf(w, "%s", output)
+
+	} else {
+		output := "<html><body><a href=\"/metrics\">metrics</a></body></html>"
+		fmt.Fprintf(w, "%s", output)
+
+	}
 }
