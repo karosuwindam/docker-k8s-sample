@@ -32,6 +32,7 @@ func Config(cfg *webserver.SetupServer) error {
 func Run(ctx context.Context) error {
 	cfg, err := webserver.NewSetup()
 	ch1 := make(chan bool)
+	ch2 := make(chan bool)
 	if err != nil {
 		return err
 	}
@@ -46,18 +47,28 @@ func Run(ctx context.Context) error {
 		chdata := false
 		for {
 			senser.SenserRead()
-			if senser.SennserData.Bme280_data.Flag {
-				fmt.Println(senser.SennserDataValue.Bme280)
-			}
-			fmt.Println(senser.SennserDataValue.CpuTmp)
 			if !chdata {
 				chdata = true
 				ch1 <- true
 			}
-			time.Sleep(5 * time.Second)
+			time.Sleep(1 * time.Second)
 		}
 		return nil
 	})
+	eg.Go(func() error {
+		fmt.Println("Start Read Gyro")
+		chdata := false
+		for {
+			senser.SenserMoveRead()
+			if !chdata {
+				chdata = true
+				ch2 <- true
+			}
+			time.Sleep((senser.GYRO_SLEEP_TIME))
+		}
+		return nil
+	})
+
 	if senser.SennserData.Bme280_data.Flag {
 		fmt.Println(senser.SennserData.Bme280_data.ReadData())
 	}
@@ -66,6 +77,7 @@ func Run(ctx context.Context) error {
 		return err
 	}
 	<-ch1
+	<-ch2
 	return s.Run(ctx)
 }
 func EndRun() {}

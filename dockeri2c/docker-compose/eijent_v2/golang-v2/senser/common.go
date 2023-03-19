@@ -2,6 +2,7 @@ package senser
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"sync"
 	"time"
@@ -120,9 +121,9 @@ func SennserSetup() {
 				zeromma8452qdata.Y = 0
 				zeromma8452qdata.Z = 0
 				for i, tmp := range tmpzero {
-					zeromma8452qdata.X = (zeromma8452qdata.X*i + tmp.X) / (i + 1)
-					zeromma8452qdata.Y = (zeromma8452qdata.Y*i + tmp.Y) / (i + 1)
-					zeromma8452qdata.Z = (zeromma8452qdata.Z*i + tmp.Z) / (i + 1)
+					zeromma8452qdata.X = (zeromma8452qdata.X*float64(i) + tmp.X) / (float64(i) + 1)
+					zeromma8452qdata.Y = (zeromma8452qdata.Y*float64(i) + tmp.Y) / (float64(i) + 1)
+					zeromma8452qdata.Z = (zeromma8452qdata.Z*float64(i) + tmp.Z) / (float64(i) + 1)
 				}
 				zeromma8452qdata.Mu.Unlock()
 				i2cmu.Unlock()
@@ -203,11 +204,38 @@ func SenserMoveRead() {
 }
 
 func SennserMoveReadData() {
-	// tmp := ZeroMma8452q{}
+	tmp := ZeroMma8452q{}
 	tempMma8452q.Mu.Lock()
-	//ゼロ位置調整を実施してその差分から絶対値が大きいものを抜き出す
+	tempdata := tempMma8452q.Data
 	tempMma8452q.Mu.Unlock()
+	zeromma8452qdata.Mu.Lock()
+	tmpzero := zeromma8452qdata
+	zeromma8452qdata.Mu.Unlock()
+	//ゼロ位置調整を実施してその差分から絶対値が大きいものを抜き出す
+	for i, tempary := range tempdata {
+		if i == 0 {
+			tmp.X = tempary.X
+			tmp.Y = tempary.Y
+			tmp.Z = tempary.Z
+		} else {
+			if math.Abs(tmp.X-tmpzero.X) < math.Abs(tempary.X-tmpzero.X) {
+				tmp.X = tempary.X
+			}
+			if math.Abs(tmp.Y-tmpzero.Y) < math.Abs(tempary.Y-tmpzero.Y) {
+				tmp.Y = tempary.Y
+			}
+			if math.Abs(tmp.Z-tmpzero.Z) < math.Abs(tempary.Z-tmpzero.Z) {
+				tmp.Z = tempary.Z
+			}
+		}
+	}
 	//出力準備
+	SennserDataValue.Mma8452q.X = strconv.FormatFloat(tmp.X, 'f', 2, 64)
+	SennserDataValue.Mma8452q.Y = strconv.FormatFloat(tmp.Y, 'f', 2, 64)
+	SennserDataValue.Mma8452q.Z = strconv.FormatFloat(tmp.Z, 'f', 2, 64)
+	SennserDataValue.Mma8452q.Zero_X = strconv.FormatFloat(tmpzero.X, 'f', 2, 64)
+	SennserDataValue.Mma8452q.Zero_Y = strconv.FormatFloat(tmpzero.Y, 'f', 2, 64)
+	SennserDataValue.Mma8452q.Zero_Z = strconv.FormatFloat(tmpzero.Z, 'f', 2, 64)
 }
 
 //通常センサーの読み取り
@@ -247,6 +275,9 @@ func SenserRead() {
 		hum, temp := SennserData.DhtSenser_data.Read()
 		SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
 		SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
+	}
+	if SennserData.Mma8452q_data.Flag {
+		SennserMoveReadData()
 	}
 	SennserDataValue.CpuTmp = cpuTmp()
 	SennserDataValue.Mu.Unlock()

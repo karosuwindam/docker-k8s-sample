@@ -114,7 +114,7 @@ func health(w http.ResponseWriter, r *http.Request) {
 		outdata = append(outdata, tmp)
 	}
 	//MMA8452Qのチェック
-	if tmp, tcode := healthadd(SennserData.Mma8452q_data.Flag,SennserData.Mma8452q_data.Name, SennserData.Mma8452q_data.Message) ; tcode !~ 404 {
+	if tmp, tcode := healthadd(SennserData.Mma8452q_data.Flag, SennserData.Mma8452q_data.Name, SennserData.Mma8452q_data.Message); tcode != 404 {
 		outdata = append(outdata, tmp)
 	}
 	tmpdata, _ := json.Marshal(outdata)
