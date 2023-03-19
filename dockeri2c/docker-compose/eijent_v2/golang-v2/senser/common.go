@@ -230,12 +230,14 @@ func SennserMoveReadData() {
 		}
 	}
 	//出力準備
+	SennserDataValue.Mu.Lock()
 	SennserDataValue.Mma8452q.X = strconv.FormatFloat(tmp.X, 'f', 2, 64)
 	SennserDataValue.Mma8452q.Y = strconv.FormatFloat(tmp.Y, 'f', 2, 64)
 	SennserDataValue.Mma8452q.Z = strconv.FormatFloat(tmp.Z, 'f', 2, 64)
 	SennserDataValue.Mma8452q.Zero_X = strconv.FormatFloat(tmpzero.X, 'f', 2, 64)
 	SennserDataValue.Mma8452q.Zero_Y = strconv.FormatFloat(tmpzero.Y, 'f', 2, 64)
 	SennserDataValue.Mma8452q.Zero_Z = strconv.FormatFloat(tmpzero.Z, 'f', 2, 64)
+	SennserDataValue.Mu.Unlock()
 }
 
 //通常センサーの読み取り
@@ -244,41 +246,52 @@ func SenserRead() {
 		fmt.Println("Reset Sennser Set Up.")
 		SennserSetup()
 	}
-	SennserDataValue.Mu.Lock()
 	if SennserData.Bme280_data.Flag {
 		i2cmu.Lock()
 		press, temp, hum := SennserData.Bme280_data.ReadData()
 		i2cmu.Unlock()
+		SennserDataValue.Mu.Lock()
 		SennserDataValue.Bme280.Press = strconv.FormatFloat(press, 'f', 2, 64)
 		SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
 		SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
+		SennserDataValue.Mu.Unlock()
 	}
 	if SennserData.Am2320_data.Flag {
 		i2cmu.Lock()
 		hum, temp := SennserData.Am2320_data.Read()
 		i2cmu.Unlock()
+		SennserDataValue.Mu.Lock()
 		SennserDataValue.Am2320.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
 		SennserDataValue.Am2320.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
+		SennserDataValue.Mu.Unlock()
 	}
 	if SennserData.CO2Sensor_data.Flag {
 		co2, temp := SennserData.CO2Sensor_data.Read()
+		SennserDataValue.Mu.Lock()
 		SennserDataValue.CO2.Co2 = strconv.Itoa(co2)
 		SennserDataValue.CO2.Temp = strconv.Itoa(temp)
+		SennserDataValue.Mu.Unlock()
 	}
 	if SennserData.Tsl2561_data.Flag {
 		i2cmu.Lock()
 		lux := SennserData.Tsl2561_data.ReadVisibleLux()
 		i2cmu.Unlock()
+		SennserDataValue.Mu.Lock()
 		SennserDataValue.Tsl2561.Lux = strconv.Itoa(lux)
+		SennserDataValue.Mu.Unlock()
+
 	}
 	if SennserData.DhtSenser_data.Flag {
 		hum, temp := SennserData.DhtSenser_data.Read()
+		SennserDataValue.Mu.Lock()
 		SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
 		SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
+		SennserDataValue.Mu.Unlock()
 	}
 	if SennserData.Mma8452q_data.Flag {
 		SennserMoveReadData()
 	}
+	SennserDataValue.Mu.Lock()
 	SennserDataValue.CpuTmp = cpuTmp()
 	SennserDataValue.Mu.Unlock()
 
