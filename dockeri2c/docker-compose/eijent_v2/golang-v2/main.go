@@ -86,7 +86,7 @@ func main() {
 	count := 0
 	for {
 		ck := uptime.Read()
-		if ck > 120 {
+		if ck > 180 {
 			break
 		} else {
 			if count == 0 {

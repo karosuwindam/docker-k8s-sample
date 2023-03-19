@@ -1,6 +1,7 @@
 package main
 
 import (
+	"app/uptime"
 	"context"
 	"fmt"
 	"log"
@@ -64,7 +65,24 @@ func senserDataCk(server *ServerData) {
 	server.Data.Rpi.cpu_tmp = cpuTmp()
 }
 
+func senserClose(server *ServerData) {
+	server.Sennser.Co2senser.Close()
+}
+
 func main() {
+	count := 0
+	for {
+		ck := uptime.Read()
+		if ck > 180 {
+			break
+		} else {
+			if count == 0 {
+				fmt.Println("sleep wake up time", ck)
+			}
+			time.Sleep(time.Second)
+		}
+		count++
+	}
 	server := ServerInt()
 	server.Sennser.Am2320.Init()
 	for i := 0; i < 3; i++ {
@@ -112,6 +130,7 @@ func main() {
 		return nil
 	})
 	<-ctx.Done()
+	senserClose(&server)
 	if err := eg.Wait(); err != nil {
 		log.Println(err)
 		os.Exit(1)

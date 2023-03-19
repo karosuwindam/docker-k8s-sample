@@ -260,10 +260,12 @@ func SenserRead() {
 		i2cmu.Lock()
 		hum, temp := SennserData.Am2320_data.Read()
 		i2cmu.Unlock()
-		SennserDataValue.Mu.Lock()
-		SennserDataValue.Am2320.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
-		SennserDataValue.Am2320.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
-		SennserDataValue.Mu.Unlock()
+		if hum != -1 && temp != -1 {
+			SennserDataValue.Mu.Lock()
+			SennserDataValue.Am2320.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
+			SennserDataValue.Am2320.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
+			SennserDataValue.Mu.Unlock()
+		}
 	}
 	if SennserData.CO2Sensor_data.Flag {
 		co2, temp := SennserData.CO2Sensor_data.Read()
@@ -283,10 +285,12 @@ func SenserRead() {
 	}
 	if SennserData.DhtSenser_data.Flag {
 		hum, temp := SennserData.DhtSenser_data.Read()
-		SennserDataValue.Mu.Lock()
-		SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
-		SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
-		SennserDataValue.Mu.Unlock()
+		if hum != -1 && temp != -1 {
+			SennserDataValue.Mu.Lock()
+			SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
+			SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
+			SennserDataValue.Mu.Unlock()
+		}
 	}
 	if SennserData.Mma8452q_data.Flag {
 		SennserMoveReadData()
