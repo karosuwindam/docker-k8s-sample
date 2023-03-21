@@ -1,4 +1,4 @@
-TAG = 0.12
+TAG = 0.13a
 DOCKER = docker
 NAME = bookserver2:31000/moni/dockeri2cmoni
 LABEL_NAME = "senser eijent"
@@ -9,7 +9,7 @@ BUILD_ADDR_ARM = tcp://buildkit-arm.bookserver.home:1235 #arm
 BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 
 TARGET = ./Dockerfile
-TARGET_FILE = ./golang-v2
+TARGET_FILE = ./golang
 GO_VERSION = 1.18.2
 DOCKERFILE_FOLDER = .
 

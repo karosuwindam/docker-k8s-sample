@@ -129,6 +129,12 @@ func (t *Tsl2561) Init() bool {
 	return flag
 }
 
+func (t *Tsl2561) Close() {
+	t.Flag = false
+	t.Down()
+	t.Message = "Close"
+}
+
 func (t *Tsl2561) WriteByte(command, data byte) error {
 	i2c, err := i2c.New(TSL2561, I2C_BUS)
 	if err != nil {

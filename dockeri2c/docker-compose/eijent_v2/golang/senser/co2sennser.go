@@ -185,9 +185,10 @@ func (t *MhZ19c) Output() (int, int) {
 }
 
 func (t *MhZ19c) Close() {
-	t.port.Close()
 	t.Flag = false
+	t.port.Close()
 	t.ReadData = []byte{}
+	t.Message = "Close"
 }
 
 func (t *Co2Sennser) Init(name string) bool {

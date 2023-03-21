@@ -180,7 +180,7 @@ var tempMma8452q TempMma8452q = TempMma8452q{
 	Data: []ZeroMma8452q{},
 }
 
-//センサーの短時間読み取り
+// センサーの短時間読み取り
 func SenserMoveRead() {
 	if SennserData.Mma8452q_data.Flag {
 		tmp := ZeroMma8452q{}
@@ -240,63 +240,122 @@ func SennserMoveReadData() {
 	SennserDataValue.Mu.Unlock()
 }
 
-//通常センサーの読み取り
+// 通常センサーの読み取り
 func SenserRead() {
+	ch := make(chan bool, 7)
 	if SennserResetRead() {
 		fmt.Println("Reset Sennser Set Up.")
 		SennserSetup()
 	}
-	if SennserData.Bme280_data.Flag {
-		i2cmu.Lock()
-		press, temp, hum := SennserData.Bme280_data.ReadData()
-		i2cmu.Unlock()
+	go func() { //ch1
+		if SennserData.Bme280_data.Flag {
+			i2cmu.Lock()
+			press, temp, hum := SennserData.Bme280_data.ReadData()
+			i2cmu.Unlock()
+			SennserDataValue.Mu.Lock()
+			SennserDataValue.Bme280.Press = strconv.FormatFloat(press, 'f', 2, 64)
+			SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
+			SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
+			SennserDataValue.Mu.Unlock()
+		}
+		ch <- true
+	}()
+	go func() { //ch2
+		if SennserData.Am2320_data.Flag {
+			i2cmu.Lock()
+			hum, temp := SennserData.Am2320_data.Read()
+			i2cmu.Unlock()
+			if hum != -1 && temp != -1 {
+				SennserDataValue.Mu.Lock()
+				SennserDataValue.Am2320.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
+				SennserDataValue.Am2320.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
+				SennserDataValue.Mu.Unlock()
+			}
+		}
+		ch <- true
+	}()
+	go func() { //ch3
+		if SennserData.CO2Sensor_data.Flag {
+			co2, temp := SennserData.CO2Sensor_data.Read()
+			if co2 > 0 {
+				SennserDataValue.Mu.Lock()
+				SennserDataValue.CO2.Co2 = strconv.Itoa(co2)
+				SennserDataValue.CO2.Temp = strconv.Itoa(temp)
+				SennserDataValue.Mu.Unlock()
+			}
+		}
+		ch <- true
+	}()
+	go func() { //ch4
+		if SennserData.Tsl2561_data.Flag {
+			i2cmu.Lock()
+			lux := SennserData.Tsl2561_data.ReadVisibleLux()
+			i2cmu.Unlock()
+			SennserDataValue.Mu.Lock()
+			SennserDataValue.Tsl2561.Lux = strconv.Itoa(lux)
+			SennserDataValue.Mu.Unlock()
+
+		}
+		ch <- true
+	}()
+	go func() { //ch5
+		if SennserData.DhtSenser_data.Flag {
+			hum, temp := SennserData.DhtSenser_data.Read()
+			if hum != -1 && temp != -1 {
+				SennserDataValue.Mu.Lock()
+				SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
+				SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
+				SennserDataValue.Mu.Unlock()
+			}
+		}
+		ch <- true
+	}()
+	go func() { //ch6
+		if SennserData.Mma8452q_data.Flag {
+			SennserMoveReadData()
+		}
+		ch <- true
+	}()
+
+	go func() { //ch7
 		SennserDataValue.Mu.Lock()
-		SennserDataValue.Bme280.Press = strconv.FormatFloat(press, 'f', 2, 64)
-		SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
-		SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
+		SennserDataValue.CpuTmp = cpuTmp()
 		SennserDataValue.Mu.Unlock()
+		ch <- true
+	}()
+	for {
+		if len(ch) == 7 {
+			break
+		}
+		time.Sleep(time.Microsecond * 10)
+	}
+
+}
+
+func Close() {
+	if SennserData.Bme280_data.Flag {
+		fmt.Println("Close BME280")
+		SennserData.Bme280_data.Close()
 	}
 	if SennserData.Am2320_data.Flag {
-		i2cmu.Lock()
-		hum, temp := SennserData.Am2320_data.Read()
-		i2cmu.Unlock()
-		if hum != -1 && temp != -1 {
-			SennserDataValue.Mu.Lock()
-			SennserDataValue.Am2320.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
-			SennserDataValue.Am2320.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
-			SennserDataValue.Mu.Unlock()
-		}
+		fmt.Println("Close AM2320")
+		SennserData.Am2320_data.Close()
 	}
 	if SennserData.CO2Sensor_data.Flag {
-		co2, temp := SennserData.CO2Sensor_data.Read()
-		SennserDataValue.Mu.Lock()
-		SennserDataValue.CO2.Co2 = strconv.Itoa(co2)
-		SennserDataValue.CO2.Temp = strconv.Itoa(temp)
-		SennserDataValue.Mu.Unlock()
+		fmt.Println("Close CO2Sensor")
+		SennserData.CO2Sensor_data.Close()
 	}
 	if SennserData.Tsl2561_data.Flag {
-		i2cmu.Lock()
-		lux := SennserData.Tsl2561_data.ReadVisibleLux()
-		i2cmu.Unlock()
-		SennserDataValue.Mu.Lock()
-		SennserDataValue.Tsl2561.Lux = strconv.Itoa(lux)
-		SennserDataValue.Mu.Unlock()
-
-	}
-	if SennserData.DhtSenser_data.Flag {
-		hum, temp := SennserData.DhtSenser_data.Read()
-		if hum != -1 && temp != -1 {
-			SennserDataValue.Mu.Lock()
-			SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
-			SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
-			SennserDataValue.Mu.Unlock()
-		}
+		fmt.Println("Close TSL2561")
+		SennserData.Tsl2561_data.Close()
 	}
 	if SennserData.Mma8452q_data.Flag {
-		SennserMoveReadData()
+		fmt.Println("Close MMA8452Q")
+		SennserData.Mma8452q_data.Close()
 	}
-	SennserDataValue.Mu.Lock()
-	SennserDataValue.CpuTmp = cpuTmp()
-	SennserDataValue.Mu.Unlock()
+	if SennserData.DhtSenser_data.Flag {
+		fmt.Println("Close DhtSenser")
+		SennserData.DhtSenser_data.Close()
+	}
 
 }

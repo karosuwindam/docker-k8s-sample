@@ -24,7 +24,14 @@ type Am2320_Vaule struct {
 
 func (t *Am2320) Init() bool {
 	t.Name = "AM2320"
-	return t.Test()
+	flag := false
+	for i := 0; i < 3; i++ {
+		if flag = t.Test(); flag {
+			break
+		}
+		time.Sleep(time.Microsecond * 200)
+	}
+	return flag
 }
 
 func (t *Am2320) Test() bool {
@@ -61,6 +68,11 @@ func (t *Am2320) Test() bool {
 	t.Flag = true
 	t.Message = "OK"
 	return true
+}
+
+func (t *Am2320) Close() {
+	t.Flag = false
+	t.Message = "Close"
 }
 
 func (t *Am2320) Read() (float64, float64) {

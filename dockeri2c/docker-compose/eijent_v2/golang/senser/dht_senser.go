@@ -82,3 +82,8 @@ func (t *DhtSenser) Read() (float64, float64) {
 	t.Message = "OK"
 	return hum, tmp
 }
+
+func (t *DhtSenser) Close() {
+	t.Flag = false
+	t.Message = "Close"
+}
