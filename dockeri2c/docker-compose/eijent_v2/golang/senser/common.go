@@ -331,3 +331,31 @@ func SenserRead() {
 	}
 
 }
+
+func Close() {
+	if SennserData.Bme280_data.Flag {
+		fmt.Println("Close BME280")
+		SennserData.Bme280_data.Close()
+	}
+	if SennserData.Am2320_data.Flag {
+		fmt.Println("Close AM2320")
+		SennserData.Am2320_data.Close()
+	}
+	if SennserData.CO2Sensor_data.Flag {
+		fmt.Println("Close CO2Sensor")
+		SennserData.CO2Sensor_data.Close()
+	}
+	if SennserData.Tsl2561_data.Flag {
+		fmt.Println("Close TSL2561")
+		SennserData.Tsl2561_data.Close()
+	}
+	if SennserData.Mma8452q_data.Flag {
+		fmt.Println("Close MMA8452Q")
+		SennserData.Mma8452q_data.Close()
+	}
+	if SennserData.DhtSenser_data.Flag {
+		fmt.Println("Close DhtSenser")
+		SennserData.DhtSenser_data.Close()
+	}
+
+}

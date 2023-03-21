@@ -1,4 +1,4 @@
-TAG = 0.12
+TAG = 0.13a
 DOCKER = docker
 NAME = bookserver2:31000/moni/dockeri2cmoni
 LABEL_NAME = "senser eijent"

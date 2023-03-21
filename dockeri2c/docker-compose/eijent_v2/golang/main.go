@@ -69,9 +69,6 @@ func Run(ctx context.Context) error {
 		return nil
 	})
 
-	if senser.SennserData.Bme280_data.Flag {
-		fmt.Println(senser.SennserData.Bme280_data.ReadData())
-	}
 	s, err := cfg.NewServer()
 	if err != nil {
 		return err
@@ -80,7 +77,9 @@ func Run(ctx context.Context) error {
 	<-ch2
 	return s.Run(ctx)
 }
-func EndRun() {}
+func EndRun() {
+	senser.Close()
+}
 
 func main() {
 	count := 0
@@ -103,5 +102,6 @@ func main() {
 		log.Println(err)
 		os.Exit(1)
 	}
+	EndRun()
 	fmt.Println("end")
 }

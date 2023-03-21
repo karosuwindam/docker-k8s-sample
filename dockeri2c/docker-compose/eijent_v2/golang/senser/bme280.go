@@ -69,7 +69,9 @@ func (t *Bme280) Init() bool {
 }
 
 func (t *Bme280) Close() {
+	t.Flag = false
 	t.down()
+	t.Message = "Close"
 }
 func (t *Bme280) up() {
 	osrs_t := 1

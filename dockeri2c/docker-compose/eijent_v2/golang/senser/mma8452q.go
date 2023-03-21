@@ -43,9 +43,9 @@ type Mma8452q struct {
 }
 
 type Mma8452q_Vaule struct {
-	X string
-	Y string
-	Z string
+	X      string
+	Y      string
+	Z      string
 	Zero_X string
 	Zero_Y string
 	Zero_Z string
@@ -63,7 +63,9 @@ func (t *Mma8452q) Init() bool {
 }
 
 func (t *Mma8452q) Close() {
+	t.Flag = false
 	t.down()
+	t.Message = "Close"
 }
 
 func (t *Mma8452q) WriteByte(command, data byte) error {
