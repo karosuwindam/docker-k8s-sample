@@ -5,18 +5,13 @@ RUN curl -OL https://dl.google.com/go/goGO_VERSION.linux-armv6l.tar.gz
 RUN tar -C /usr/local -xzf goGO_VERSION.linux-armv6l.tar.gz
 RUN rm -rf goGO_VERSION.linux-armv6l.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
-# RUN go get -u github.com/davecheney/i2c
-# RUN go get -u github.com/d2r2/go-dht
-# RUN go get -u github.com/tarm/serial
-# RUN go get -u 
 WORKDIR /app
-ADD ./golang/ ./
+ADD ./ ./
 RUN go build .
 FROM multiarch/ubuntu-core:armhf-bionic
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
 LABEL version="TAG"
-LABEL docker_arch="ARCH"
-LABEL name="senser eijent"
+LABEL name="LABEL_NAME"
 LABEL go_version="GO_VERSION"
 RUN apt-get update && \
     apt-get upgrade -y && \
