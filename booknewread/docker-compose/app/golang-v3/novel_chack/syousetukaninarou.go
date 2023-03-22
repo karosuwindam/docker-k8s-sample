@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -35,53 +36,29 @@ const (
 )
 
 type Channel struct {
-	Ch_Narou    chan bool
-	Ch_Kakuyomu chan bool
-	Ch_Nocku    chan bool
-	Ch_Alpha    chan bool
-	Setup       bool
+	Ch_Narou    sync.Mutex //ノクターン
+	Ch_Kakuyomu sync.Mutex //カクヨム
+	Ch_Nocku    sync.Mutex //なろう
+	Ch_Alpha    sync.Mutex //アルファポリス
+	flag        bool
 }
 
-func Setup(count int) Channel {
-	var output Channel
-	if count > 2 {
-		output.Ch_Narou = make(chan bool, 2)
-		output.Ch_Alpha = make(chan bool, 2)
-	} else {
-		output.Ch_Narou = make(chan bool, count)
-		output.Ch_Alpha = make(chan bool, count)
-	}
-	output.Ch_Kakuyomu = make(chan bool, count)
+var channel_data Channel
 
-	output.Ch_Nocku = make(chan bool, count)
-	output.Setup = true
-	return output
+func Setup() {
+	channel_data = Channel{flag: true}
 }
 
-func (t *Channel) ChackUrldata(url string) List {
+func ChackUrldata(url string) List {
 	var output List
-	if !t.Setup {
+	if !channel_data.flag {
 		log.Println("not Setup")
 		return output
 	}
-	// if len(BASE_URL_NAROU) <= len(url) {
-	// 	if url[:len(BASE_URL_NAROU)] == BASE_URL_NAROU {
-	// 		t.Ch_Narou <- true
-	// 		output = chackSyousetu(url)
-	// 		<-t.Ch_Narou
-	// 	}
-	// }
-	// if len(BASE_URL_NAROUS) <= len(url) {
-	// 	if url[:len(BASE_URL_NAROUS)] == BASE_URL_NAROUS {
-	// 		t.Ch_Narou <- true
-	// 		output = chackSyousetu(url)
-	// 		<-t.Ch_Narou
-	// 	}
-	// }
+
 	if len(BASE_URL_NAROU)+1 < len(url) { //なろうのチェック
 		url_tmp := ""
 		if url[:len(BASE_URL_NAROU)] == BASE_URL_NAROU {
-			// url_tmp = url
 			url_tmp = strings.Replace(url, "http", "https", 1)
 		} else if len(BASE_URL_NAROUS) <= len(url) {
 			if url[:len(BASE_URL_NAROUS)] == BASE_URL_NAROUS {
@@ -89,9 +66,9 @@ func (t *Channel) ChackUrldata(url string) List {
 			}
 		}
 		if url_tmp != "" {
-			t.Ch_Narou <- true
+			channel_data.Ch_Narou.Lock()
 			data, err := getDocument(url)
-			<-t.Ch_Narou
+			channel_data.Ch_Narou.Unlock()
 			if err != nil {
 				fmt.Println(err.Error())
 				return output
@@ -102,10 +79,7 @@ func (t *Channel) ChackUrldata(url string) List {
 	}
 	if len(BASE_URL_KAKUYOMU)+1 < len(url) { //カクヨムのチェック
 		if url[:len(BASE_URL_KAKUYOMU)] == BASE_URL_KAKUYOMU {
-			t.Ch_Kakuyomu <- true
-			// data, err := getDocument(url)
 			data, err := getKakuyomu(url)
-			<-t.Ch_Kakuyomu
 			if err != nil {
 				fmt.Println(err.Error())
 				return output
@@ -124,9 +98,7 @@ func (t *Channel) ChackUrldata(url string) List {
 			}
 		}
 		if url_tmp != "" {
-			t.Ch_Nocku <- true
 			data, err := getNokutarn(url_tmp)
-			<-t.Ch_Nocku
 			if err != nil {
 				fmt.Println(err.Error())
 				return output
@@ -145,9 +117,9 @@ func (t *Channel) ChackUrldata(url string) List {
 			}
 		}
 		if url_tmp != "" {
-			t.Ch_Nocku <- true
+			channel_data.Ch_Alpha.Lock()
 			data, err := getDocument(url_tmp)
-			<-t.Ch_Nocku
+			channel_data.Ch_Alpha.Unlock()
 			if err != nil {
 				fmt.Println(err.Error())
 				return output
@@ -172,16 +144,19 @@ func getDocument(url string) (documentdata, error) {
 	return output, nil
 }
 
-//カクヨムの取得
+// カクヨムの取得
 func getKakuyomu(urldata string) (documentdata, error) {
 	var output documentdata
 	output.url = urldata
+
+	channel_data.Ch_Kakuyomu.Lock()
 	req, err := http.NewRequest(http.MethodGet, urldata, nil)
 	req.Header.Add("Accept", `text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8`)
 	req.Header.Add("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11`)
 	client := new(http.Client)
-
 	resp, err := client.Do(req)
+	channel_data.Ch_Kakuyomu.Unlock()
+
 	if err != nil {
 		return output, err
 	}
@@ -194,17 +169,20 @@ func getKakuyomu(urldata string) (documentdata, error) {
 	return output, nil
 }
 
-//ノクターンノベルのゲット
+// ノクターンノベルのゲット
 func getNokutarn(urldata string) (documentdata, error) {
 	var output documentdata
 	output.url = urldata
+
+	channel_data.Ch_Nocku.Lock()
 	req, err := http.NewRequest(http.MethodPost, urldata, nil)
 	if err != nil {
 		return output, err
 	}
 	req.Header.Set("Cookie", "over18=yes")
-
 	resp, err := http.DefaultClient.Do(req)
+	channel_data.Ch_Nocku.Unlock()
+
 	if err != nil {
 		return output, err
 	}
@@ -217,7 +195,7 @@ func getNokutarn(urldata string) (documentdata, error) {
 	return output, nil
 }
 
-//ノクターンノベルのチェック
+// ノクターンノベルのチェック
 func chackNokutarn(data documentdata) List {
 	var output List
 	output.Url = data.url
@@ -231,9 +209,7 @@ func chackNokutarn(data documentdata) List {
 				times = times[:strings.Index(times, "（改）")]
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 JST", times+":00 JST")
-			// fmt.Println(t.Local())
 			output.Lastdate = t.UTC().Add(-9 * time.Hour)
-			// output.Lastdate = t.UTC()
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
@@ -243,10 +219,9 @@ func chackNokutarn(data documentdata) List {
 		output.Count = i + 1
 	})
 	return output
-
 }
 
-//小説になろうのチェック
+// 小説になろうのチェック
 func chackSyousetu(data documentdata) List {
 	var output List
 	output.Url = data.url
@@ -260,10 +235,7 @@ func chackSyousetu(data documentdata) List {
 				times = times[:strings.Index(times, "（改）")]
 			}
 			t, _ := time.Parse("2006/01/02 15:04:05 JST", times+":00 JST")
-			// fmt.Println(t)
-			// output.Lastdate = t.Local().Add(-9 * time.Hour)
 			output.Lastdate = t.UTC().Add(-9 * time.Hour)
-			// output.Lastdate = t.UTC()
 
 		}
 		tmp, _ := s.Find("dd.subtitle").Find("a").Attr("href")
@@ -275,13 +247,12 @@ func chackSyousetu(data documentdata) List {
 	return output
 }
 
-//カクヨムのチェック
+// カクヨムのチェック
 func chackKakuyomu(data documentdata) List {
 	var output List
 	output.Url = data.url
 	doc := data.data
 	output.Title = doc.Find("div#workHeader-inner").Find("h1#workTitle").Text()
-	// fmt.Println(doc.Find("div.widget-toc-main").Text())
 
 	doc.Find("div.widget-toc-main").Each(func(i int, s *goquery.Selection) {
 		s.Find("li.widget-toc-episode").Each(func(j int, ss *goquery.Selection) {
@@ -290,13 +261,9 @@ func chackKakuyomu(data documentdata) List {
 			if tmpurl != "" {
 				output.LastUrl = BASE_URL_KAKUYOMU + tmpurl
 			}
-			// fmt.Println(ss.Find("a").Find("time").Text())
 			tmpdate, _ := ss.Find("a").Find("time").Attr("datetime")
 			if tmpdate != "" {
 				t, _ := time.Parse("2006-01-02T15:04:05Z", tmpdate)
-				// jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-
-				// fmt.Println(t.Local())
 				output.Lastdate = t.Local()
 			}
 		})
@@ -306,7 +273,7 @@ func chackKakuyomu(data documentdata) List {
 
 }
 
-//アルファポリスのチェック
+// アルファポリスのチェック
 func chackAlpha(data documentdata) List {
 	var output List
 	output.Url = data.url
@@ -316,15 +283,8 @@ func chackAlpha(data documentdata) List {
 		output.LastStoryT = strings.TrimSpace(s.Find("span.title").Text())
 		times := strings.TrimSpace(s.Find("span.open-date").Text())
 		if times != "" {
-			// if strings.Index(times, "（改）") > 0 {
-			// 	times = times[:strings.Index(times, "（改）")]
-			// }
-			// t, _ := time.Parse("2006/01/02 15:04:05 JST", times+":00 JST")
 			t, _ := time.Parse("2006.01.02 15:04:05 JST", times+":00 JST")
-			// fmt.Println(t)
-			// output.Lastdate = t.Local().Add(-9 * time.Hour)
 			output.Lastdate = t.UTC().Add(-9 * time.Hour)
-			// output.Lastdate = t.UTC()
 
 		}
 		tmp, _ := s.Find("a").Attr("href")
@@ -336,7 +296,7 @@ func chackAlpha(data documentdata) List {
 	return output
 }
 
-//無効にする
+// 無効にする
 func chackurl(url string) bool {
 	flag := false
 	if len(BASE_URL_NAROU) <= len(url) {

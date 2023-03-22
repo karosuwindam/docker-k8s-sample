@@ -1,12 +1,14 @@
 package main
 
 import (
+	"booknewread/loop"
+	"booknewread/webserver"
 	"context"
 	"fmt"
-	"gowebserver/webserver"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func hello(w http.ResponseWriter, r *http.Request) {
@@ -43,11 +45,23 @@ func Run(ctx context.Context) error {
 func EndRun() {}
 
 func main() {
+	url := "http://ncode.syosetu.com/n3289ds/?p=4"
+	url1 := "https://ncode.syosetu.com/n8920ex/?p=3"
+	url2 := "https://circle.ms/"
+	go func() {
+		loop.Loop([]string{url, url1, url2})
+	}()
+	time.Sleep(time.Millisecond * 50 * 0)
+	loop.Read()
+	fmt.Println(loop.Count(), loop.ListData)
+
+	return
 	fmt.Println("start")
 	ctx := context.Background()
 	if err := Run(ctx); err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
+	EndRun()
 	fmt.Println("end")
 }
