@@ -2,7 +2,10 @@ package loop
 
 import (
 	"booknewread/novel_chack"
+	"fmt"
+	"sort"
 	"sync"
+	"time"
 )
 
 var ListData []novel_chack.List
@@ -19,9 +22,10 @@ func (t *Listdata) chackurl(url string) novel_chack.List {
 	return novel_chack.ChackUrldata(url)
 }
 
-func Loop(urllists []string) {
+func NobelLoop(urllists []string) {
+	now := time.Now()
 	ch := make(chan bool, len(urllists))
-	listtemp = Listdata{data: []novel_chack.List{}, count: 0}
+	listtemp = Listdata{data: []novel_chack.List{}, count: 1}
 	novel_chack.Setup()
 
 	for i, url := range urllists {
@@ -34,6 +38,9 @@ func Loop(urllists []string) {
 	for i := 0; i < len(urllists); i++ {
 		<-ch
 	}
+	endtime := time.Now()
+	fmt.Println("read novel data end", (endtime.Sub(now)).Seconds(), "s")
+
 }
 
 func (t *Listdata) add(data novel_chack.List) {
@@ -60,6 +67,7 @@ func Read() {
 	listtemp.mu.Lock()
 	ListData = listtemp.data
 	listtemp.mu.Unlock()
+	sort.Slice(ListData, func(i, j int) bool { return ListData[i].Lastdate.Unix() > ListData[j].Lastdate.Unix() })
 }
 
 func Count() int {
@@ -67,5 +75,4 @@ func Count() int {
 	count := listtemp.count
 	listtemp.mu.Unlock()
 	return count
-
 }
