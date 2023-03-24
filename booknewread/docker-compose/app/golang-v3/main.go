@@ -4,12 +4,12 @@ import (
 	"booknewread/dirread"
 	"booknewread/loop"
 	"booknewread/novel_chack"
+	"booknewread/webpage"
 	"booknewread/webserver"
 	"context"
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
 )
@@ -18,14 +18,10 @@ const (
 	LOOP_TIME_SEC = 60 * 60
 )
 
-func hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "hello World")
-}
-
 func RootConfg() []webserver.WebConfig {
 	output := []webserver.WebConfig{}
-	tmp := webserver.WebConfig{Pass: "/", Handler: hello}
-	output = append(output, tmp)
+	tmp := webpage.Route
+	output = append(output, tmp...)
 	return output
 }
 
@@ -84,52 +80,70 @@ func bookmarkread(fpass *dirread.Dirtype) []string {
 }
 
 func main() {
+	chbook := make(chan bool)
+	loop.Setup()
 	fpass, err := bookmarkFalderRead()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	bookmarklists := bookmarkread(&fpass)
+	go func() { //ループによるチェックスタート
+		fmt.Println("start new book data count")
+		count := 0
+		for {
+			starttime := time.Now()
+			loop.Bookloop()
+			loop.Reset_OFF(loop.RESET_BOOK)
+			if count == 0 {
+				chbook <- true
+				count++
+			}
+			for {
+				if time.Now().Sub(starttime).Seconds() > LOOP_TIME_SEC {
+					break
+				} else {
+					if loop.ResetRead(loop.RESET_BOOK) {
+						break
+					}
+					time.Sleep(time.Microsecond * 100)
+				}
+			}
+			fmt.Println("reload novel data")
+		}
+	}()
 
 	go func(list []string) { //ループによるURLチェックスタート
 		fmt.Println("start novel data count")
 		for {
 			starttime := time.Now()
 			loop.NobelLoop(list)
+			loop.Reset_OFF(loop.RESET_NOBEL)
 			for {
 				if time.Now().Sub(starttime).Seconds() > LOOP_TIME_SEC {
 					break
 				} else {
+					if loop.ResetRead(loop.RESET_NOBEL) {
+						break
+					}
 					time.Sleep(time.Microsecond * 100)
 				}
 			}
 			fmt.Println("reload novel data")
 		}
 	}(bookmarklists)
-	go func() {
-		fmt.Println("start new book data count")
-		starttime := time.Now()
-		for {
-			if time.Now().Sub(starttime).Seconds() > LOOP_TIME_SEC {
-				break
-			} else {
-				time.Sleep(time.Microsecond * 100)
-			}
-		}
-		fmt.Println("reload new book data")
 
-	}()
-
-	//動作確認--start
-	time.Sleep(time.Second * 60)
-	loop.Read()
-	fmt.Println(len(bookmarklists), loop.Count())
-	for _, listdata := range loop.ListData {
-		fmt.Println(listdata)
-	}
-	time.Sleep(time.Second * 60)
-	//動作確認--end
-	return
+	// //動作確認--start
+	// time.Sleep(time.Second * 60)
+	// loop.Read()
+	// fmt.Println(len(bookmarklists), loop.Count())
+	// for _, listdata := range loop.NListData {
+	// 	fmt.Println(listdata)
+	// }
+	// time.Sleep(time.Second * 60)
+	// //動作確認--end
+	// return
+	<-chbook
 	fmt.Println("start")
 	ctx := context.Background()
 	if err := Run(ctx); err != nil {

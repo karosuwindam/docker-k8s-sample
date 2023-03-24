@@ -1,7 +1,7 @@
 FROM golang:1.18.1-buster As builder
 #RUN apt update && apt upgrade -y
 WORKDIR /app
-ADD ./golang-v2 .
+ADD ./golang-v3 .
 RUN go build -o app
 
 
@@ -23,9 +23,9 @@ RUN apt-get update && \
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY ./golang-v2/html html
-COPY ./golang-v2/run.sh ./
-COPY ./golang-v2/bookmark bookmark
+COPY ./golang-v3/html html
+COPY ./golang-v3/run.sh ./
+COPY ./golang-v3/bookmark bookmark
 COPY --from=builder /app/app /app
 RUN chmod +x run.sh
 

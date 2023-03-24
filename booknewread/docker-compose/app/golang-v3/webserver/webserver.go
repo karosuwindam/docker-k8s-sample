@@ -41,7 +41,7 @@ func NewSetup() (*SetupServer, error) {
 }
 
 func (t *SetupServer) NewServer() (*Server, error) {
-	log.Println("Setupserver", t.Protocol, t.Hostname+":"+t.Port)
+	fmt.Println("Setupserver", t.Protocol, t.Hostname+":"+t.Port)
 	l, err := net.Listen(t.Protocol, t.Hostname+":"+t.Port)
 	if err != nil {
 		return nil, err
