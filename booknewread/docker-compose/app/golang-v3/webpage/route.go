@@ -13,6 +13,7 @@ import (
 )
 
 var Route []webserver.WebConfig = []webserver.WebConfig{
+	{Pass: "/status", Handler: status},
 	{Pass: "/jsonb", Handler: getlocaljson},
 	{Pass: "/jsonnobel", Handler: getnowdata},
 	{Pass: "/restart", Handler: restart},
@@ -58,6 +59,17 @@ func viewhtml(w http.ResponseWriter, r *http.Request) {
 		w.Write(buffer)
 	}
 	return
+}
+
+// ステータスを取得する
+func status(w http.ResponseWriter, r *http.Request) {
+	loop.Read()
+	jsondata, err := json.Marshal(loop.Statusdata)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+	} else {
+		fmt.Fprintf(w, "%s", jsondata)
+	}
 }
 
 func getlocaljson(w http.ResponseWriter, r *http.Request) {

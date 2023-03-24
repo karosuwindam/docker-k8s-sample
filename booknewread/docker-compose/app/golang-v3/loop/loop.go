@@ -4,6 +4,7 @@ import (
 	"booknewread/novel_chack"
 	"fmt"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -13,6 +14,7 @@ var NListData []novel_chack.List
 type Listdata struct {
 	data     []novel_chack.List
 	listdata []BListData
+	status   Status
 	count    int
 	mu       sync.Mutex
 }
@@ -25,6 +27,7 @@ func (t *Listdata) chackurl(url string) novel_chack.List {
 
 func NobelLoop(urllists []string) {
 	fmt.Println("start novel data count")
+	dataStatusSet(NOBEL_SELECT, "Reload")
 	now := time.Now()
 	ch := make(chan bool, len(urllists))
 	listtemp.data = []novel_chack.List{}
@@ -35,6 +38,7 @@ func NobelLoop(urllists []string) {
 		go func(i int, url string) {
 			tmp := listtemp.chackurl(url)
 			listtemp.add(tmp)
+			dataStatusSet(NOBEL_SELECT, "Reload:"+strconv.Itoa(Count()*100/len(urllists))+"%")
 			ch <- true
 		}(i, url)
 	}
@@ -42,12 +46,16 @@ func NobelLoop(urllists []string) {
 		<-ch
 	}
 	endtime := time.Now()
+	timeStatusSet(NOBEL_SELECT, endtime)
+	dataStatusSet(NOBEL_SELECT, "OK")
 	fmt.Println("read novel data end", (endtime.Sub(now)).Seconds(), "s")
 
 }
 
 func (t *Listdata) add(data novel_chack.List) {
+	t.mu.Lock()
 	t.count++
+	t.mu.Unlock()
 	if data.Url == "" {
 		return
 	}
@@ -70,6 +78,7 @@ func Read() {
 	listtemp.mu.Lock()
 	NListData = listtemp.data
 	BookListData = listtemp.listdata
+	Statusdata = listtemp.status
 	listtemp.mu.Unlock()
 	sort.Slice(NListData, func(i, j int) bool { return NListData[i].Lastdate.Unix() > NListData[j].Lastdate.Unix() })
 }
@@ -85,4 +94,10 @@ func Setup() {
 	EnvData = SetupEnv()
 	BookListData = make([]BListData, 3)
 	listtemp.listdata = make([]BListData, 3)
+	listtemp.status = Status{
+		BookNowTIme:     time.Time{},
+		BookStatus:      "Reload",
+		BookMarkNowTime: time.Time{},
+		BookMarkStatus:  "Reload",
+	}
 }

@@ -1,6 +1,9 @@
 package loop
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 type RESET_FLAG int
 
@@ -10,10 +13,26 @@ const (
 	RESET_DATA  = RESET_NOBEL | RESET_BOOK
 )
 
+type SELECT_STATUS int
+
+const (
+	NOBEL_SELECT = SELECT_STATUS(0)
+	BOOK_SELECT  = SELECT_STATUS(1)
+)
+
 type reset struct {
 	flag RESET_FLAG
 	mu   sync.Mutex
 }
+
+type Status struct {
+	BookNowTIme     time.Time `json:booknowtime`
+	BookStatus      string    `json:bookstatus`
+	BookMarkNowTime time.Time `json:bookmarknowtime`
+	BookMarkStatus  string    `json:bookmarkstatus`
+}
+
+var Statusdata Status
 
 var resetflag reset
 
@@ -39,4 +58,26 @@ func ResetRead(flag RESET_FLAG) bool {
 	}
 	return false
 
+}
+
+func dataStatusSet(num SELECT_STATUS, str string) {
+	listtemp.mu.Lock()
+	switch num {
+	case BOOK_SELECT:
+		listtemp.status.BookStatus = str
+	case NOBEL_SELECT:
+		listtemp.status.BookMarkStatus = str
+	}
+	listtemp.mu.Unlock()
+}
+
+func timeStatusSet(num SELECT_STATUS, tdata time.Time) {
+	listtemp.mu.Lock()
+	switch num {
+	case BOOK_SELECT:
+		listtemp.status.BookNowTIme = tdata
+	case NOBEL_SELECT:
+		listtemp.status.BookMarkNowTime = tdata
+	}
+	listtemp.mu.Unlock()
 }

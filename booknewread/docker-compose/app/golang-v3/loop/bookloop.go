@@ -51,6 +51,7 @@ var bookloopmu sync.Mutex
 
 func Bookloop() {
 	fmt.Println("start new book data count")
+	dataStatusSet(BOOK_SELECT, "Reload")
 	t := time.Now()
 	ch := make(chan bool, 3)
 	for i := 0; i < 3; i++ {
@@ -91,6 +92,8 @@ func Bookloop() {
 		<-ch
 	}
 	endtime := time.Now()
+	dataStatusSet(BOOK_SELECT, "OK")
+	timeStatusSet(BOOK_SELECT, endtime)
 	fmt.Println("read new book data end", (endtime.Sub(t)).Seconds(), "s")
 
 }
