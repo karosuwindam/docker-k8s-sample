@@ -36,7 +36,6 @@ func NobelLoop(urllists []string) {
 	dataStatusSet(NOBEL_SELECT, "Reload")
 	now := time.Now()
 	ch := make(chan bool, len(urllists))
-	listtemp.data = []novel_chack.List{}
 	listtemp.count = 1
 	novel_chack.Setup()
 
@@ -103,6 +102,7 @@ func Count() int {
 func Setup() {
 	EnvData = SetupEnv()
 	BookListData = make([]BListData, 3)
+	listtemp.data = []novel_chack.List{}
 	listtemp.listdata = make([]BListData, 3)
 	listtemp.status = Status{
 		BookNowTIme:     time.Time{},
