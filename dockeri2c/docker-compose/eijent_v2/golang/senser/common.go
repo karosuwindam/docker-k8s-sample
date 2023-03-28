@@ -116,6 +116,7 @@ func SennserSetup() {
 					tmpzero = append(tmpzero, tmp)
 					time.Sleep(GYRO_SLEEP_TIME)
 				}
+				i2cmu.Unlock()
 				zeromma8452qdata.Mu.Lock()
 				zeromma8452qdata.X = 0
 				zeromma8452qdata.Y = 0
@@ -126,7 +127,6 @@ func SennserSetup() {
 					zeromma8452qdata.Z = (zeromma8452qdata.Z*float64(i) + tmp.Z) / (float64(i) + 1)
 				}
 				zeromma8452qdata.Mu.Unlock()
-				i2cmu.Unlock()
 			}
 			mma <- true
 		}()
@@ -252,11 +252,15 @@ func SenserRead() {
 			i2cmu.Lock()
 			press, temp, hum := SennserData.Bme280_data.ReadData()
 			i2cmu.Unlock()
-			SennserDataValue.Mu.Lock()
-			SennserDataValue.Bme280.Press = strconv.FormatFloat(press, 'f', 2, 64)
-			SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
-			SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
-			SennserDataValue.Mu.Unlock()
+			if press == temp && temp == hum && hum == -1 {
+				SennserData.Bme280_data.Message = "Read Error"
+			} else {
+				SennserDataValue.Mu.Lock()
+				SennserDataValue.Bme280.Press = strconv.FormatFloat(press, 'f', 2, 64)
+				SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
+				SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
+				SennserDataValue.Mu.Unlock()
+			}
 		}
 		ch <- true
 	}()
