@@ -16,14 +16,14 @@ ENV PATH $PATH:/usr/local/go/bin
 #     go get -u github.com/go-sql-driver/mysql &&\
 #     go get -u github.com/mattn/go-sqlite3
 WORKDIR /app
-ADD ./golang-v2 .
+ADD ./golang-v3 .
 RUN go build -o app
 # FROM multiarch/ubuntu-core:armhf-bionic
 # FROM balenalib/raspberrypi3-debian
 FROM ubuntu:22.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.13.0"
-LABEL docker_arch="arm"
+LABEL version="0.14.6"
+LABEL docker_arch="armv6l"
 LABEL go_version="1.18.2"
 LABEL name="booknewread"
 
@@ -34,10 +34,10 @@ RUN apt-get update && \
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY ./golang-v2/bookmarks.html ./
-COPY ./golang-v2/html html
-COPY ./golang-v2/bookmark bookmark
-COPY ./golang-v2/run.sh ./
+COPY ./golang-v3/bookmarks.html ./
+COPY ./golang-v3/html html
+COPY ./golang-v3/bookmark bookmark
+COPY ./golang-v3/run.sh ./
 COPY --from=builder /app/app /app
 RUN chmod +x run.sh
 # COPY ./app /app

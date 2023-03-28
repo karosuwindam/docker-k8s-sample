@@ -1,5 +1,5 @@
 # TAG = 24.0.0-fpm-alpine
-TAG = 0.13.0
+TAG = 0.14.6
 DOCKER = docker
 NAME = bookserver2:31000/karosu/booknewread
 
@@ -7,7 +7,7 @@ TEMPLATE = ./app/Dockerfile_tmp
 TARGET = ./app/Dockerfile_arm
 TARGET_FILE = ./app
 GO_VERSION = 1.18.2
-ARCH = ${shell docker version --format '{{.Server.Arch}}'}
+ARCH = armv6l
 OPT = "--privileged"
 
 all: build push

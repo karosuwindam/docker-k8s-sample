@@ -68,6 +68,7 @@ kubectl apply -f grafana-prometesus/k8s/role/
 kubectl apply -f grafana-prometesus/k8s/account/
 kubectl apply -f grafana-prometesus/k8s/kube-state-metrics/account/
 kubectl apply -f grafana-prometesus/k8s/kube-state-metrics/role/
+kubectl apply -f victoriametrics/k8s/deployment/deployment.yml
 kubectl apply -f grafana-prometesus/k8s/kube-state-metrics/pod/
 
 kubectl label nodes raspberrypi5 i2c=true
