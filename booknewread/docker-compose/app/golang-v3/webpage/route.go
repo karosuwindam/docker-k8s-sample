@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var Route []webserver.WebConfig = []webserver.WebConfig{
@@ -74,11 +75,11 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 func getlocaljson(w http.ResponseWriter, r *http.Request) {
 	form_data := ""
-	// timedata := time.Now().Sub(GrobalStatus.BookNowTIme).Seconds()
-	// if timedata > 300 {
-	// 	Reloadflag.BookMarkFlag = true
-	// 	Reloadflag.BookFlag = true
-	// }
+	loop.Read()
+	timedata := time.Now().Sub(loop.Statusdata.BookNowTIme).Seconds()
+	if timedata > 300 {
+		loop.Reset_ON(loop.RESET_DATA)
+	}
 	r.ParseForm()
 	for cnt, strs := range r.Form {
 		form_data += " " + cnt + ":"

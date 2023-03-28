@@ -22,7 +22,13 @@ type Listdata struct {
 var listtemp Listdata
 
 func (t *Listdata) chackurl(url string) novel_chack.List {
-	return novel_chack.ChackUrldata(url)
+	if tmp, err := novel_chack.ChackUrldata(url); err != nil {
+		time.Sleep(time.Microsecond * 100)
+		tmp, err = novel_chack.ChackUrldata(url)
+		return tmp
+	} else {
+		return tmp
+	}
 }
 
 func NobelLoop(urllists []string) {
@@ -30,7 +36,6 @@ func NobelLoop(urllists []string) {
 	dataStatusSet(NOBEL_SELECT, "Reload")
 	now := time.Now()
 	ch := make(chan bool, len(urllists))
-	listtemp.data = []novel_chack.List{}
 	listtemp.count = 1
 	novel_chack.Setup()
 
@@ -62,6 +67,10 @@ func (t *Listdata) add(data novel_chack.List) {
 	t.mu.Lock()
 	flag := true
 	for i, tmp := range t.data {
+		if data.Title == "" {
+			flag = false
+			break
+		}
 		if tmp.Url == data.Url {
 			t.data[i] = data
 			flag = false
@@ -93,6 +102,7 @@ func Count() int {
 func Setup() {
 	EnvData = SetupEnv()
 	BookListData = make([]BListData, 3)
+	listtemp.data = []novel_chack.List{}
 	listtemp.listdata = make([]BListData, 3)
 	listtemp.status = Status{
 		BookNowTIme:     time.Time{},

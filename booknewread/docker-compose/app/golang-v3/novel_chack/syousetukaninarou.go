@@ -1,6 +1,7 @@
 package novel_chack
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -49,11 +50,11 @@ func Setup() {
 	channel_data = Channel{flag: true}
 }
 
-func ChackUrldata(url string) List {
+func ChackUrldata(url string) (List, error) {
 	var output List
 	if !channel_data.flag {
 		log.Println("not Setup")
-		return output
+		return output, errors.New("not Setup")
 	}
 
 	if len(BASE_URL_NAROU)+1 < len(url) { //なろうのチェック
@@ -71,9 +72,9 @@ func ChackUrldata(url string) List {
 			channel_data.Ch_Narou.Unlock()
 			if err != nil {
 				fmt.Println(err.Error())
-				return output
+				return output, err
 			} else {
-				return chackSyousetu(data)
+				return chackSyousetu(data), nil
 			}
 		}
 	}
@@ -82,9 +83,9 @@ func ChackUrldata(url string) List {
 			data, err := getKakuyomu(url)
 			if err != nil {
 				fmt.Println(err.Error())
-				return output
+				return output, err
 			} else {
-				return chackKakuyomu(data)
+				return chackKakuyomu(data), nil
 			}
 		}
 	}
@@ -101,9 +102,9 @@ func ChackUrldata(url string) List {
 			data, err := getNokutarn(url_tmp)
 			if err != nil {
 				fmt.Println(err.Error())
-				return output
+				return output, err
 			} else {
-				return chackNokutarn(data)
+				return chackNokutarn(data), nil
 			}
 		}
 	}
@@ -122,14 +123,14 @@ func ChackUrldata(url string) List {
 			channel_data.Ch_Alpha.Unlock()
 			if err != nil {
 				fmt.Println(err.Error())
-				return output
+				return output, err
 			} else {
-				return chackAlpha(data)
+				return chackAlpha(data), nil
 			}
 		}
 	}
 
-	return output
+	return output, nil
 
 }
 

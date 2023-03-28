@@ -45,7 +45,13 @@ func Run(ctx context.Context) error {
 
 	return s.Run(ctx)
 }
-func EndRun() {}
+
+var ForLoop bool
+
+func EndRun() {
+	ForLoop = true
+	time.Sleep(300 * time.Microsecond)
+}
 
 func bookmarkFalderRead() (dirread.Dirtype, error) {
 	var fpass dirread.Dirtype
@@ -80,7 +86,9 @@ func bookmarkread(fpass *dirread.Dirtype) []string {
 }
 
 func main() {
+	ForLoop = false
 	chbook := make(chan bool)
+	ctx := context.Background()
 	loop.Setup()
 	fpass, err := bookmarkFalderRead()
 	if err != nil {
@@ -106,11 +114,18 @@ func main() {
 					if loop.ResetRead(loop.RESET_BOOK) {
 						break
 					}
+					if ForLoop {
+						break
+					}
 					time.Sleep(time.Microsecond * 100)
 				}
 			}
-			fmt.Println("reload novel data")
+			if ForLoop {
+				break
+			}
+			fmt.Println("reload book data")
 		}
+		log.Println("book loop end")
 	}()
 
 	go func(list []string) { //ループによるURLチェックスタート
@@ -126,28 +141,25 @@ func main() {
 					if loop.ResetRead(loop.RESET_NOBEL) {
 						break
 					}
+					if ForLoop {
+						break
+					}
 					time.Sleep(time.Microsecond * 100)
 				}
 			}
+			if ForLoop {
+				break
+			}
 			fmt.Println("reload novel data")
 		}
+		log.Println("novel loop end")
 	}(bookmarklists)
 
-	// //動作確認--start
-	// time.Sleep(time.Second * 60)
-	// loop.Read()
-	// fmt.Println(len(bookmarklists), loop.Count())
-	// for _, listdata := range loop.NListData {
-	// 	fmt.Println(listdata)
-	// }
-	// time.Sleep(time.Second * 60)
-	// //動作確認--end
-	// return
 	<-chbook
 	fmt.Println("start")
-	ctx := context.Background()
 	if err := Run(ctx); err != nil {
 		log.Println(err)
+		EndRun()
 		os.Exit(1)
 	}
 	EndRun()

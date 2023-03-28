@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: victoriametrics
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      app: victoriametrics
+  template:
+    metadata:
+      labels:
+        app: victoriametrics
+      annotations:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8428'
+        prometheus.io/path: /metrics
+        podinfo: "Prometheusのデータ保存用"
+    spec:
+      containers:
+        - name: victoriametrics
+          image: victoriametrics/victoria-metrics:v1.87.4
+          imagePullPolicy: IfNotPresent
+          args:
+            - storageDataPath=/victoria-metrics-data
+            - retentionPeriod=30d
+          ports:
+            - containerPort: 8428
+          resources:
+            limits:
+              cpu: 1
+              memory: 1000Mi
+            requests:
+              cpu: 0.5
+              memory: 500Mi
+          volumeMounts:
+            - name: storage
+              mountPath: /victoria-metrics-data
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: victoriametrics-pv-claim
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "victoriametrics-pv-volume"
+  namespace: gf-space
+  labels:
+    type: "local"
+spec:
+  storageClassName: "victoriametrics"
+  persistentVolumeReclaimPolicy: Retain
+  capacity:
+    storage: "100Gi"
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    server: k8s-worker-2
+    path: /home/pi/usb/usb1/nfs/kubernetes/victoriametrics
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: victoriametrics-pv-claim
+  namespace: gf-space
+spec:
+  storageClassName: victoriametrics
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: victoriametrics-service
+  namespace: gf-space
+spec:
+  selector:
+    app: victoriametrics
+  ports:
+    - port: 8428
+      targetPort: 8428
+  type: ClusterIP

@@ -5,18 +5,27 @@ var serche = function(keyword,output){
     console.log(keyword,document.getElementById("page").value,document.getElementById("pagetype").value)
     var page = document.getElementById("page").value -0;
     var pagetype = document.getElementById("pagetype").value -0;
-    if ((page == 3)||(pagetype == 2)) {
-        return
-    }
     if (JSON_DATA[page-0] == ""){
-        getnewJSON(output,page)
+        if (pagetype == 2){
+
+        }else{
+            getnewJSON(output,page)
+        }
+    }
+    if (page == 3){
+        return
     }
     if (keyword == ""){
         // console.log(tableb(JSON_DATA[page-0]));
         document.getElementById(output).innerHTML = tableb(JSON_DATA[page-0]);
     }else {
         // console.log(serche_table(JSON_DATA[page-0],keyword.toUpperCase() ))
-        document.getElementById(output).innerHTML = serche_table(JSON_DATA[page-0],keyword.toUpperCase() )
+        
+        if (pagetype == 2) {
+            
+        }else{
+            document.getElementById(output).innerHTML = serche_table(JSON_DATA[page-0],keyword.toUpperCase() )
+        }
         // document.getElementById(output).innerHTML = tableb(JSON_DATA[0]);
     }
 }
@@ -25,25 +34,27 @@ function serche_table(data,keyword) {
     var output = ""
     var tmp = JSON.parse(data)
     var tmp_data = []
-    
-    for (var i=0;i<tmp.Comic.length;i++){
-        if (data_ck(keyword,tmp.Comic[i])){
-            tmp_data.push(tmp.Comic[i])
-        }
-    }
-    for (var i=0;i<tmp.LiteNobel.length;i++){
-        if (data_ck(keyword,tmp.LiteNobel[i])){
-            tmp_data.push(tmp.LiteNobel[i])
-        }
-    }
-    var output = tmp.Year +"年" +tmp.Month + "月<br>";
-    output += "</div>"
-    for (var i=0;i<tmp_data.length;i++){
-        output += "<div class='table_line'>"
-        output += table_conbd(tmp_data[i])
-        output += "</div>"
-    }
-    output += "<div class='table'>"
+    // ToDo
+    // キーワードによる検索をまとめる
+    // キーワード結果をHTMLに加工   
+    // for (var i=0;i<tmp.Comic.length;i++){
+    //     if (data_ck(keyword,tmp.Comic[i])){
+    //         tmp_data.push(tmp.Comic[i])
+    //     }
+    // }
+    // for (var i=0;i<tmp.LiteNobel.length;i++){
+    //     if (data_ck(keyword,tmp.LiteNobel[i])){
+    //         tmp_data.push(tmp.LiteNobel[i])
+    //     }
+    // }
+    // var output = tmp.Year +"年" +tmp.Month + "月<br>";
+    // output += "</div>"
+    // for (var i=0;i<tmp_data.length;i++){
+    //     output += "<div class='table_line'>"
+    //     output += table_conbd(tmp_data[i])
+    //     output += "</div>"
+    // }
+    // output += "<div class='table'>"
     return output
 }
 function hankaku2Zenkaku(str) {
@@ -149,6 +160,7 @@ function getnobleJSON(output){
         var data=req.responseText;
         // data = JSON.parse(data);
         console.log(JSON.parse(data));
+        JSON_DATA[JSON_DATA.length-1] = data
         document.getElementById(output).innerHTML = table_noble(data);
         // document.getElementById(output).innerHTML = data;
       }
@@ -190,26 +202,58 @@ function getnewJSON(output,page){
     req.send(str);
 }
 
+function serche_table_nobel(data,keyword) {
+    var output = ""
+    var tmp = JSON.parse(data)
+    var tmp_data = []
+    
+    for (var i=0;i<tmp.Comic.length;i++){
+        if (data_ck(keyword,tmp.Comic[i])){
+            tmp_data.push(tmp.Comic[i])
+        }
+    }
+    for (var i=0;i<tmp.LiteNobel.length;i++){
+        if (data_ck(keyword,tmp.LiteNobel[i])){
+            tmp_data.push(tmp.LiteNobel[i])
+        }
+    }
+    var output = tmp.Year +"年" +tmp.Month + "月<br>";
+    output += "</div>"
+    for (var i=0;i<tmp_data.length;i++){
+        output += "<div class='table_line'>"
+        output += table_conbd(tmp_data[i])
+        output += "</div>"
+    }
+    output += "<div class='table'>"
+    return output
+}
+
 function table_noble(data){
     var output = "";
     var tmp = JSON.parse(data);
     console.log(tmp);
     output += "<div class='table'>"
     for (var i=0;i<tmp.length;i++){
-        output += "<div class='table_line'>"
-        output += "<div class='block'>"
-        output += "<a href='"+tmp[i].Url+"'>"+tmp[i].Title+"</a>"
-        output += "</div>"
-        output += "<div class='block'>"
-        output += "<a href='"+tmp[i].LastUrl+"'>"+tmp[i].LastStoryT+"</a>"
-        output += "</div>"
-        output += "<div class='block_time'>"
-        output += timech(tmp[i].Lastdate)
-        output += "</div>"
-        output += "</div>"
+        output += table_nobel_con(tmp[i])
     }
     output += "</div>"
     return output;
+}
+
+function table_nobel_con(data) {
+    var output = "";
+    output += "<div class='table_line'>"
+    output += "<div class='block'>"
+    output += "<a href='"+data.Url+"'>"+data.Title+"</a>"
+    output += "</div>"
+    output += "<div class='block'>"
+    output += "<a href='"+data.LastUrl+"'>"+data.LastStoryT+"</a>"
+    output += "</div>"
+    output += "<div class='block_time'>"
+    output += timech(data.Lastdate)
+    output += "</div>"
+    output += "</div>"
+    return output
 }
 
 function table_con(data){
@@ -251,7 +295,11 @@ function table_conbd(data){
     output += "<div class='block_n2'>"+data.Writer+ "</div>";
     output += "<div class='block_n2'>"+data.Bround+ "</div>";
     output += "<div class='block_n2'>"+data.Ext+ "</div>";
-    output += "<div class='block_img'>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</div>";
+    if (window.navigator.connection.type == 'cellular'){
+        output += "<div class='block_img' onclick='testclick(this,\""+data.Img+"\")'>"+"onclick<br>image<br>view</div>";
+    }else{
+        output += "<div class='block_img'>"+"<img src='"+ data.Img+"' alt='"+data.Img+"'>"+"</div>";
+    }
     return output
 }
 
