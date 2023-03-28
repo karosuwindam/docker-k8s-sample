@@ -201,6 +201,13 @@ func (t *Bme280) Test() bool {
 }
 func (t *Bme280) Read() (int, int, int) {
 	buf := t.ReadByte(BME280_PRESS_MSB, 8)
+	tmp := 0
+	for _, bt := range buf {
+		tmp += int(bt)
+	}
+	if tmp == 0 {
+		return -1, -1, -1
+	}
 	press := int(buf[0])<<12 | int(buf[1])<<4 | int(buf[2])>>4
 	temp := int(buf[3])<<12 | int(buf[4])<<4 | int(buf[5])>>4
 	hum := int(buf[6])<<8 | int(buf[7])

@@ -1,4 +1,4 @@
-TAG = 0.13a
+TAG = 0.14
 DOCKER = docker
 NAME = bookserver2:31000/moni/dockeri2cmoni
 LABEL_NAME = "senser eijent"
@@ -15,6 +15,7 @@ DOCKERFILE_FOLDER = .
 
 all: build push
 create:
+	@echo "--- ${NAME} ${TAG} create ---"
 	@echo "--- create Dockerfile ---"
 	@cat Dockerfile_tmp | sed s/TAG/${TAG}/ | sed s/LABEL_NAME/${LABEL_NAME}/ | sed s/GO_VERSION/${GO_VERSION}/ > ${TARGET}
 build: create
