@@ -36,6 +36,17 @@ spec:
             name: caliber
             port:
               number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: caliber-web
+  namespace: caliber
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
   - host: caliber.bookserver.home
     http:
       paths:

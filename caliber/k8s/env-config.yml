@@ -4,7 +4,7 @@ metadata:
   name: caliber-env
   namespace: caliber
 data:
-  PUID: "1000"
-  PGID: "1000"
+  PUID: "65534"
+  PGID: "65534"
   TZ: "Asia/Tokyo"
  
