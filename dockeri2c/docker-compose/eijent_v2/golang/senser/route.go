@@ -71,7 +71,7 @@ func jsonData(w http.ResponseWriter, r *http.Request) {
 	}
 	outdata = append(outdata, createAddJsonData("localhost", "cpu_tmp", tmpvaule.CpuTmp))
 	output, _ := json.Marshal(outdata)
-	fmt.Fprintf(w, "%s", string(output))
+	fmt.Fprintf(w, "%s\n", string(output))
 }
 
 //Healthチェックのデータ追加のフラグ
@@ -119,7 +119,7 @@ func health(w http.ResponseWriter, r *http.Request) {
 	}
 	tmpdata, _ := json.Marshal(outdata)
 	w.WriteHeader(code)
-	fmt.Fprintf(w, "%s", string(tmpdata))
+	fmt.Fprintf(w, "%s\n", string(tmpdata))
 }
 
 func createLineMetrics(name, types, value string) string {

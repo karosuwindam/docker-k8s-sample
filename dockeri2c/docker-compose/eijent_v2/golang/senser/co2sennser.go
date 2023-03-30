@@ -178,6 +178,7 @@ func (t *MhZ19c) Output() (int, int) {
 	co2ppm := int(data[2])*256 + int(data[3])
 	temp := int(data[4]) - 40
 	if (co2ppm >= CO2_MIN) && (co2ppm <= CO2_MAX) {
+		t.Message = "OK"
 		return co2ppm, temp
 	} else {
 		return -1, -1
