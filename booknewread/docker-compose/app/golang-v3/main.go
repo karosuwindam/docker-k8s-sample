@@ -64,11 +64,14 @@ func bookmarkFalderRead() (dirread.Dirtype, error) {
 	return fpass, nil
 }
 
-func bookmarkread(fpass *dirread.Dirtype) []string {
+func bookmarkread(list []string, fpass *dirread.Dirtype) []string {
 	data := []novel_chack.BookBark{}
+	for _, url := range list {
+		data = append(data, novel_chack.ReadBookBark(url)...)
+	}
 	if len(fpass.Data) != 0 {
-		data = []novel_chack.BookBark{}
 		for _, fd := range fpass.Data {
+			fmt.Println("read file", fd.Name)
 			pass := fd.RootPath + fd.Name
 			ncr := novel_chack.ReadBookBark(pass)
 			for _, tmpd := range ncr {
@@ -95,7 +98,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	bookmarklists := bookmarkread(&fpass)
+	bookmarklists := bookmarkread([]string{}, &fpass)
 	go func() { //ループによるチェックスタート
 		fmt.Println("start new book data count")
 		count := 0
@@ -150,6 +153,8 @@ func main() {
 			if ForLoop {
 				break
 			}
+			fpass, _ := bookmarkFalderRead()
+			list = bookmarkread(list, &fpass)
 			fmt.Println("reload novel data")
 		}
 		log.Println("novel loop end")
