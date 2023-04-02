@@ -29,7 +29,7 @@ spec:
         - name: prometheus2
           # image: prom/prometheus:v2.24.1
           # image: prom/prometheus:v2.35.0
-          image: prom/prometheus:v2.42.0
+          image: prom/prometheus:v2.43.0
           imagePullPolicy: IfNotPresent
           #/bin/prometheus
           #-config.file=/etc/prometheus/prometheus.yml

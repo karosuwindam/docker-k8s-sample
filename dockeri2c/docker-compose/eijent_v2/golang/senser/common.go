@@ -70,6 +70,8 @@ var SennserDataValue SenserValue = SenserValue{
 }
 
 var i2cmu sync.Mutex
+var gpiomu sync.Mutex
+var serialmu sync.Mutex
 
 var resetFlagData ResetFlag = ResetFlag{}
 
@@ -87,12 +89,15 @@ func SennserSetup() {
 	//sriale
 	go func() {
 		for i := 0; i < 3; i++ {
+			serialmu.Lock()
 			if !SennserData.CO2Sensor_data.Init(SRIAL_PORT) {
+				serialmu.Unlock()
 				fmt.Printf("Count:%v Srical Error for MH-Z19C\n", i+1)
 				if "open "+SRIAL_PORT+": permission denied" == SennserData.CO2Sensor_data.Message {
 					break
 				}
 			} else {
+				serialmu.Unlock()
 				break
 			}
 			time.Sleep(500 * time.Millisecond)
@@ -116,6 +121,7 @@ func SennserSetup() {
 					tmpzero = append(tmpzero, tmp)
 					time.Sleep(GYRO_SLEEP_TIME)
 				}
+				i2cmu.Unlock()
 				zeromma8452qdata.Mu.Lock()
 				zeromma8452qdata.X = 0
 				zeromma8452qdata.Y = 0
@@ -126,7 +132,6 @@ func SennserSetup() {
 					zeromma8452qdata.Z = (zeromma8452qdata.Z*float64(i) + tmp.Z) / (float64(i) + 1)
 				}
 				zeromma8452qdata.Mu.Unlock()
-				i2cmu.Unlock()
 			}
 			mma <- true
 		}()
@@ -150,9 +155,11 @@ func SennserSetup() {
 	}()
 	//GPIO
 	go func() {
+		gpiomu.Lock()
 		if !SennserData.DhtSenser_data.Init(DHT_GPIO) {
 			fmt.Println("GPIO not for DHT Senser")
 		}
+		gpiomu.Unlock()
 		ch3 <- true
 	}()
 	<-ch1
@@ -249,39 +256,64 @@ func SenserRead() {
 	}
 	go func() { //ch1
 		if SennserData.Bme280_data.Flag {
-			i2cmu.Lock()
-			press, temp, hum := SennserData.Bme280_data.ReadData()
-			i2cmu.Unlock()
-			SennserDataValue.Mu.Lock()
-			SennserDataValue.Bme280.Press = strconv.FormatFloat(press, 'f', 2, 64)
-			SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
-			SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
-			SennserDataValue.Mu.Unlock()
+			for i := 0; i < 2; i++ {
+				i2cmu.Lock()
+				press, temp, hum := SennserData.Bme280_data.ReadData()
+				i2cmu.Unlock()
+				if press == temp && temp == hum && hum == -1 {
+					SennserData.Bme280_data.Message = "Read Error Bm280"
+					time.Sleep(time.Microsecond * 100)
+				} else {
+					SennserDataValue.Mu.Lock()
+					SennserDataValue.Bme280.Press = strconv.FormatFloat(press, 'f', 2, 64)
+					SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
+					SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
+					SennserDataValue.Mu.Unlock()
+					break
+				}
+			}
+
 		}
 		ch <- true
 	}()
 	go func() { //ch2
 		if SennserData.Am2320_data.Flag {
-			i2cmu.Lock()
-			hum, temp := SennserData.Am2320_data.Read()
-			i2cmu.Unlock()
-			if hum != -1 && temp != -1 {
-				SennserDataValue.Mu.Lock()
-				SennserDataValue.Am2320.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
-				SennserDataValue.Am2320.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
-				SennserDataValue.Mu.Unlock()
+			for i := 0; i < 2; i++ {
+				i2cmu.Lock()
+				hum, temp := SennserData.Am2320_data.Read()
+				i2cmu.Unlock()
+				if hum != -1 && temp != -1 {
+					SennserDataValue.Mu.Lock()
+					SennserDataValue.Am2320.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
+					SennserDataValue.Am2320.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
+					SennserDataValue.Mu.Unlock()
+					break
+				} else {
+					fmt.Println("reread AM2320")
+					time.Sleep(time.Microsecond * 100)
+				}
 			}
+
 		}
 		ch <- true
 	}()
 	go func() { //ch3
 		if SennserData.CO2Sensor_data.Flag {
-			co2, temp := SennserData.CO2Sensor_data.Read()
-			if co2 > 0 {
-				SennserDataValue.Mu.Lock()
-				SennserDataValue.CO2.Co2 = strconv.Itoa(co2)
-				SennserDataValue.CO2.Temp = strconv.Itoa(temp)
-				SennserDataValue.Mu.Unlock()
+			for i := 0; i < 2; i++ {
+				serialmu.Lock()
+				co2, temp := SennserData.CO2Sensor_data.Read()
+				serialmu.Unlock()
+				if co2 > 0 {
+					SennserDataValue.Mu.Lock()
+					SennserDataValue.CO2.Co2 = strconv.Itoa(co2)
+					SennserDataValue.CO2.Temp = strconv.Itoa(temp)
+					SennserDataValue.Mu.Unlock()
+					break
+				} else {
+					fmt.Println("reread Co2Sensor")
+					time.Sleep(time.Microsecond * 100)
+
+				}
 			}
 		}
 		ch <- true
@@ -300,12 +332,20 @@ func SenserRead() {
 	}()
 	go func() { //ch5
 		if SennserData.DhtSenser_data.Flag {
-			hum, temp := SennserData.DhtSenser_data.Read()
-			if hum != -1 && temp != -1 {
-				SennserDataValue.Mu.Lock()
-				SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
-				SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
-				SennserDataValue.Mu.Unlock()
+			for i := 0; i < 2; i++ {
+				gpiomu.Lock()
+				hum, temp := SennserData.DhtSenser_data.Read()
+				gpiomu.Unlock()
+				if hum != -1 && temp != -1 {
+					SennserDataValue.Mu.Lock()
+					SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
+					SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
+					SennserDataValue.Mu.Unlock()
+					break
+				} else {
+					fmt.Println("reread DhtSenser")
+					time.Sleep(time.Microsecond * 100)
+				}
 			}
 		}
 		ch <- true
