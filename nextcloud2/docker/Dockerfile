@@ -1,6 +1,6 @@
 FROM nextcloud:TAG
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="24.0.5"
+LABEL version="26.0.0"
 LABEL arch="arm"
 LABEL name="nextcloud"
 # RUN apk add --no-cache --virtual smbclient 

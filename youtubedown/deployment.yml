@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: youtube-down
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtubedown
+  namespace: youtube-down
+spec:
+  selector:
+    matchLabels:
+      app: youtubedown
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: youtubedown
+      annotations:
+        podinfo: "YouTubeのURLからmp3を取り出すもの"
+    spec:
+      containers:
+      - name: youtubedown
+        image: bookserver2:31000/tool/youtubedown:0.1.0
+        imagePullPolicy: IfNotPresent
+        # imagePullPolicy: Always
+        env:
+          - name: TZ
+            value: 'Asia/Tokyo'
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - mountPath: /app/download
+            name: youtubedown-storage
+      volumes:
+        - name: youtubedown-storage
+          persistentVolumeClaim:
+            claimName: youtubedown-pvc-smb-music
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: smb.csi.k8s.io
+  name: youtubedown-pv-smb-music
+spec:
+  capacity:
+    storage: 1000Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: youtubedown-smb-music
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - uid=1000
+    - gid=1000
+    - noperm
+    - mfsymlinks
+    - cache=strict
+    - noserverino  # required to prevent data corruption
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    # volumeHandle format: {smb-server-address}#{sub-dir-name}#{share-name}
+    # make sure this value is unique for every share in the cluster
+    volumeHandle: smb-server.default.svc.cluster.local/music_down##
+    volumeAttributes:
+      # source: "//smb-server.default.svc.cluster.local/share"
+      source: "//192.168.0.6/music/download"
+    nodeStageSecretRef:
+      name: smbcreds
+      namespace: youtube-down
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: youtubedown-pvc-smb-music
+  namespace: youtube-down
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1000Gi
+  storageClassName: youtubedown-smb-music
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: youtubedown-service
+  namespace: youtube-down
+spec:
+  selector:
+    app: youtubedown
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: youtubedown-ingress
+  namespace: youtube-down
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: youtubedown.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: youtubedown-service
+            port:
+              number: 8080
