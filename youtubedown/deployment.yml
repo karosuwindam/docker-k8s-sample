@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: youtubedown
-        image: bookserver2:31000/tool/youtubedown:0.3.3
+        image: bookserver2:31000/tool/youtubedown:0.3.4
         imagePullPolicy: IfNotPresent
         # imagePullPolicy: Always
         env:
