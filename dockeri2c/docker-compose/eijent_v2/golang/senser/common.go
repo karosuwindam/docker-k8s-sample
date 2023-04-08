@@ -13,7 +13,17 @@ var (
 	SRIAL_PORT      = "/dev/ttyS0"
 	DHT_GPIO        = 12
 	GYRO_SLEEP_TIME = time.Microsecond * 500
-	GYRO_COUNT_MAX  = 360
+	GYRO_COUNT_MAX  = 1000
+	ERROR_COUNT_MAX = 1000
+)
+
+const (
+	ERR_BME280    = 1 << 0
+	ERR_AM2320    = 1 << 1
+	ERR_CO2SENSOR = 1 << 2
+	ERR_TSL2561   = 1 << 3
+	ERR_DHTSENSER = 1 << 4
+	ERR_MM8452Q   = 1 << 5
 )
 
 type ResetFlag struct {
@@ -53,6 +63,16 @@ type TempMma8452q struct {
 	Data []ZeroMma8452q
 }
 
+type senserErrorCount struct {
+	Mu        sync.Mutex
+	Bme280    int
+	Am2320    int
+	CO2       int
+	Tsl2561   int
+	DhtSenser int
+	Mma8452q  int
+}
+
 var zeromma8452qdata ZeroMma8452q = ZeroMma8452q{
 	X: 0, Y: 0, Z: 0,
 }
@@ -74,6 +94,61 @@ var gpiomu sync.Mutex
 var serialmu sync.Mutex
 
 var resetFlagData ResetFlag = ResetFlag{}
+
+var errorCount senserErrorCount = senserErrorCount{
+	Bme280:    0,
+	Am2320:    0,
+	CO2:       0,
+	Tsl2561:   0,
+	DhtSenser: 0,
+	Mma8452q:  0,
+}
+
+func errorCountUP(count int) int {
+	output := 0
+	errorCount.Mu.Lock()
+	switch count {
+	case ERR_AM2320:
+		errorCount.Am2320++
+		output = errorCount.Am2320
+	case ERR_BME280:
+		errorCount.Bme280++
+		output = errorCount.Bme280
+	case ERR_CO2SENSOR:
+		errorCount.CO2++
+		output = errorCount.CO2
+	case ERR_TSL2561:
+		errorCount.Tsl2561++
+		output = errorCount.Tsl2561
+	case ERR_DHTSENSER:
+		errorCount.DhtSenser++
+		output = errorCount.DhtSenser
+	case ERR_MM8452Q:
+		errorCount.Mma8452q++
+		output = errorCount.Mma8452q
+	}
+	errorCount.Mu.Unlock()
+	return output
+}
+
+func errorCountReset(count int) {
+	errorCount.Mu.Lock()
+	switch count {
+	case ERR_AM2320:
+		errorCount.Am2320 = 0
+	case ERR_BME280:
+		errorCount.Bme280 = 0
+	case ERR_CO2SENSOR:
+		errorCount.CO2 = 0
+	case ERR_TSL2561:
+		errorCount.Tsl2561 = 0
+	case ERR_DHTSENSER:
+		errorCount.DhtSenser = 0
+	case ERR_MM8452Q:
+		errorCount.Mma8452q = 0
+	}
+	errorCount.Mu.Unlock()
+}
 
 func SennserSetup() {
 	ch1 := make(chan bool)
@@ -187,6 +262,8 @@ var tempMma8452q TempMma8452q = TempMma8452q{
 	Data: []ZeroMma8452q{},
 }
 
+var zeroCount int = 0
+
 // センサーの短時間読み取り
 func SenserMoveRead() {
 	if SennserData.Mma8452q_data.Flag {
@@ -207,6 +284,24 @@ func SenserMoveRead() {
 		}
 		tempMma8452q.Data = temparymma
 		tempMma8452q.Mu.Unlock()
+		if zeroCount > GYRO_COUNT_MAX {
+			tmpx := 0.0
+			tmpy := 0.0
+			tmpz := 0.0
+			for _, tmpdata := range temparymma {
+				tmpx += tmpdata.X
+				tmpy += tmpdata.Y
+				tmpz += tmpdata.Z
+			}
+			zeromma8452qdata.Mu.Lock()
+			zeromma8452qdata.X = tmpx / float64(len(temparymma))
+			zeromma8452qdata.Y = tmpy / float64(len(temparymma))
+			zeromma8452qdata.Z = tmpz / float64(len(temparymma))
+			zeromma8452qdata.Mu.Unlock()
+			zeroCount = 0
+		} else {
+			zeroCount++
+		}
 	}
 }
 
@@ -262,6 +357,10 @@ func SenserRead() {
 				i2cmu.Unlock()
 				if press == temp && temp == hum && hum == -1 {
 					SennserData.Bme280_data.Message = "Read Error Bm280"
+					if errorCountUP(ERR_BME280) > ERROR_COUNT_MAX {
+						SennserData.Bme280_data.Flag = false
+						break
+					}
 					time.Sleep(time.Microsecond * 100)
 				} else {
 					SennserDataValue.Mu.Lock()
@@ -269,6 +368,7 @@ func SenserRead() {
 					SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
 					SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
 					SennserDataValue.Mu.Unlock()
+					errorCountReset(ERR_BME280)
 					break
 				}
 			}
@@ -287,9 +387,14 @@ func SenserRead() {
 					SennserDataValue.Am2320.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
 					SennserDataValue.Am2320.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
 					SennserDataValue.Mu.Unlock()
+					errorCountReset(ERR_AM2320)
 					break
 				} else {
 					fmt.Println("reread AM2320")
+					if errorCountUP(ERR_AM2320) > ERROR_COUNT_MAX {
+						SennserData.Am2320_data.Flag = false
+						break
+					}
 					time.Sleep(time.Microsecond * 100)
 				}
 			}
@@ -308,9 +413,15 @@ func SenserRead() {
 					SennserDataValue.CO2.Co2 = strconv.Itoa(co2)
 					SennserDataValue.CO2.Temp = strconv.Itoa(temp)
 					SennserDataValue.Mu.Unlock()
+					errorCountReset(ERR_CO2SENSOR)
 					break
 				} else {
 					fmt.Println("reread Co2Sensor")
+					fmt.Println("reread AM2320")
+					if errorCountUP(ERR_CO2SENSOR) > ERROR_COUNT_MAX {
+						SennserData.CO2Sensor_data.Flag = false
+						break
+					}
 					time.Sleep(time.Microsecond * 100)
 
 				}
@@ -326,7 +437,7 @@ func SenserRead() {
 			SennserDataValue.Mu.Lock()
 			SennserDataValue.Tsl2561.Lux = strconv.Itoa(lux)
 			SennserDataValue.Mu.Unlock()
-
+			errorCountReset(ERR_TSL2561)
 		}
 		ch <- true
 	}()
@@ -341,9 +452,14 @@ func SenserRead() {
 					SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
 					SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
 					SennserDataValue.Mu.Unlock()
+					errorCountReset(ERR_DHTSENSER)
 					break
 				} else {
 					fmt.Println("reread DhtSenser")
+					if errorCountUP(ERR_DHTSENSER) > ERROR_COUNT_MAX {
+						SennserData.DhtSenser_data.Flag = false
+						break
+					}
 					time.Sleep(time.Microsecond * 100)
 				}
 			}

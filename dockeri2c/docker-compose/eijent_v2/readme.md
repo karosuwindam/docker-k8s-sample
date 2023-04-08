@@ -5,6 +5,8 @@ curl localhost:9140/reset -X POST
 ```
 
 ## 履歴
+* ver 0.14.2
+  * 読み取り動作がおかしい場合の処理
 * ver 0.14.1
   * CO2センサーのヘルスチェック
 * ver 0.14

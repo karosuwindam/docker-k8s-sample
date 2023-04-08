@@ -10,7 +10,7 @@ ADD ./ ./
 RUN go build .
 FROM multiarch/ubuntu-core:armhf-bionic
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.14.1"
+LABEL version="0.14.2"
 LABEL name="senser eijent"
 LABEL go_version="1.18.2"
 RUN apt-get update && \

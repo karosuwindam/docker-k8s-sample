@@ -288,5 +288,8 @@ func (t *Bme280) ReadData() (float64, float64, float64) {
 	c_tmp, t_fine := t.Calib_Temp(temp)
 	c_press := t.Calib_Press(press, t_fine)
 	c_hum := t.Calib_Hum(hum, t_fine)
+	if c_hum <= 0 {
+		return -1, -1, -1
+	}
 	return c_press, c_tmp, c_hum
 }
