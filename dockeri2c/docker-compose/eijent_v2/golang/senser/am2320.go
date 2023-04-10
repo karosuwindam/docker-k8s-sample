@@ -99,10 +99,13 @@ func (t *Am2320) Read() (float64, float64) {
 	_, err = i2c.Read(buf)
 	if err != nil {
 		t.Message = err.Error()
-		// return -1, -1
+		return -1, -1
 	}
 	hum := float64((uint(buf[2])<<8)|uint(buf[3])) / 10 //湿度
 	tmp := float64((uint(buf[4])<<8)|uint(buf[5])) / 10 //温度
+	if hum == 0 {
+		return -1, -1
+	}
 	t.Message = "OK"
 	return hum, tmp
 }
