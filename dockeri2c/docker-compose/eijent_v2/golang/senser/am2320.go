@@ -103,7 +103,7 @@ func (t *Am2320) Read() (float64, float64) {
 	}
 	hum := float64((uint(buf[2])<<8)|uint(buf[3])) / 10 //湿度
 	tmp := float64((uint(buf[4])<<8)|uint(buf[5])) / 10 //温度
-	if hum == 0 {
+	if hum == 0 || tmp < -40 || tmp > 80 {
 		return -1, -1
 	}
 	t.Message = "OK"

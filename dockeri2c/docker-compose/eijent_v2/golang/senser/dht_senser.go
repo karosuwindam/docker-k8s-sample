@@ -79,6 +79,9 @@ func (t *DhtSenser) Read() (float64, float64) {
 	}
 	hum := float64(humidity)
 	tmp := float64(temperature)
+	if tmp < -40 || tmp > 80 {
+		return -1, -1
+	}
 	t.Message = "OK"
 	return hum, tmp
 }
