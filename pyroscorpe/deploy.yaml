@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyroscorpe
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      app: pyroscorpe
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pyroscorpe
+      annotations:
+        podinfo: "プロファイルを解析するためのツール"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      containers:
+      - name: pyroscorpe
+        image: pyroscope/pyroscope:0.37.2
+        imagePullPolicy: IfNotPresent
+        # imagePullPolicy: Always
+        env:
+          - name: TZ
+            value: 'Asia/Tokyo'
+        args:
+          - "server"
+        ports:
+        - containerPort: 4040
+        resources:
+          limits:
+            cpu: 1
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        volumeMounts:
+          - mountPath: /var/lib/pyroscope
+            name: pyroscorpe-storage
+      volumes:
+        - name: pyroscorpe-storage
+          persistentVolumeClaim:
+            claimName: pyroscorpe-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pyroscorpe-service
+  namespace: gf-space
+spec:
+  selector:
+    app: pyroscorpe
+  ports:
+    - port: 4040
+      targetPort: 4040
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pyroscorpe-ingress
+  namespace: gf-space
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: pyroscorpe.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: pyroscorpe-service
+            port:
+              number: 4040
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "pyroscorpe-pv-volume"
+  namespace: gf-space
+spec:
+  storageClassName: "pyroscorpe"
+  persistentVolumeReclaimPolicy: Retain
+  capacity:
+    storage: "5Gi"
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: k8s-worker-2
+    path: /home/pi/usb/usb1/nfs/kubernetes/pyroscorpe
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pyroscorpe-pv-claim
+  namespace: gf-space
+spec:
+  storageClassName: pyroscorpe
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
