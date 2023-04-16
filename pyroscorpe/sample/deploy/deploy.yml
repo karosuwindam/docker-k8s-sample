@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyroscorpe-sample
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      app: pyroscorpe-sample
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pyroscorpe-sample
+      annotations:
+        podinfo: "プロファイルを解析するための動作サンプル"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      containers:
+      - name: pyroscorpe-sample
+        image: bookserver2:31000/tool/pyroscorpe-sample:0.0.1
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: TZ
+            value: 'Asia/Tokyo'
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
