@@ -34,12 +34,14 @@ spec:
             value: 'Asia/Tokyo'
         args:
           - "server"
+          - "--retention=168h"
+          - "--exemplars-retention=24h"
         ports:
         - containerPort: 4040
         resources:
           limits:
             cpu: 1
-            memory: 512Mi
+            memory: 1Gi
           requests:
             cpu: 200m
             memory: 256Mi
