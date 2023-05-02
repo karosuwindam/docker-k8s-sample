@@ -15,7 +15,7 @@ type filedata struct {
 }
 
 // Dirtype implements buffering for an []filedata object.
-//Dirtypeは[]filedata objectをバッファする必要あり
+// Dirtypeは[]filedata objectをバッファする必要あり
 type Dirtype struct {
 	path  string
 	Data  []filedata

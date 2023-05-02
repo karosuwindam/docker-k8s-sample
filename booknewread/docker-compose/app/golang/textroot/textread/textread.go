@@ -1,9 +1,15 @@
-package main
+package textread
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
+)
+
+const (
+	HTMLPASS = "./html"
 )
 
 //ファイルチェック
@@ -83,4 +89,25 @@ func ReadOther(path string) []byte {
 		buffer = append(buffer, buf[:n]...)
 	}
 	return buffer
+}
+
+func ViewHtml(w http.ResponseWriter, r *http.Request) {
+	upath := r.URL.Path
+	tmp := map[string]string{}
+	if !strings.HasPrefix(upath, "/") {
+		upath = "/" + upath
+		r.URL.Path = upath
+	}
+	if upath == "/" {
+		upath += "index.html"
+	}
+	if !Exists(HTMLPASS + upath) {
+		w.WriteHeader(http.StatusNotFound)
+		tmp["urlpath"] = r.URL.Path
+		fmt.Fprint(w, ConvertData(ReadHtml(HTMLPASS+"/404.html"), tmp))
+		return
+	} else {
+		fmt.Fprint(w, ConvertData(ReadHtml(HTMLPASS+upath), tmp))
+	}
+
 }

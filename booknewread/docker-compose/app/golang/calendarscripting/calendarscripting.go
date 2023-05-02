@@ -1,8 +1,9 @@
-package main
+package calendarscripting
 
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -45,6 +46,8 @@ func FilterComicList(data []BookList, lastday int) []BookList {
 	return output
 }
 
+var readmutex sync.Mutex
+
 func GetComicList(year, month string, booktype int) []BookList {
 	var output []BookList
 	mounth_tmp := month
@@ -61,7 +64,9 @@ func GetComicList(year, month string, booktype int) []BookList {
 	if (year != "") && (month != "") {
 		url += "?year=" + year + "&month=" + month
 	}
+	readmutex.Lock()
 	doc, err := goquery.NewDocument(url)
+	readmutex.Unlock()
 	if err != nil {
 		fmt.Println(err.Error())
 		return output
