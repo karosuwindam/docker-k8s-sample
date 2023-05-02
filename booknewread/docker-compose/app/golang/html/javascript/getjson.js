@@ -134,7 +134,7 @@ function statusckJSON(output){
         // document.getElementById(output).innerHTML = data;
       }
     };
-    req.open("GET","/status",true);
+    req.open("GET","/v1/status",true);
     req.send();
 
 }
@@ -150,7 +150,7 @@ function serchgetJSON(output){
         // document.getElementById(output).innerHTML = data;
       }
     };
-    req.open("GET","/json",true);
+    req.open("GET","/v1/json",true);
     req.send();
 }
 function getnobleJSON(output){
@@ -165,7 +165,7 @@ function getnobleJSON(output){
         // document.getElementById(output).innerHTML = data;
       }
     };
-    req.open("GET","/jsonnobel",true);
+    req.open("GET","/v1/jsonnobel",true);
     req.send();
 }
 function getnewJSON(output,page){
@@ -196,7 +196,7 @@ function getnewJSON(output,page){
         // document.getElementById(output).innerHTML = data;
       }
     };
-    req.open("POST","/jsonb",true);
+    req.open("POST","/v1/jsonb",true);
     req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     var str = "page="+page
     req.send(str);

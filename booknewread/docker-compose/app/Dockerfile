@@ -1,13 +1,13 @@
 FROM golang:1.18.2-buster As builder
 #RUN apt update && apt upgrade -y
 WORKDIR /app
-ADD ./golang-v3 .
+ADD ./golang .
 RUN go build -o app
 
 
 FROM debian:unstable-slim
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.15.0"
+LABEL version="0.16.0"
 LABEL name="booknewread"
 # RUN <<EOF
 # apt-get update
@@ -23,10 +23,11 @@ RUN apt-get update && \
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY ./golang-v3/html html
-COPY ./golang-v3/run.sh ./
-COPY ./golang-v3/bookmark bookmark
+COPY ./golang/html html
+COPY ./golang/run.sh ./
+COPY ./golang/bookmark bookmark
 COPY --from=builder /app/app /app
+ENV PYROSCOPE_FLAG=FALSE
 RUN chmod +x run.sh
 
 CMD ["./run.sh"]

@@ -4,6 +4,7 @@ import (
 	"booknewread/dirread"
 	"booknewread/loop"
 	"booknewread/novel_chack"
+	"booknewread/pyroscopesetup"
 	"booknewread/webpage"
 	"booknewread/webserver"
 	"context"
@@ -89,6 +90,9 @@ func bookmarkread(list []string, fpass *dirread.Dirtype) []string {
 }
 
 func main() {
+	pyro := pyroscopesetup.Setup()
+	pyroscopesetup.Add("base", "v1")
+	pyro.Run()
 	ForLoop = false
 	chbook := make(chan bool)
 	ctx := context.Background()

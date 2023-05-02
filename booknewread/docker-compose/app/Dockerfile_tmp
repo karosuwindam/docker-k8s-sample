@@ -16,7 +16,7 @@ ENV PATH $PATH:/usr/local/go/bin
 #     go get -u github.com/go-sql-driver/mysql &&\
 #     go get -u github.com/mattn/go-sqlite3
 WORKDIR /app
-ADD ./golang-v3 .
+ADD ./golang .
 RUN go build -o app
 # FROM multiarch/ubuntu-core:armhf-bionic
 # FROM balenalib/raspberrypi3-debian
@@ -34,10 +34,10 @@ RUN apt-get update && \
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY ./golang-v3/bookmarks.html ./
-COPY ./golang-v3/html html
-COPY ./golang-v3/bookmark bookmark
-COPY ./golang-v3/run.sh ./
+COPY ./golang/bookmarks.html ./
+COPY ./golang/html html
+COPY ./golang/bookmark bookmark
+COPY ./golang/run.sh ./
 COPY --from=builder /app/app /app
 RUN chmod +x run.sh
 # COPY ./app /app
