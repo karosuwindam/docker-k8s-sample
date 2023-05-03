@@ -51,12 +51,12 @@ ErrCK:
 			break ErrCK
 		}
 	}
-	return nil
+	return Shutdown()
 }
 
 // シャットダウン中の処理
-func Shutdown() {
-
+func Shutdown() error {
+	return nil
 }
 
 func main() {
@@ -67,6 +67,6 @@ func main() {
 		os.Exit(1)
 
 	}
-	Shutdown()
+
 	fmt.Println("end")
 }

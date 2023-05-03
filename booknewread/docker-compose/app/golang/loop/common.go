@@ -4,6 +4,7 @@ import (
 	"book-newread/config"
 	"book-newread/loop/dirread"
 	"book-newread/novel_chack"
+	"book-newread/novelchack"
 	"context"
 	"errors"
 	"fmt"
@@ -61,7 +62,7 @@ func ResetRead(flag RESET_FLAG) bool {
 }
 
 type Listdata struct { //出力について
-	data     []novel_chack.List
+	data     []novelchack.List
 	listdata []BListData
 	status   Status
 	count    int
@@ -196,7 +197,7 @@ func Setup(cfg *config.Config) error {
 	bookmarkfalder = cfg.Loop.BookmarkF
 
 	booklistdata = make([]BListData, 3)
-	listtemp.data = []novel_chack.List{}
+	listtemp.data = []novelchack.List{}
 	listtemp.listdata = make([]BListData, 3)
 	listtemp.status = Status{
 		BookNowTIme:     time.Now(),

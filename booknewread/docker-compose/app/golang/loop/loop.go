@@ -2,7 +2,7 @@ package loop
 
 import (
 	"book-newread/calendarscripting"
-	"book-newread/novel_chack"
+	"book-newread/novelchack"
 	"context"
 	"fmt"
 	"sort"
@@ -26,13 +26,15 @@ var maxaccess int  //一つのサイトに対してアクセスできる限界�
 var maxbackday int //今日を基準に表示する前日数
 
 // 対象のURLから小説の更新確認
-func (t *Listdata) chackurl(url string) novel_chack.List {
-	if tmp, err := novel_chack.ChackUrldata(url); err != nil {
-		time.Sleep(time.Microsecond * 100)
-		tmp, err = novel_chack.ChackUrldata(url)
-		return tmp
+func (t *Listdata) chackurl(url string) novelchack.List {
+	if t, err := novelchack.ChackUrlType(url); err != nil {
+		return novelchack.List{}
 	} else {
-		return tmp
+		if tmp, err := novelchack.ChackUrlData(t, url); err != nil {
+			return tmp
+		} else {
+			return tmp
+		}
 	}
 }
 
@@ -59,7 +61,7 @@ func nobelLoopStart(urlLists []string) {
 	dataStatusSet(NOBEL_SELECT, "Reload")
 	now := time.Now()
 	listtemp.count = 1
-	novel_chack.Setup()
+	novelchack.Setup()
 	var wg sync.WaitGroup
 	for i, url := range urlLists {
 		wg.Add(1)
@@ -77,7 +79,7 @@ func nobelLoopStart(urlLists []string) {
 	fmt.Println("read novel data end", (endtime.Sub(now)).Seconds(), "s")
 }
 
-func addNovelChack(data novel_chack.List) {
+func addNovelChack(data novelchack.List) {
 	listtemp_mux.Lock()
 	listtemp.count++
 	listtemp_mux.Unlock()
@@ -111,7 +113,7 @@ func ReadListCount() int {
 	return count
 }
 
-func ReadNListData() []novel_chack.List {
+func ReadNListData() []novelchack.List {
 	listtemp_mux.Lock()
 	tmp := listtemp.data
 	listtemp_mux.Unlock()
