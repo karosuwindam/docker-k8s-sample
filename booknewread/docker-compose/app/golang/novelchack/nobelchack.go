@@ -1,4 +1,4 @@
-package novel_chack
+package novelchack
 
 import (
 	"errors"
@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -36,130 +35,156 @@ const (
 	BASE_URL_ALPHAS   = "https://www.alphapolis.co.jp"
 )
 
-type Channel struct {
-	Ch_Narou    sync.Mutex //ノクターン
-	Ch_Kakuyomu sync.Mutex //カクヨム
-	Ch_Nocku    sync.Mutex //なろう
-	Ch_Alpha    sync.Mutex //アルファポリス
-	flag        bool
-}
+const (
+	DNS_NAROU    = "ncode.syosetu.com"
+	DNS_KAKUYOMU = "kakuyomu.jp"
+	DNS_NOCKU    = "novel18.syosetu.com"
+	DNS_ALPHA    = "alphapolis.co.jp"
+)
 
-var channel_data Channel
+type nobelWebType int
+
+const (
+	NAROU_WEB    nobelWebType = iota //なろう
+	KAKUYOMU_WEB                     //カクヨム
+	NNOCKU_WEB                       //ノクターン
+	ALPHA_WEB                        //アルファポリス
+	ATHOR_WEB
+)
+
+const MAX_CH int = 3
+
+var narou_ch chan string
+var kakuyomu_ch chan string
+var nnocku_ch chan string
+var alpha_ch chan string
 
 func Setup() {
-	channel_data = Channel{flag: true}
+	narou_ch = make(chan string, MAX_CH)
+	kakuyomu_ch = make(chan string, MAX_CH)
+	nnocku_ch = make(chan string, MAX_CH)
+	alpha_ch = make(chan string, MAX_CH)
 }
 
-func ChackUrldata(url string) (List, error) {
+func ChackUrlType(url string) (nobelWebType, error) {
+	ckDnsTmp := []string{
+		DNS_NAROU,
+		DNS_KAKUYOMU,
+		DNS_NOCKU,
+		DNS_ALPHA,
+	}
+	nobeltype := ATHOR_WEB
+	for i, dns := range ckDnsTmp {
+		if strings.Index(url, dns) > 0 {
+			nobeltype = nobelWebType(i)
+			break
+		}
+	}
+	if nobeltype == ATHOR_WEB {
+		return nobeltype, errors.New("Other URL Data:" + url)
+	}
+	return nobeltype, nil
+}
+
+func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 	var output List
-	if !channel_data.flag {
-		log.Println("not Setup")
-		return output, errors.New("not Setup")
-	}
-
-	if len(BASE_URL_NAROU)+1 < len(url) { //なろうのチェック
-		url_tmp := ""
-		if url[:len(BASE_URL_NAROU)] == BASE_URL_NAROU {
-			url_tmp = strings.Replace(url, "http", "https", 1)
-		} else if len(BASE_URL_NAROUS) <= len(url) {
-			if url[:len(BASE_URL_NAROUS)] == BASE_URL_NAROUS {
-				url_tmp = url
-			}
-		}
-		if url_tmp != "" {
-			channel_data.Ch_Narou.Lock()
-			data, err := getDocument(url)
-			channel_data.Ch_Narou.Unlock()
-			if err != nil {
-				fmt.Println(err.Error())
-				return output, err
+	var outerr error
+	switch nwt {
+	case NAROU_WEB:
+		for i := 0; i < 3; i++ {
+			if data, err := getDocument(url, narou_ch); err != nil {
+				log.Println(err)
+				outerr = err
 			} else {
-				return chackSyousetu(data), nil
+				outerr = nil
+				output = chackSyousetu(data)
+				break
 			}
+			time.Sleep(time.Microsecond * 100)
 		}
-	}
-	if len(BASE_URL_KAKUYOMU)+1 < len(url) { //カクヨムのチェック
-		if url[:len(BASE_URL_KAKUYOMU)] == BASE_URL_KAKUYOMU {
-			data, err := getKakuyomu(url)
-			if err != nil {
-				fmt.Println(err.Error())
-				return output, err
+	case KAKUYOMU_WEB:
+		for i := 0; i < 3; i++ {
+			if data, err := getKakuyomu(url, kakuyomu_ch); err != nil {
+				log.Println(err)
+				outerr = err
 			} else {
-				return chackKakuyomu(data), nil
+				outerr = nil
+				output = chackKakuyomu(data)
+				break
 			}
+			time.Sleep(time.Microsecond * 200)
 		}
-	}
-	if len(BASE_URL_NOCKU)+1 < len(url) { //ノクターンチェック
-		url_tmp := ""
-		if url[:len(BASE_URL_NOCKU)] == BASE_URL_NOCKU {
-			url_tmp = strings.Replace(url, "http", "https", 1)
-		} else if len(BASE_URL_NOCKUS) <= len(url) {
-			if url[:len(BASE_URL_NOCKUS)] == BASE_URL_NOCKUS {
-				url_tmp = url
-			}
-		}
-		if url_tmp != "" {
-			data, err := getNokutarn(url_tmp)
-			if err != nil {
-				fmt.Println(err.Error())
-				return output, err
+	case NNOCKU_WEB:
+		for i := 0; i < 3; i++ {
+			if data, err := getNokutarn(url, nnocku_ch); err != nil {
+				log.Println(err)
+				outerr = err
 			} else {
-				return chackNokutarn(data), nil
+				outerr = nil
+				output = chackNokutarn(data)
+				break
 			}
+			time.Sleep(time.Microsecond * 200)
 		}
-	}
-	if len(BASE_URL_ALPHA)+1 < len(url) { //アルファポリス
-		url_tmp := ""
-		if url[:len(BASE_URL_ALPHA)] == BASE_URL_ALPHA {
-			url_tmp = strings.Replace(url, "http", "https", 1)
-		} else if len(BASE_URL_ALPHAS) <= len(url) {
-			if url[:len(BASE_URL_ALPHAS)] == BASE_URL_ALPHAS {
-				url_tmp = url
-			}
-		}
-		if url_tmp != "" {
-			channel_data.Ch_Alpha.Lock()
-			data, err := getDocument(url_tmp)
-			channel_data.Ch_Alpha.Unlock()
-			if err != nil {
-				fmt.Println(err.Error())
-				return output, err
+	case ALPHA_WEB:
+		for i := 0; i < 3; i++ {
+			if data, err := getDocument(url, alpha_ch); err != nil {
+				log.Println(err)
+				outerr = err
 			} else {
-				return chackAlpha(data), nil
+				outerr = nil
+				output = chackAlpha(data)
+				break
 			}
+			time.Sleep(time.Microsecond * 200)
 		}
+	default:
+		return output, errors.New("not input type")
 	}
-
-	return output, nil
-
+	return output, outerr
 }
+
+// func Loop(ctx context.Context){
+// loop:
+// for{
+// 	select{
+// 	case <-ctx.Done():
+// 		break loop
+// 	case url:=<-narou_ch:
+// 	case url:=<-kakuyomu_ch:
+// 	case url:=<-nnocku_ch:
+// 	case url:=<-alpha_ch:
+// 	}
+// }
+// }
 
 // なろうの取得
 // アルファポリスの取得
-func getDocument(url string) (documentdata, error) {
+func getDocument(url string, ch chan string) (documentdata, error) {
 	var output documentdata
 	output.url = url
+	ch <- url
 	doc, err := goquery.NewDocument(url)
-	if err != nil {
-		return output, err
+	<-ch
+	if err == nil {
+		output.data = doc
 	}
-	output.data = doc
-	return output, nil
+	return output, err
 }
 
 // カクヨムの取得
-func getKakuyomu(urldata string) (documentdata, error) {
+func getKakuyomu(urldata string, ch chan string) (documentdata, error) {
 	var output documentdata
 	output.url = urldata
 
-	channel_data.Ch_Kakuyomu.Lock()
+	ch <- urldata
 	req, err := http.NewRequest(http.MethodGet, urldata, nil)
 	req.Header.Add("Accept", `text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8`)
 	req.Header.Add("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11`)
 	client := new(http.Client)
 	resp, err := client.Do(req)
-	channel_data.Ch_Kakuyomu.Unlock()
 
+	<-ch
 	if err != nil {
 		return output, err
 	}
@@ -173,18 +198,18 @@ func getKakuyomu(urldata string) (documentdata, error) {
 }
 
 // ノクターンノベルのゲット
-func getNokutarn(urldata string) (documentdata, error) {
+func getNokutarn(urldata string, ch chan string) (documentdata, error) {
 	var output documentdata
 	output.url = urldata
 
-	channel_data.Ch_Nocku.Lock()
+	ch <- urldata
 	req, err := http.NewRequest(http.MethodPost, urldata, nil)
 	if err != nil {
 		return output, err
 	}
 	req.Header.Set("Cookie", "over18=yes")
 	resp, err := http.DefaultClient.Do(req)
-	channel_data.Ch_Nocku.Unlock()
+	<-ch
 
 	if err != nil {
 		return output, err

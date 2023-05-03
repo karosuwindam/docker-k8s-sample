@@ -16,6 +16,7 @@ type TXTData struct {
 	Title []string `json:"title"` // タイトル
 }
 
+var apiname string = "text"
 var folder string
 var TXTFolder *dirread.Dirtype
 
