@@ -12,6 +12,7 @@ git clone https://github.com/karosuwindam/youtubedown.git
 ```
 
 ```
-kubectl -n jellyfin create secret generic smbcreds --from-literal username=USERNAME --from-literal password="PASSWORD"
-kubectl apply -f deployment.yml
+kubectl apply -f youtubedown/ns.yaml
+kubectl -n youtube-down create secret generic smbcreds --from-literal username=USERNAME --from-literal password="PASSWORD"
+kubectl apply -f youtubedown/deployment.yml
 ```
