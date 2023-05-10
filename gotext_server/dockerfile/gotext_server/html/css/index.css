@@ -1,0 +1,9 @@
+input[type="text"] {
+    width: 100%;
+    min-width: 400px;
+    font-size: 20
+}
+
+select {
+    font-size: 20
+}

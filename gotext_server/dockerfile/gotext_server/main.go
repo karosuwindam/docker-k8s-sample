@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"gocsvserver/api"
 	"gocsvserver/config"
+	"gocsvserver/textroot"
 	"gocsvserver/webserver"
 	"log"
 	"os"
@@ -17,12 +19,16 @@ func Config() (*webserver.Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := api.Setup(cfg); err != nil {
+		return nil, err
+	}
 	wcfg, err := webserver.NewSetup(cfg)
 	if err != nil {
 		return nil, err
 	}
 	//ハンドラー登録設定
-	// webserver.Config(wcfg, ,"")
+	webserver.Config(wcfg, api.Route, "/v1")
+	webserver.Config(wcfg, textroot.Route, "/")
 
 	return wcfg.NewServer()
 }
@@ -38,7 +44,7 @@ func Run() error {
 	} else {
 		go s.Run(ctx, errCh)
 	}
-	ctx.Done()
+	<-ctx.Done()
 	stop()
 ErrCK:
 	for {
