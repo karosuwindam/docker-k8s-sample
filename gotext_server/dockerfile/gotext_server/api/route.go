@@ -1,5 +1,18 @@
 package api
 
-import "gocsvserver/config"
+import (
+	"gocsvserver/api/text"
+	"gocsvserver/config"
+	"gocsvserver/webserver"
+)
 
-func Setup(cfg *config.Config) {}
+var Route []webserver.WebConfig = []webserver.WebConfig{}
+
+func Setup(cfg *config.Config) error {
+	if r, err := text.Setup(cfg); err != nil {
+		return err
+	} else {
+		Route = append(Route, r...)
+	}
+	return nil
+}
