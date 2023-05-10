@@ -24,6 +24,11 @@ spec:
                   operator: In
                   values:
                     - arm64
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
       containers:
       - name: pyroscorpe
         image: pyroscope/pyroscope:0.37.2

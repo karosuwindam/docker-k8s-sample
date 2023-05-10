@@ -8,7 +8,7 @@ RUN go build -o app
 
 FROM debian:11
 LABEL version="0.0.1"
-LABEL name="bookserver"
+LABEL name="gotext-server"
 LABEL goversion="1.18"
 RUN apt-get update && \
     apt-get upgrade -y && \
