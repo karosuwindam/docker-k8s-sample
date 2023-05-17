@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: gotext
-        image: bookserver2:31000/tool/gotext-server:0.0.1
+        image: bookserver2:31000/tool/gotext-server:0.0.2
         imagePullPolicy: IfNotPresent
         # imagePullPolicy: Always
         env:

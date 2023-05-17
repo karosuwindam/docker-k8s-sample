@@ -64,6 +64,7 @@ function viewdata() {
     var output = ""
     output += createList1()
     output += " "+createList2()
+    output += " " + "<input type=\"text\" name=\"search\" id=\"search\" onkeyup='searchTxt(this.value)'>"
     output += "<br>"+createList3()
     return output
 }
@@ -81,7 +82,7 @@ function createList1() {
 
 function createList2(){
     var output = ""
-    output += "<select name=\"quart\" id=\"quart\" onchange=\"changeList3(this.value)\">"
+    output += "<select name=\"quart\" id=\"quart\" onchange=\"clearText();changeList3(this.value,'')\">"
     for (var i=0;i<Quartlist[Nowyear].length;i++) {
         output += "<option value=\""+Quartlist[Nowyear][i]+"\">"+Quartlist[Nowyear][i]+"</option>"
     }
@@ -104,24 +105,33 @@ function changeList2(v) {
         option1.textContent = Quartlist[Nowyear][i]
         data.appendChild(option1)
     }
-    changeList3(Quartlist[Nowyear][0])
+    changeList3(Quartlist[Nowyear][0],"")
 
 }
 
-function changeList3(v) {
+function changeList3(v,keyword) {
     Nowquart = v
     var data = document.getElementById("title")
     while (0 < data.childNodes.length) {
         data.removeChild(data.childNodes[0]);
     }
-    
+    var nowcount = -1
     for (var i=0;i<Titlelist[Nowyear][Nowquart].length;i++) {
         const option1 = document.createElement('option');
-        option1.value = Titlelist[Nowyear][Nowquart][i]
-        option1.textContent = Titlelist[Nowyear][Nowquart][i]
-        data.appendChild(option1)
+        var tmpText = Titlelist[Nowyear][Nowquart][i]
+        if ((keyword == "") ||(tmpText.toUpperCase().indexOf(keyword.toUpperCase())>0)){
+            if (nowcount < 0) {
+                nowcount =i
+            }
+            option1.value = tmpText
+            option1.textContent = tmpText
+            data.appendChild(option1)
+        }
     }
-    titleOut(Titlelist[Nowyear][Nowquart][0])
+    if (nowcount < 0){
+        nowcount = 0
+    }
+    titleOut(Titlelist[Nowyear][Nowquart][nowcount])
 }
 function createList3() {
     var output = ""
@@ -136,4 +146,13 @@ function createList3() {
 function titleOut(str) {
     var data = document.getElementById("titledata")
     data.value = str
+}
+
+function clearText() {
+    document.getElementById("search").value = ""
+}
+
+function searchTxt(keyword) {
+    changeList3(Nowquart,keyword)
+    // console.log(keyword)
 }
