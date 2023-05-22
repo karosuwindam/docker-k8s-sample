@@ -19,7 +19,7 @@ spec:
       - name: nextcloud2
         # image: arm32v7/nextcloud
         # image: nextcloud_app
-        image: bookserver2:31000/karosu/nextcloud:25.0.3
+        image: bookserver2:31000/karosu/nextcloud:26.0.0
         # image: nextcloud:24.0.0
         imagePullPolicy: IfNotPresent
         ports:
