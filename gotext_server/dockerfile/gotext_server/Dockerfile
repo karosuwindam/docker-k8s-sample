@@ -1,4 +1,4 @@
-FROM golang:1.18 As builder
+FROM golang:1.19 As builder
 
 WORKDIR /app
 RUN apt-get update && \
@@ -7,9 +7,9 @@ ADD ./ .
 RUN go build -o app
 
 FROM debian:11
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL name="gotext-server"
-LABEL goversion="1.18"
+LABEL goversion="1.19"
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y locales locales-all curl poppler-utils && \

@@ -119,7 +119,7 @@ function changeList3(v,keyword) {
     for (var i=0;i<Titlelist[Nowyear][Nowquart].length;i++) {
         const option1 = document.createElement('option');
         var tmpText = Titlelist[Nowyear][Nowquart][i]
-        if ((keyword == "") ||(tmpText.toUpperCase().indexOf(keyword.toUpperCase())>0)){
+        if ((keyword == "") ||(tmpText.toUpperCase().indexOf(keyword.toUpperCase())!=-1)){
             if (nowcount < 0) {
                 nowcount =i
             }

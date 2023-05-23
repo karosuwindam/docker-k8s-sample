@@ -1,8 +1,8 @@
-TAG = 0.0.2
+TAG = 0.0.3
 DOCKER = docker
 NAME = bookserver2:31000/tool/gotext-server
 APPNAME = "gotext-server"
-GOVERSION = "1.18"
+GOVERSION = "1.19"
 TEMPLATE = ./Dockerfile_tmp
 BASE_CONTANER = "debian:11"
 
@@ -14,7 +14,6 @@ BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 TEMPLATE = ./gotext_server/Dockerfile_tmp
 TARGET = Dockerfile
 TARGET_FILE = ./gotext_server
-GO_VERSION = 1.18.2
 ARCH = armv6l
 OPT = "--privileged"
 
