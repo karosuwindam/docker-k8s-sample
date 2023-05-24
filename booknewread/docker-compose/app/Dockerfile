@@ -1,4 +1,4 @@
-FROM golang:1.18.2-buster As builder
+FROM golang:1.19.9-buster As builder
 #RUN apt update && apt upgrade -y
 WORKDIR /app
 ADD ./golang .
