@@ -34,12 +34,16 @@ const (
 	BASE_URL_NOCKUS   = "https://novel18.syosetu.com"
 	BASE_URL_ALPHA    = "http://www.alphapolis.co.jp"
 	BASE_URL_ALPHAS   = "https://www.alphapolis.co.jp"
+	NAROU_CK_SLEEP    = time.Millisecond * 200 //100ms なろう待ち時間
+	KAKUYOMU_CK_SLEEP = time.Millisecond * 200 //100ms カクヨム待ち時間
+	NOCKU_CK_SLEEP    = time.Millisecond * 200 //100ms ノクターン待ち時間
+	ALPHA_CK_SLEEP    = time.Millisecond * 200 //100ms アルファポリス待ち時間
 )
 
 type Channel struct {
-	Ch_Narou    sync.Mutex //ノクターン
+	Ch_Narou    sync.Mutex //なろう
 	Ch_Kakuyomu sync.Mutex //カクヨム
-	Ch_Nocku    sync.Mutex //なろう
+	Ch_Nocku    sync.Mutex //ノクターン
 	Ch_Alpha    sync.Mutex //アルファポリス
 	flag        bool
 }
@@ -52,6 +56,7 @@ func Setup() {
 
 func ChackUrldata(url string) (List, error) {
 	var output List
+	var wp sync.WaitGroup
 	if !channel_data.flag {
 		log.Println("not Setup")
 		return output, errors.New("not Setup")
@@ -69,7 +74,12 @@ func ChackUrldata(url string) (List, error) {
 		if url_tmp != "" {
 			channel_data.Ch_Narou.Lock()
 			data, err := getDocument(url)
-			channel_data.Ch_Narou.Unlock()
+			wp.Add(1)
+			go func() {
+				defer wp.Done()
+				time.Sleep(NAROU_CK_SLEEP)
+				channel_data.Ch_Narou.Unlock()
+			}()
 			if err != nil {
 				fmt.Println(err.Error())
 				return output, err
@@ -120,7 +130,12 @@ func ChackUrldata(url string) (List, error) {
 		if url_tmp != "" {
 			channel_data.Ch_Alpha.Lock()
 			data, err := getDocument(url_tmp)
-			channel_data.Ch_Alpha.Unlock()
+			wp.Add(1)
+			go func() {
+				defer wp.Done()
+				time.Sleep(ALPHA_CK_SLEEP)
+				channel_data.Ch_Alpha.Unlock()
+			}()
 			if err != nil {
 				fmt.Println(err.Error())
 				return output, err
@@ -129,6 +144,7 @@ func ChackUrldata(url string) (List, error) {
 			}
 		}
 	}
+	wp.Wait()
 
 	return output, nil
 
@@ -150,6 +166,7 @@ func getDocument(url string) (documentdata, error) {
 // カクヨムの取得
 func getKakuyomu(urldata string) (documentdata, error) {
 	var output documentdata
+	var wp sync.WaitGroup
 	output.url = urldata
 
 	channel_data.Ch_Kakuyomu.Lock()
@@ -158,7 +175,12 @@ func getKakuyomu(urldata string) (documentdata, error) {
 	req.Header.Add("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11`)
 	client := new(http.Client)
 	resp, err := client.Do(req)
-	channel_data.Ch_Kakuyomu.Unlock()
+	wp.Add(1)
+	go func() {
+		defer wp.Done()
+		time.Sleep(KAKUYOMU_CK_SLEEP)
+		channel_data.Ch_Kakuyomu.Unlock()
+	}()
 
 	if err != nil {
 		return output, err
@@ -169,12 +191,14 @@ func getKakuyomu(urldata string) (documentdata, error) {
 		return output, err
 	}
 	output.data = doc
+	wp.Wait()
 	return output, nil
 }
 
 // ノクターンノベルのゲット
 func getNokutarn(urldata string) (documentdata, error) {
 	var output documentdata
+	var wp sync.WaitGroup
 	output.url = urldata
 
 	channel_data.Ch_Nocku.Lock()
@@ -184,7 +208,12 @@ func getNokutarn(urldata string) (documentdata, error) {
 	}
 	req.Header.Set("Cookie", "over18=yes")
 	resp, err := http.DefaultClient.Do(req)
-	channel_data.Ch_Nocku.Unlock()
+	wp.Add(1)
+	go func() {
+		defer wp.Done()
+		time.Sleep(NOCKU_CK_SLEEP)
+		channel_data.Ch_Nocku.Unlock()
+	}()
 
 	if err != nil {
 		return output, err
@@ -195,6 +224,7 @@ func getNokutarn(urldata string) (documentdata, error) {
 		return output, err
 	}
 	output.data = doc
+	wp.Wait()
 	return output, nil
 }
 
