@@ -34,10 +34,11 @@ const (
 	BASE_URL_NOCKUS   = "https://novel18.syosetu.com"
 	BASE_URL_ALPHA    = "http://www.alphapolis.co.jp"
 	BASE_URL_ALPHAS   = "https://www.alphapolis.co.jp"
-	NAROU_CK_SLEEP    = time.Millisecond * 200 //100ms なろう待ち時間
-	KAKUYOMU_CK_SLEEP = time.Millisecond * 200 //100ms カクヨム待ち時間
-	NOCKU_CK_SLEEP    = time.Millisecond * 200 //100ms ノクターン待ち時間
-	ALPHA_CK_SLEEP    = time.Millisecond * 200 //100ms アルファポリス待ち時間
+	NAROU_CK_SLEEP    = time.Millisecond * 500 //500ms なろう待ち時間
+	KAKUYOMU_CK_SLEEP = time.Millisecond * 500 //500ms カクヨム待ち時間
+	NOCKU_CK_SLEEP    = time.Millisecond * 500 //500ms ノクターン待ち時間
+	ALPHA_CK_SLEEP    = time.Millisecond * 500 //500ms アルファポリス待ち時間
+	MAX_LOOP_COUNT    = 20
 )
 
 type Channel struct {
@@ -49,9 +50,11 @@ type Channel struct {
 }
 
 var channel_data Channel
+var maxloop chan bool
 
 func Setup() {
 	channel_data = Channel{flag: true}
+	maxloop = make(chan bool, MAX_LOOP_COUNT)
 }
 
 func ChackUrldata(url string) (List, error) {
@@ -61,7 +64,7 @@ func ChackUrldata(url string) (List, error) {
 		log.Println("not Setup")
 		return output, errors.New("not Setup")
 	}
-
+	maxloop <- true
 	if len(BASE_URL_NAROU)+1 < len(url) { //なろうのチェック
 		url_tmp := ""
 		if url[:len(BASE_URL_NAROU)] == BASE_URL_NAROU {
@@ -145,6 +148,7 @@ func ChackUrldata(url string) (List, error) {
 		}
 	}
 	wp.Wait()
+	<-maxloop
 
 	return output, nil
 
