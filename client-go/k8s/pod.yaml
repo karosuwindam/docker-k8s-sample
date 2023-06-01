@@ -18,10 +18,13 @@ spec:
       serviceAccount: client-go
       containers:
       - name: client
-        image: bookserver2:31000/karosu/client-go:0.3.1
+        image: bookserver2:31000/karosu/client-go:0.4.0
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        env:
+          - name: KUBE_PATH_FLAG
+            value: "false"
         ports:
           - containerPort: 8080
