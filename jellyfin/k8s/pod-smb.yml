@@ -1,3 +1,90 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "jellyfin-meta-pv-volume"
+  namespace: jellyfin
+  labels:
+    type: "local"
+spec:
+  storageClassName: "jellyfin-meta"
+  capacity:
+    storage: "20Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/pi/usb/usb1/jellyfin-metadata
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-meta-pv-claim
+  namespace: jellyfin
+spec:
+  storageClassName: jellyfin-meta
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "jellyfin-transcodes-pv-volume"
+  namespace: jellyfin
+  labels:
+    type: "local"
+spec:
+  storageClassName: "jellyfin-transcodes"
+  capacity:
+    storage: "20Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/pi/usb/usb1/jellyfin-transcodes
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-transcodes-pv-claim
+  namespace: jellyfin
+spec:
+  storageClassName: jellyfin-transcodes
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "jellyfin-cache-pv-volume"
+  namespace: jellyfin
+  labels:
+    type: "local"
+spec:
+  storageClassName: "jellyfin-cache"
+  capacity:
+    storage: "20Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/pi/usb/usb1/jellyfin-cache
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-cache-pv-claim
+  namespace: jellyfin
+spec:
+  storageClassName: jellyfin-cache
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,6 +126,8 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+            - name: jellyfin-meta
+              mountPath: /config/data/metadata
             - name: movies
               mountPath: /data/movies
               readOnly: true
@@ -51,10 +140,14 @@ spec:
             - name: nextcloud
               mountPath: /data/nextcloud
               readOnly: true
+            - name: jellyfin-transcodes
+              mountPath: /config/data/transcodes
+            - name: jellyfin-cache
+              mountPath: /config/cache
           resources:
             limits:
               cpu: 2.5
-              memory: 5.5Gi
+              memory: 5Gi
             requests:
               cpu: 1
               memory: 2.5Gi
@@ -74,4 +167,13 @@ spec:
         - name: nextcloud
           persistentVolumeClaim:
             claimName: jellyfin-pvc-smb-pi 
+        - name: jellyfin-meta
+          persistentVolumeClaim:
+            claimName: jellyfin-meta-pv-claim
+        - name: jellyfin-transcodes
+          persistentVolumeClaim:
+            claimName: jellyfin-transcodes-pv-claim
+        - name: jellyfin-cache
+          persistentVolumeClaim:
+            claimName: jellyfin-cache-pv-claim
 ---

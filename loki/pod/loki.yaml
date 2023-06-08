@@ -28,8 +28,8 @@ spec:
                     - "k8s-worker-1"
       containers:
         - name: loki
-          # image: grafana/loki:1.6.0
-          image: grafana/loki:2.7.4
+          image: grafana/loki:2.8.2
+          # image: grafana/loki:2.7.4
           imagePullPolicy: IfNotPresent
           args:
           - --config.file=/etc/loki/local-config.yaml       #   command: ["-config.file=/etc/loki/local-config.yaml"]
@@ -37,7 +37,7 @@ spec:
             - containerPort: 3100
           resources:
             limits:
-              cpu: 400m
+              cpu: 500m
               memory: 1Gi
             requests:
               cpu: 200m

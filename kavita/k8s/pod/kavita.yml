@@ -34,8 +34,8 @@ spec:
         effect: NoSchedule
       containers:
         - name: kavita
-          # image: kizaing/kavita:nightly-0.6.1.45
-          image: kizaing/kavita:nightly-0.7.2.14
+          image: kizaing/kavita:nightly-0.7.3.1
+          # image: kizaing/kavita:nightly-0.7.2.14
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
