@@ -22,14 +22,15 @@ apiVersion: "v1"
 metadata:
   name: portainer
   namespace: portainer  
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "generic"
-  labels:
-    io.portainer.kubernetes.application.stack: portainer
-    app.kubernetes.io/name: portainer
-    app.kubernetes.io/instance: portainer
-    app.kubernetes.io/version: "ce-latest-ee-2.18.3"
+  # annotations:
+  #   volume.beta.kubernetes.io/storage-class: "generic"
+  # labels:
+  #   io.portainer.kubernetes.application.stack: portainer
+  #   app.kubernetes.io/name: portainer
+  #   app.kubernetes.io/instance: portainer
+  #   app.kubernetes.io/version: "ce-latest-ee-2.18.3"
 spec:
+  storageClassName: nfs-client
   accessModes:
     - "ReadWriteMany"
   resources:

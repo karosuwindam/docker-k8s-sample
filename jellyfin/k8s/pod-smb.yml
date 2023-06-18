@@ -151,6 +151,8 @@ spec:
             requests:
               cpu: 1
               memory: 2.5Gi
+          securityContext:
+            privileged: true
       volumes:
         - name: config
           persistentVolumeClaim:
