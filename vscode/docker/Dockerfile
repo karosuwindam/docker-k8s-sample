@@ -1,6 +1,6 @@
-FROM gitpod/openvscode-server:1.76.0
+FROM gitpod/openvscode-server:1.78.2
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="1.76.0"
+LABEL version="1.78.2"
 LABEL go_version="1.19.6"
 LABEL name="vscode-server"
 USER root

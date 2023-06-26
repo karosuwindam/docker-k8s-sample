@@ -26,8 +26,8 @@ spec:
         effect: NoSchedule
       containers:
       - name: promtail
-        # image: grafana/promtail:1.6.0
-        image: grafana/promtail:2.7.4
+        image: grafana/promtail:2.8.2
+        # image: grafana/promtail:2.7.4
         # image: grafana/promtail
         args:
         - --config.file=/etc/promtail/config.yaml

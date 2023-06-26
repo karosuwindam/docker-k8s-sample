@@ -13,9 +13,47 @@ spec:
     - name: http-metrics
       port: 8080
       # targetPort: 8080
-      nodePort: 30003
+      # nodePort: 30003
     - name: telemetry
       port: 8081
       # targetPort: 8080
-      nodePort: 30004
+      # nodePort: 30004
   type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kube-state-metrics
+  namespace: kube-system
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: kubestate.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-state-metrics
+            port:
+              number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kube-state-metrics-t
+  namespace: kube-system
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: kubestate-t.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-state-metrics
+            port:
+              number: 8081
