@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -59,6 +60,9 @@ func webTextRead(w http.ResponseWriter, r *http.Request) {
 			output = append(output, t)
 		}
 	}
+	sort.Slice(output, func(i, j int) bool {
+		return output[i].Year+output[i].Quart > output[j].Year+output[j].Quart
+	})
 	b, _ := json.Marshal(output)
 	w.Write(b)
 }

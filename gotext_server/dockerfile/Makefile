@@ -1,4 +1,4 @@
-TAG = 0.0.3
+TAG = 0.0.4
 DOCKER = docker
 NAME = bookserver2:31000/tool/gotext-server
 APPNAME = "gotext-server"
