@@ -4,7 +4,7 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get upgrade -y
 ADD ./ .
-RUN go build -o app
+RUN CGO_ENABLED=0 go build -o app
 
 FROM BASE_CONTANER
 LABEL version="TAG"

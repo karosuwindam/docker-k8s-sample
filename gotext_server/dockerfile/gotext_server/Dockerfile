@@ -4,10 +4,10 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get upgrade -y
 ADD ./ .
-RUN go build -o app
+RUN CGO_ENABLED=0 go build -o app
 
 FROM debian:11
-LABEL version="0.0.3"
+LABEL version="0.0.4"
 LABEL name="gotext-server"
 LABEL goversion="1.19"
 RUN apt-get update && \
