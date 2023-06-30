@@ -1,0 +1,46 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: smb.csi.k8s.io
+  name: nginx-smb
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nginx-smb
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - uid=1000
+    - gid=1000
+    - noperm
+    - mfsymlinks
+    - cache=strict
+    - noserverino  # required to prevent data corruption
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: smb-server.default.svc.cluster.local/html##
+    volumeAttributes:
+      source: "//k8s-worker-1/k8s/html"
+    nodeStageSecretRef:
+      name: smbdata
+      namespace: nginx
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nginx-pvc-smb
+  namespace: nginx
+spec:
+  accessModes:
+    # - ReadWriteMany
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: nginx-smb
