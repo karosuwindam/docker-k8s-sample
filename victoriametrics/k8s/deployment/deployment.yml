@@ -31,6 +31,10 @@ spec:
                   operator: In
                   values:
                     - arm64
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - "k8s-worker-2"
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule

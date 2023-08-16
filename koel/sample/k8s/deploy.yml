@@ -1,0 +1,162 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: koel-mariadb
+  namespace: koel
+spec:
+  selector:
+    matchLabels:
+      app: koel-mariadb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: koel-mariadb
+    spec:
+      containers:
+      - image: mariadb:10.11.4
+        imagePullPolicy: IfNotPresent
+        name: koel-mariadb
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: koel
+        - name: MYSQL_PASSWORD
+          value: koel
+        - name: MYSQL_DATABASE
+          value: koel
+        - name: MYSQL_USER
+          value: koel
+        ports:
+        - containerPort: 3306
+          name: koel-mariadb
+        resources:
+          limits:
+            cpu: 0.4
+            memory: 600Mi
+          requests:
+            cpu: 0.2
+            memory: 300Mi
+        volumeMounts:
+        - name: koel-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: koel-persistent-storage
+        persistentVolumeClaim:
+          claimName: koel-pvc-mariadb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: koel-mariadb
+  namespace: koel
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: koel-mariadb
+  # type: LoadBalancer
+  type: ClusterIP
+  # clusterIP: None
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: koel-env
+  namespace: koel
+data:
+  DB_CONNECTION: mysql
+  DB_HOST: koel-mariadb
+  DB_USERNAME: koel
+  DB_PASSWORD: koel
+  DB_DATABASE: koel
+  TZ: "Asia/Tokyo"
+  # TZ: "Europe/London"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: koel
+  namespace: koel
+spec:
+  selector:
+    matchLabels:
+      app: koel
+  template:
+    metadata:
+      labels:
+        app: koel
+      annotations:
+        podinfo: "koel:マルチメディアの総合管理"
+    spec:
+      containers:
+        - name: koel
+          image: phanan/koel:6.11.2
+          imagePullPolicy: IfNotPresent
+          command: 
+            ["bash","-c"]
+          args:
+           - "/usr/local/bin/php artisan koel:init --no-assets && apache2-foreground"
+          envFrom:
+          - configMapRef:
+              name: koel-env
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: search-index
+              mountPath: /var/www/html/storage/search-indexes
+            - name: covers
+              mountPath: /var/www/html/public/img/covers
+            - name: music
+              mountPath: /music
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+      volumes:
+        - name: search-index
+          persistentVolumeClaim:
+            claimName: koel-pvc-search-index 
+        - name: covers
+          persistentVolumeClaim:
+            claimName: koel-pvc-covers 
+        - name: music
+          persistentVolumeClaim:
+            claimName: koel-pvc-music 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: koel
+  namespace: koel
+spec:
+  selector:
+    app: koel
+  ports:
+    - name: koel-desktop
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: koel
+  namespace: koel
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: koel.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: koel
+            port:
+              number: 80

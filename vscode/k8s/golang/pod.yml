@@ -31,7 +31,7 @@ spec:
       serviceAccountName: vscode-user
       serviceAccount: vscode-user
       containers:
-      - image: bookserver2:31000/karosu/vscode-go:1.78.2
+      - image: bookserver2:31000/karosu/vscode-go:1.79.2
         name: vscode-go
         ports:
         - name: http

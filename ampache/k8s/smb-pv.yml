@@ -1,0 +1,47 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: smb.csi.k8s.io
+  name: ampache-pv-media
+spec:
+  capacity:
+    storage: 1000Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ampache-pv-media
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - uid=33
+    - gid=33
+    - noperm
+    - mfsymlinks
+    - cache=strict
+    - noserverino  # required to prevent data corruption
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    # volumeHandle format: {smb-server-address}#{sub-dir-name}#{share-name}
+    # make sure this value is unique for every share in the cluster
+    volumeHandle: smb-server.default.svc.cluster.local/music##
+    volumeAttributes:
+      # source: "//smb-server.default.svc.cluster.local/share"
+      source: "//192.168.0.6/music"
+    nodeStageSecretRef:
+      name: smbcreds
+      namespace: jellyfin
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: ampache-pvc-media
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1000Gi
+  storageClassName: ampache-pv-media

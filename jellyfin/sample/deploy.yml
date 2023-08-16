@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jellyfin-env
+data:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Asia/Tokyo"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+spec:
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      containers:
+        - name: jellyfin
+          image: lscr.io/linuxserver/jellyfin:10.8.10
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - configMapRef:
+              name: jellyfin-env
+          ports:
+            - containerPort: 8096
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: jellyfin-meta
+              mountPath: /config/data/metadata
+            - name: movies
+              mountPath: /data/movies
+              readOnly: true
+            - name: jellyfin-transcodes
+              mountPath: /config/data/transcodes
+            - name: jellyfin-cache
+              mountPath: /config/cache
+          resources:
+            limits:
+              cpu: 2.5
+              memory: 5Gi
+            requests:
+              cpu: 1
+              memory: 2.5Gi
+          securityContext:
+            privileged: true
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: config 
+        - name: movies
+          persistentVolumeClaim:
+            claimName: data
+        - name: jellyfin-meta
+          persistentVolumeClaim:
+            claimName: jellyfin-meta-pvc
+        - name: jellyfin-transcodes
+          persistentVolumeClaim:
+            claimName: jellyfin-transcodes-pvc
+        - name: jellyfin-cache
+          persistentVolumeClaim:
+            claimName: jellyfin-cache-pvc
+---

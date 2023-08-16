@@ -1,0 +1,107 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ampache-env
+data:
+  # DB_CONNECTION: mysql
+  # DB_HOST: ampache-mariadb
+  # DB_USERNAME: ampache
+  # DB_PASSWORD: ampache
+  # DB_DATABASE: ampache
+  TZ: "Asia/Tokyo"
+  TIMEZONE: "Asia/Tokyo"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ampache
+spec:
+  selector:
+    matchLabels:
+      app: ampache
+  template:
+    metadata:
+      labels:
+        app: ampache
+      annotations:
+        podinfo: "ampache:音楽再生"
+    spec:
+      containers:
+        - name: ampache
+          image: ampache/ampache:5.6.2
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - configMapRef:
+              name: ampache-env
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config
+              mountPath: /var/www/config
+            - name: log
+              mountPath: /var/log/ampache
+            - name: music
+              mountPath: /media
+              # readOnly: true
+            - name: mysql
+              mountPath: /var/lib/mysql
+            - name: php-ini
+              mountPath: //etc/php/8.2/apache2/php.ini
+              subPath: php.ini
+          resources:
+            requests:
+              cpu: 2
+              memory: 2Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: ampache-pvc-config 
+        - name: log
+          persistentVolumeClaim:
+            claimName: ampache-pvc-log 
+        - name: music
+          persistentVolumeClaim:
+            claimName: ampache-pvc-media 
+        - name: mysql
+          persistentVolumeClaim:
+            claimName: ampache-pvc-mysql
+        - name: php-ini
+          configMap:
+            name: php-ini-env
+            items:
+              - key: php.ini
+                path: php.ini
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ampache
+spec:
+  selector:
+    app: ampache
+  ports:
+    - name: ampache-desktop
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ampache
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: ampache.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ampache
+            port:
+              number: 80

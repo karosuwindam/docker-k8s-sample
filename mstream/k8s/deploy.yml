@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mstream-env
+data:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Asia/Tokyo"
+  # TZ: "Europe/London"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mstream
+spec:
+  selector:
+    matchLabels:
+      app: mstream
+  template:
+    metadata:
+      labels:
+        app: mstream
+      annotations:
+        podinfo: "mstream:マルチメディアの総合管理"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      containers:
+        - name: mstream
+          image: lscr.io/linuxserver/mstream:5.11.4
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - configMapRef:
+              name: mstream-env
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: music
+              mountPath: /music
+              readOnly: true
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+          # securityContext:
+          #   privileged: true
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: mstream-pvc-config 
+        - name: music
+          persistentVolumeClaim:
+            claimName: mstream-pvc-data 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mstream
+spec:
+  selector:
+    app: mstream
+  ports:
+    - name: mstream-desktop
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mstream
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: mstream.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mstream
+            port:
+              number: 3000

@@ -1,0 +1,165 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: piwigo-mariadb
+  namespace: piwigo
+spec:
+  selector:
+    matchLabels:
+      app: piwigo-mariadb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: piwigo-mariadb
+      annotations:
+        podinfo: "piwigo用のmariadbのPod"
+    spec:
+      containers:
+      - image: mariadb:10.11.4
+        imagePullPolicy: IfNotPresent
+        name: piwigo-mariadb
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: piwigo
+        - name: MYSQL_PASSWORD
+          value: piwigo
+        - name: MYSQL_DATABASE
+          value: piwigo
+        - name: MYSQL_USER
+          value: piwigo
+        ports:
+        - containerPort: 3306
+          name: piwigo-mariadb
+        resources:
+          limits:
+            cpu: 0.4
+            memory: 600Mi
+          requests:
+            cpu: 0.2
+            memory: 300Mi
+        volumeMounts:
+        - name: mariadb-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mariadb-persistent-storage
+        persistentVolumeClaim:
+          claimName: piwigo-sql-pvc-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: piwigo-mariadb
+  namespace: piwigo
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: piwigo-mariadb
+  # type: LoadBalancer
+  type: ClusterIP
+  # clusterIP: None
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: piwigo-env
+  namespace: piwigo
+data:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Asia/Tokyo"
+  # TZ: "Europe/London"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: piwigo
+  namespace: piwigo
+spec:
+  selector:
+    matchLabels:
+      app: piwigo
+  template:
+    metadata:
+      labels:
+        app: piwigo
+      annotations:
+        podinfo: "piwigo:マルチメディアの総合管理"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      containers:
+        - name: piwigo
+          image: lscr.io/linuxserver/piwigo:13.7.0
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - configMapRef:
+              name: piwigo-env
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: gallery
+              mountPath: /gallery
+          resources:
+            requests:
+              cpu: 1
+              memory: 1Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: piwigo-pvc-config 
+        - name: gallery
+          persistentVolumeClaim:
+            claimName: piwigo-pvc-data 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: piwigo
+  namespace: piwigo
+spec:
+  selector:
+    app: piwigo
+  ports:
+    - name: piwigo-desktop
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: piwigo
+  namespace: piwigo
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: piwigo.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: piwigo
+            port:
+              number: 80

@@ -131,9 +131,9 @@ spec:
             - name: movies
               mountPath: /data/movies
               readOnly: true
-            - name: other
-              mountPath: /data/other
-              readOnly: true
+            # - name: other
+            #   mountPath: /data/other
+            #   readOnly: true
             - name: music
               mountPath: /data/music
               readOnly: true
@@ -147,7 +147,7 @@ spec:
           resources:
             limits:
               cpu: 2.5
-              memory: 5Gi
+              memory: 5.5Gi
             requests:
               cpu: 1
               memory: 2.5Gi
@@ -163,9 +163,9 @@ spec:
         - name: music
           persistentVolumeClaim:
             claimName: jellyfin-pvc-smb-music 
-        - name: other
-          persistentVolumeClaim:
-            claimName: jellyfin-pvc-smb-other 
+        # - name: other
+        #   persistentVolumeClaim:
+        #     claimName: jellyfin-pvc-smb-other 
         - name: nextcloud
           persistentVolumeClaim:
             claimName: jellyfin-pvc-smb-pi 

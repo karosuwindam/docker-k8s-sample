@@ -1,0 +1,107 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: config
+spec:
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: data
+spec:
+  storageClassName: smb
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "jellyfin-meta-pv"
+  labels:
+    type: "local"
+spec:
+  storageClassName: "jellyfin-meta-pv"
+  capacity:
+    storage: "20Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /tmp/jellyfin/jellyfin-metadata
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-meta-pvc
+spec:
+  storageClassName: jellyfin-meta-pv
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "jellyfin-transcodes-pv"
+  namespace: jellyfin
+  labels:
+    type: "local"
+spec:
+  storageClassName: "jellyfin-transcodes-pv"
+  capacity:
+    storage: "20Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /tmp/jellyfin/jellyfin-transcodes
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-transcodes-pvc
+spec:
+  storageClassName: jellyfin-transcodes-pv
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "jellyfin-cache-pv"
+  labels:
+    type: "local"
+spec:
+  storageClassName: "jellyfin-cache-pv"
+  capacity:
+    storage: "20Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /tmp/jellyfin/jellyfin-cache
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-cache-pvc
+spec:
+  storageClassName: jellyfin-cache-pv
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---

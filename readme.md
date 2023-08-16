@@ -52,9 +52,9 @@ kubectl label node/raspberrypi5 type=raspberrypi5
 
 ```
 kubectl apply -f pvd/kuberente-pv.yaml 
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.9/config/manifests/metallb-native.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.10/config/manifests/metallb-native.yaml
 kubectl apply -f metallb/metallb.yaml 
-kubectl apply -f inggress/controller-v1.2.0-deploy.yaml 
+kubectl apply -f inggress/controller-v1.8.0-deploy.yaml 
 ```
 
 ```

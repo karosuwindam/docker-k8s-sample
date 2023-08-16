@@ -1,0 +1,92 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emulatorjs
+  namespace: emulatorjs
+spec:
+  selector:
+    matchLabels:
+      app: emulatorjs
+  template:
+    metadata:
+      labels:
+        app: emulatorjs
+      annotations:
+        podinfo: "emulatorjs"
+    spec:
+      containers:
+      - image: linuxserver/emulatorjs:1.7.2
+        name: emulatorjs
+        ports:
+        - containerPort: 3000
+          name: config
+        - containerPort: 80
+          name: http
+        volumeMounts:
+          - mountPath: /config
+            name: config
+          - mountPath: /data
+            name: data
+        resources:
+          limits:
+            memory: 4Gi
+          requests:
+            cpu: 700m
+            memory: 1Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: config
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: emulatorjs
+    namespace: emulatorjs
+spec:
+  selector:
+    app: emulatorjs
+  ports:
+    - port: 3000
+      targetPort: 3000
+      name: config
+    - port: 80
+      targetPort: 80
+      name: http
+  # type: ClusterIP
+  clusterIP: None
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: emulatorjs
+  namespace: emulatorjs
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: emu-config.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: emulatorjs
+            port:
+              number: 3000
+  - host: emu.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: emulatorjs
+            port:
+              number: 80

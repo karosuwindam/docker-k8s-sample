@@ -1,0 +1,110 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vscode-sample
+spec:
+  selector:
+    matchLabels:
+      app: vscode-sample
+  template:
+    metadata:
+      labels:
+        app: vscode-sample
+      annotations:
+        podinfo: "VSCode,goinstallのweb版sample"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+      shareProcessNamespace: true
+      serviceAccountName: vscode-user-sample
+      serviceAccount: vscode-user-sample
+      containers:
+      - image: bookserver2:31000/karosu/vscode-go:1.79.2
+        name: vscode-sample
+        ports:
+        - name: http
+          containerPort: 3000
+        - name: app
+          containerPort: 8080
+        volumeMounts:
+          - mountPath: /home/workspace
+            name: vscode-sample-storage
+        resources:
+          limits:
+            memory: 4Gi
+          requests:
+            cpu: 300m
+            memory: 512Mi
+      volumes:
+        - name: vscode-sample-storage
+          persistentVolumeClaim:
+            claimName: vscode-sample-pvc-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: vscode-sample
+spec:
+  selector:
+    app: vscode-sample
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+    - name: app
+      port: 8080
+      targetPort: 8080
+  # type: ClusterIP
+  clusterIP: None
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vscode-sample
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: vscode-sample.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: vscode-sample
+            port:
+              number: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vscode-sample-app
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: vscode-app-sample.bookserver.home
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: vscode-sample
+            port:
+              number: 8080

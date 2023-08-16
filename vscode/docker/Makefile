@@ -1,4 +1,4 @@
-TAG = 1.78.2
+TAG = 1.79.2
 BUILD = buildctl
 BUILD_ADDR = tcp://buildkit.bookserver.home:1234 #arm64
 BUILD_ADDR_ARM = tcp://buildkit-arm.bookserver.home:1235 #arm
