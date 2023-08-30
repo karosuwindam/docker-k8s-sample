@@ -40,7 +40,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: registry
-        image: registry:2.8.1
+        image: registry:2.8.2
         env:
         - name: REGISTRY_STORAGE_DELETE_ENABLED
           value: "true"

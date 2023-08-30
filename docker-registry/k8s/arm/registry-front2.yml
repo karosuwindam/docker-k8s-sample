@@ -36,7 +36,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: registry-front
-        image: klausmeyer/docker-registry-browser:1.6.0
+        image: klausmeyer/docker-registry-browser:1.6.1
         env:
           - name: DOCKER_REGISTRY_URL
             value: "http://registry:5000"

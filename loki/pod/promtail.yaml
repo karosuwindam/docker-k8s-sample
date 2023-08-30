@@ -26,7 +26,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: promtail
-        image: grafana/promtail:2.8.2
+        image: grafana/promtail:2.8.4
         # image: grafana/promtail:2.7.4
         # image: grafana/promtail
         args:
@@ -45,9 +45,9 @@ spec:
         resources:
           limits:
             cpu: 200m
-            memory: 600Mi
+            memory: 400Mi
           requests:
-            cpu: 100m
+            cpu: 150m
             memory: 300Mi
         volumeMounts:
         - name: log

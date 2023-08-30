@@ -1,6 +1,6 @@
-FROM nextcloud:27.0.0
+FROM nextcloud:27.0.2
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="27.0.0"
+LABEL version="27.0.2"
 LABEL name="nextcloud"
 # RUN apk add --no-cache --virtual smbclient 
 RUN apt-get update && \
