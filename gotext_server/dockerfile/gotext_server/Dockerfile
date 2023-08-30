@@ -7,7 +7,7 @@ ADD ./ .
 RUN CGO_ENABLED=0 go build -o app
 
 FROM debian:11
-LABEL version="0.0.4"
+LABEL version="0.0.5"
 LABEL name="gotext-server"
 LABEL goversion="1.19"
 RUN apt-get update && \
