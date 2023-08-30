@@ -20,6 +20,11 @@
                 // コピーをお知らせする
                 alert("コピーできました！ : " + copyTarget.value);
             }
+            function test(){
+                var str ="saaaaa"
+                str = roma2hiragana(str)
+                alert(str);
+            }
         </script>
     </head>
     <body>
@@ -29,6 +34,9 @@
             <input type="text" name="titledata" id="titledata"><br>
             <input type="button" value="clear" onclick="titleOut('');return false">
             <input type="button" value="copy" onclick="copyToClipboard()">
+        </div>
+        <div>
+            <input type="button" value="test" onclick="test()">
         </div>
     </body>
 </html>

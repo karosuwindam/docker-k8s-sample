@@ -126,6 +126,27 @@ function changeList3(v,keyword) {
             option1.value = tmpText
             option1.textContent = tmpText
             data.appendChild(option1)
+            continue
+        }
+        var kana = roma2hiragana(keyword)
+        if ((keyword == "") ||(tmpText.toUpperCase().indexOf(kana.toUpperCase())!=-1)){
+            if (nowcount < 0) {
+                nowcount =i
+            }
+            option1.value = tmpText
+            option1.textContent = tmpText
+            data.appendChild(option1)
+            continue
+        }
+        var katakana = hiragana2katakana(kana)
+        if ((keyword == "") ||(tmpText.toUpperCase().indexOf(katakana.toUpperCase())!=-1)){
+            if (nowcount < 0) {
+                nowcount =i
+            }
+            option1.value = tmpText
+            option1.textContent = tmpText
+            data.appendChild(option1)
+            continue
         }
     }
     if (nowcount < 0){
@@ -155,4 +176,74 @@ function clearText() {
 function searchTxt(keyword) {
     changeList3(Nowquart,keyword)
     // console.log(keyword)
+}
+
+//ローマ字をひらがなに変換する
+function roma2hiragana(str) {
+    var kana
+    var reples_data = [
+        {from: 'kya', to: 'きゃ'}, {from: 'kyi', to: 'きぃ'}, {from: 'kyu', to: 'きゅ'}, {from: 'kye', to: 'きぇ'}, {from: 'kyo', to: 'きょ'},
+        {from: `sha`, to: 'しゃ'}, {from: 'shi', to: 'し'}, {from: 'shu', to: 'しゅ'}, {from: 'she', to: 'しぇ'}, {from: 'sho', to: 'しょ'},
+        {from: 'cha', to: 'ちゃ'}, {from: 'chi', to: 'ち'}, {from: 'chu', to: 'ちゅ'}, {from: 'che', to: 'ちぇ'}, {from: 'cho', to: 'ちょ'},
+        {from: 'nya', to: 'にゃ'}, {from: 'nyi', to: 'にぃ'}, {from: 'nyu', to: 'にゅ'}, {from: 'nye', to: 'にぇ'}, {from: 'nyo', to: 'にょ'},
+        {from: 'hya', to: 'ひゃ'}, {from: 'hyi', to: 'ひぃ'}, {from: 'hyu', to: 'ひゅ'}, {from: 'hye', to: 'ひぇ'}, {from: 'hyo', to: 'ひょ'},
+        {form: 'pya', to: 'ぴゃ'}, {from: 'pyi', to: 'ぴぃ'}, {from: 'pyu', to: 'ぴゅ'}, {from: 'pye', to: 'ぴぇ'}, {from: 'pyo', to: 'ぴょ'},
+        {form: 'xa', to: 'ぁ'}, {from: 'xi', to: 'ぃ'}, {from: 'xu', to: 'ぅ'}, {from: 'xe', to: 'ぇ'}, {from: 'xo', to: 'ぉ'},
+        {from: 'xya', to: 'ゃ'}, {from: 'xyi', to: 'ぃ'}, {from: 'xyu', to: 'ゅ'}, {from: 'xye', to: 'ぇ'}, {from: 'xyo', to: 'ょ'},
+        {from: 'ka', to: 'か'}, {from: 'ki', to: 'き'}, {from: 'ku', to: 'く'}, {from: 'ke', to: 'け'}, {from: 'ko', to: 'こ'},
+        {from: 'sa', to: 'さ'}, {from: 'si', to: 'し'}, {from: 'su', to: 'す'}, {from: 'se', to: 'せ'}, {from: 'so', to: 'そ'},
+        {from: 'ta', to: 'た'}, {from: 'ti', to: 'ち'}, {from: 'tu', to: 'つ'}, {from: 'te', to: 'て'}, {from: 'to', to: 'と'},
+        {from: 'na', to: 'な'}, {from: 'ni', to: 'に'}, {from: 'nu', to: 'ぬ'}, {from: 'ne', to: 'ね'}, {from: 'no', to: 'の'},
+        {from: 'ha', to: 'は'}, {from: 'hi', to: 'ひ'}, {from: 'hu', to: 'ふ'}, {from: 'he', to: 'へ'}, {from: 'ho', to: 'ほ'},
+        {from: 'ma', to: 'ま'}, {from: 'mi', to: 'み'}, {from: 'mu', to: 'む'}, {from: 'me', to: 'め'}, {from: 'mo', to: 'も'},
+        {from: 'ya', to: 'や'}, {from: 'yi', to: 'い'}, {from: 'yu', to: 'ゆ'}, {from: 'ye', to: 'いぇ'}, {from: 'yo', to: 'よ'},
+        {from: 'ra', to: 'ら'}, {from: 'ri', to: 'り'}, {from: 'ru', to: 'る'}, {from: 're', to: 'れ'}, {from: 'ro', to: 'ろ'},
+        {from: 'wa', to: 'わ'}, {from: 'wi', to: 'うぃ'}, {from: 'wu', to: 'う'}, {from: 'we', to: 'うぇ'}, {from: 'wo', to: 'を'},
+        {from: 'nn', to: 'ん'},
+        {from: 'ga', to: 'が'}, {from: 'gi', to: 'ぎ'}, {from: 'gu', to: 'ぐ'}, {from: 'ge', to: 'げ'}, {from: 'go', to: 'ご'},
+        {from: 'za', to: 'ざ'}, {from: 'zi', to: 'じ'}, {from: 'zu', to: 'ず'}, {from: 'ze', to: 'ぜ'}, {from: 'zo', to: 'ぞ'},
+        {from: 'da', to: 'だ'}, {from: 'di', to: 'ぢ'}, {from: 'du', to: 'づ'}, {from: 'de', to: 'で'}, {from: 'do', to: 'ど'},
+        {from: 'ba', to: 'ば'}, {from: 'bi', to: 'び'}, {from: 'bu', to: 'ぶ'}, {from: 'be', to: 'べ'}, {from: 'bo', to: 'ぼ'},
+        {from: 'pa', to: 'ぱ'}, {from: 'pi', to: 'ぴ'}, {from: 'pu', to: 'ぷ'}, {from: 'pe', to: 'ぺ'}, {from: 'po', to: 'ぽ'},
+        {from: 'va', to: 'ヴぁ'}, {from: 'vi', to: 'ヴぃ'}, {from: 'vu', to: 'ヴ'}, {from: 've', to: 'ヴぇ'}, {from: 'vo', to: 'ヴぉ'},
+
+        {from: 'a', to: 'あ'}, {from: 'i', to: 'い'}, {from: 'u', to: 'う'}, {from: 'e', to: 'え'}, {from: 'o', to: 'お'},
+    ]
+    for (var i=0;i<reples_data.length;i++) {
+        if (str.indexOf(reples_data[i].from) != -1) {
+            str = str.replace(new RegExp(reples_data[i].from, 'g'), reples_data[i].to);
+        }
+    }
+    kana = str
+    return kana;
+}
+
+// ひらがなをカタカナに変換する
+function hiragana2katakana(str) {
+    var kana
+    var reples_data = [
+        {from: 'あ', to: 'ア'}, {from: 'い', to: 'イ'}, {from: 'う', to: 'ウ'}, {from: 'え', to: 'エ'}, {from: 'お', to: 'オ'},
+        {from: 'か', to: 'カ'}, {from: 'き', to: 'キ'}, {from: 'く', to: 'ク'}, {from: 'け', to: 'ケ'}, {from: 'こ', to: 'コ'},
+        {from: 'さ', to: 'サ'}, {from: 'し', to: 'シ'}, {from: 'す', to: 'ス'}, {from: 'せ', to: 'セ'}, {from: 'そ', to: 'ソ'},
+        {from: 'た', to: 'タ'}, {from: 'ち', to: 'チ'}, {from: 'つ', to: 'ツ'}, {from: 'て', to: 'テ'}, {from: 'と', to: 'ト'},
+        {from: 'な', to: 'ナ'}, {from: 'に', to: 'ニ'}, {from: 'ぬ', to: 'ヌ'}, {from: 'ね', to: 'ネ'}, {from: 'の', to: 'ノ'},
+        {from: 'は', to: 'ハ'}, {from: 'ひ', to: 'ヒ'}, {from: 'ふ', to: 'フ'}, {from: 'へ', to: 'ヘ'}, {from: 'ほ', to: 'ホ'},
+        {from: 'ま', to: 'マ'}, {from: 'み', to: 'ミ'}, {from: 'む', to: 'ム'}, {from: 'め', to: 'メ'}, {from: 'も', to: 'モ'},
+        {from: 'や', to: 'ヤ'}, {from: 'いぇ', to: 'イェ'}, {from: 'ゆ', to: 'ユ'}, {from: 'い', to: 'イ'}, {from: 'よ', to: 'ヨ'},
+        {from: 'ら', to: 'ラ'}, {from: 'り', to: 'リ'}, {from: 'る', to: 'ル'}, {from: 'れ', to: 'レ'}, {from: 'ろ', to: 'ロ'},
+        {from: 'わ', to: 'ワ'}, {from: 'うぃ', to: 'ウィ'}, {from: 'う', to: 'ウ'}, {from: 'うぇ', to: 'ウェ'}, {from: 'を', to: 'ヲ'},
+        {from: 'ん', to: 'ン'},
+        {from: 'が', to: 'ガ'}, {from: 'ぎ', to: 'ギ'}, {from: 'ぐ', to: 'グ'}, {from: 'げ', to: 'ゲ'}, {from: 'ご', to: 'ゴ'},
+        {from: 'ざ', to: 'ザ'}, {from: 'じ', to: 'ジ'}, {from: 'ず', to: 'ズ'}, {from: 'ぜ', to: 'ゼ'}, {from: 'ぞ', to: 'ゾ'},
+        {from: 'だ', to: 'ダ'}, {from: 'ぢ', to: 'ヂ'}, {from: 'づ', to: 'ヅ'}, {from: 'で', to: 'デ'}, {from: 'ど', to: 'ド'},
+        {from: 'ば', to: 'バ'}, {from: 'び', to: 'ビ'}, {from: 'ぶ', to: 'ブ'}, {from: 'べ', to: 'ベ'}, {from: 'ぼ', to: 'ボ'},
+        {from: 'ぱ', to: 'パ'}, {from: 'ぴ', to: 'ピ'}, {from: 'ぷ', to: 'プ'}, {from: 'ぺ', to: 'ペ'}, {from: 'ぽ', to: 'ポ'},
+        {from: 'ぁ', to: 'ァ'}, {from: 'ぃ', to: 'ィ'}, {from: 'ぅ', to: 'ゥ'}, {from: 'ぇ', to: 'ェ'}, {from: 'ぉ', to: 'ォ'},
+        {from: 'ゃ', to: 'ャ'}, {from: 'ゅ', to: 'ュ'}, {from: 'ょ', to: 'ョ'},
+    ]
+    for (var i=0;i<reples_data.length;i++) {
+        str = str.replace(new RegExp(reples_data[i].from, 'g'), reples_data[i].to);
+    }
+    kana = str
+    return kana;
 }
