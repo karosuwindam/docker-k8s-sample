@@ -33,12 +33,11 @@ func Config() (*webserver.Server, error) {
 	return wcfg.NewServer()
 }
 
-func Run() error {
+func Run(ctx context.Context) error {
 
 	errCh := make(chan error, 1)
-	ctx := context.Background()
 	//ストップシグナルを受け取るコンテキストを作成
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP)
 	if s, err := Config(); err != nil {
 		return err
 	} else {
@@ -68,10 +67,18 @@ func Shutdown() error {
 func main() {
 	// flag.Parse() //コマンドラインオプションの有効
 	log.SetFlags(log.Llongfile | log.Flags())
-	if err := Run(); err != nil {
+	ctx := context.Background()
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP)
+	go func() {
+		<-sigChan
+		fmt.Println("signal")
+		time.Sleep(10 * time.Second)
+		os.Exit(1)
+	}()
+	if err := Run(ctx); err != nil {
 		log.Panicln(err)
 		os.Exit(1)
-
 	}
 
 	fmt.Println("end")

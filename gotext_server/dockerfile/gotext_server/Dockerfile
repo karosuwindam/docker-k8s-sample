@@ -7,13 +7,18 @@ ADD ./ .
 RUN CGO_ENABLED=0 go build -o app
 
 FROM debian:11
-LABEL version="0.0.5"
+LABEL version="0.0.6"
 LABEL name="gotext-server"
 LABEL goversion="1.19"
+RUN cp /etc/apt/sources.list /etc/apt/sources.list.bak && \
+    echo "deb http://deb.debian.org/debian experimental main" >> /etc/apt/sources.list
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y locales locales-all curl poppler-utils && \
     locale-gen ja_JP.UTF-8 &&\
+    apt-get -t experimental install -y libc6
+RUN cp /etc/apt/sources.list.bak /etc/apt/sources.list && rm /etc/apt/sources.list.bak
+RUN apt-get update && \
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
