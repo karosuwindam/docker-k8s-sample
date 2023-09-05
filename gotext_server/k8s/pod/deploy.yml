@@ -15,25 +15,25 @@ spec:
         podinfo: "年代ごとのアニメタイトル"
     spec:
       containers:
-      - name: gotext
-        image: bookserver2:31000/tool/gotext-server:0.0.5
-        imagePullPolicy: IfNotPresent
-        # imagePullPolicy: Always
-        env:
-          - name: TZ
-            value: 'Asia/Tokyo'
-        ports:
-        - containerPort: 8080
-        volumeMounts:
-          - mountPath: /app/txt
-            name: gotext-storage
-        resources:
-          limits:
-            cpu: 0.3
-            memory: 200Mi
-          requests:
-            cpu: 0.1
-            memory: 100Mi
+        - name: gotext
+          image: bookserver2:31000/tool/gotext-server:0.0.6
+          imagePullPolicy: IfNotPresent
+          # imagePullPolicy: Always
+          env:
+            - name: TZ
+              value: "Asia/Tokyo"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - mountPath: /app/txt
+              name: gotext-storage
+          resources:
+            limits:
+              cpu: 0.3
+              memory: 200Mi
+            requests:
+              cpu: 0.1
+              memory: 100Mi
       volumes:
         - name: gotext-storage
           persistentVolumeClaim:
@@ -51,3 +51,4 @@ spec:
       targetPort: 8080
   type: ClusterIP
 ---
+
