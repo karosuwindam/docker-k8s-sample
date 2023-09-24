@@ -392,6 +392,7 @@ function roma2hiragana(str) {
     { from: "u", to: "う" },
     { from: "e", to: "え" },
     { from: "o", to: "お" },
+    { from: "-", to: "ー"}
   ];
   for (var i = 0; i < reples_data.length; i++) {
     if (str.indexOf(reples_data[i].from) != -1) {
