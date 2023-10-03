@@ -52,7 +52,8 @@ const (
 	ATHOR_WEB
 )
 
-const MAX_CH int = 2
+const MAX_CH int = 3
+const MAX_Novel_CH int = 1
 
 var narou_ch chan string
 var kakuyomu_ch chan string
@@ -60,9 +61,9 @@ var nnocku_ch chan string
 var alpha_ch chan string
 
 func Setup() {
-	narou_ch = make(chan string, MAX_CH)
+	narou_ch = make(chan string, MAX_Novel_CH)
 	kakuyomu_ch = make(chan string, MAX_CH)
-	nnocku_ch = make(chan string, MAX_CH)
+	nnocku_ch = make(chan string, MAX_Novel_CH)
 	alpha_ch = make(chan string, MAX_CH)
 }
 
