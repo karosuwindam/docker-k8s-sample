@@ -52,7 +52,7 @@ const (
 	ATHOR_WEB
 )
 
-const MAX_CH int = 3
+const MAX_CH int = 2
 
 var narou_ch chan string
 var kakuyomu_ch chan string
@@ -66,6 +66,7 @@ func Setup() {
 	alpha_ch = make(chan string, MAX_CH)
 }
 
+// URLから小説の種類を判定
 func ChackUrlType(url string) (nobelWebType, error) {
 	ckDnsTmp := []string{
 		DNS_NAROU,
@@ -86,6 +87,7 @@ func ChackUrlType(url string) (nobelWebType, error) {
 	return nobeltype, nil
 }
 
+// URLから小説の種類を判定してデータを取得
 func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 	var output List
 	var outerr error
@@ -165,10 +167,10 @@ func getDocument(url string, ch chan string) (documentdata, error) {
 	output.url = url
 	ch <- url
 	doc, err := goquery.NewDocument(url)
-	<-ch
 	if err == nil {
 		output.data = doc
 	}
+	<-ch
 	return output, err
 }
 
@@ -184,7 +186,6 @@ func getKakuyomu(urldata string, ch chan string) (documentdata, error) {
 	client := new(http.Client)
 	resp, err := client.Do(req)
 
-	<-ch
 	if err != nil {
 		return output, err
 	}
@@ -194,6 +195,7 @@ func getKakuyomu(urldata string, ch chan string) (documentdata, error) {
 		return output, err
 	}
 	output.data = doc
+	<-ch
 	return output, nil
 }
 
@@ -209,7 +211,6 @@ func getNokutarn(urldata string, ch chan string) (documentdata, error) {
 	}
 	req.Header.Set("Cookie", "over18=yes")
 	resp, err := http.DefaultClient.Do(req)
-	<-ch
 
 	if err != nil {
 		return output, err
@@ -220,6 +221,7 @@ func getNokutarn(urldata string, ch chan string) (documentdata, error) {
 		return output, err
 	}
 	output.data = doc
+	<-ch
 	return output, nil
 }
 

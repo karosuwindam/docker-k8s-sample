@@ -25,7 +25,7 @@ var booklistdata_mux sync.Mutex
 var maxaccess int  //一つのサイトに対してアクセスできる限界数
 var maxbackday int //今日を基準に表示する前日数
 
-// 対象のURLから小説の更新確認
+// 対象のURLからWeb小説の更新確認
 func (t *Listdata) chackurl(url string) novelchack.List {
 	if t, err := novelchack.ChackUrlType(url); err != nil {
 		return novelchack.List{}
@@ -56,6 +56,7 @@ nobelloop:
 	ch <- nil
 }
 
+// Web小説の更新確認
 func nobelLoopStart(urlLists []string) {
 	fmt.Println("start novel data count")
 	dataStatusSet(NOBEL_SELECT, "Reload")
@@ -82,28 +83,25 @@ func nobelLoopStart(urlLists []string) {
 func addNovelChack(data novelchack.List) {
 	listtemp_mux.Lock()
 	listtemp.count++
-	listtemp_mux.Unlock()
-	if data.Url == "" {
-		return
-	}
-	flag := true
-	listtemp_mux.Lock()
-	for i, tmp := range listtemp.data {
-		if data.Title == "" {
-			flag = false
-			break
+	if data.Url != "" {
+		flag := true
+		for i, tmp := range listtemp.data {
+			if data.Title == "" {
+				flag = false
+				break
+			}
+			if tmp.Url == data.Url {
+				listtemp.data[i] = data
+				flag = false
+				break
+			}
 		}
-		if tmp.Url == data.Url {
-			listtemp.data[i] = data
-			flag = false
-			break
+		if flag {
+			listtemp.data = append(listtemp.data, data)
 		}
-	}
-	if flag {
-		listtemp.data = append(listtemp.data, data)
 	}
 	listtemp_mux.Unlock()
-
+	return
 }
 
 func ReadListCount() int {
