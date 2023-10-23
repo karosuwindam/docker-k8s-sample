@@ -208,6 +208,7 @@ func getNokutarn(urldata string) (documentdata, error) {
 	channel_data.Ch_Nocku.Lock()
 	req, err := http.NewRequest(http.MethodPost, urldata, nil)
 	if err != nil {
+		channel_data.Ch_Nocku.Unlock()
 		return output, err
 	}
 	req.Header.Set("Cookie", "over18=yes")
@@ -220,11 +221,13 @@ func getNokutarn(urldata string) (documentdata, error) {
 	}()
 
 	if err != nil {
+		wp.Wait()
 		return output, err
 	}
 	defer resp.Body.Close()
 	doc, err := goquery.NewDocumentFromResponse(resp)
 	if err != nil {
+		wp.Wait()
 		return output, err
 	}
 	output.data = doc
