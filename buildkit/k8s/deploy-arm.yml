@@ -29,7 +29,7 @@ spec:
                   values:
                     - arm
       containers:
-      - image: moby/buildkit:v0.12.2
+      - image: moby/buildkit:v0.12.4
         args:
         - --addr
         - tcp://0.0.0.0:1235

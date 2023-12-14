@@ -29,7 +29,7 @@ spec:
                     - arm64
       containers:
         - name: caliber
-          image: lscr.io/linuxserver/calibre:6.14.1
+          image: lscr.io/linuxserver/calibre:7.1.0
           imagePullPolicy: IfNotPresent
           envFrom:
           - configMapRef:

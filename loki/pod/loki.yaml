@@ -28,7 +28,7 @@ spec:
                     - "k8s-worker-1"
       containers:
         - name: loki
-          image: grafana/loki:2.8.4
+          image: grafana/loki:2.8.7
           # image: grafana/loki:2.7.4
           imagePullPolicy: IfNotPresent
           args:
