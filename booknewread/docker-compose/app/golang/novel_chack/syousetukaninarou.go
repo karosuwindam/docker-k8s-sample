@@ -292,7 +292,15 @@ func chackKakuyomu(data documentdata) List {
 	var output List
 	output.Url = data.url
 	doc := data.data
+
 	output.Title = doc.Find("div#workHeader-inner").Find("h1#workTitle").Text()
+	if output.Title == "" {
+		doc.Find("div#template-root").Find("div#app").Find("div.LayoutItem_layoutItem__cl360").Find("a.LinkAppearance_link__POVTP.LinkAppearance_hoverblueWithUnderline__y_22T").Each(func(i int, s *goquery.Selection) {
+			if output.Title == "" {
+				output.Title = s.Text()
+			}
+		})
+	}
 
 	doc.Find("div.widget-toc-main").Each(func(i int, s *goquery.Selection) {
 		s.Find("li.widget-toc-episode").Each(func(j int, ss *goquery.Selection) {
@@ -309,6 +317,15 @@ func chackKakuyomu(data documentdata) List {
 		})
 
 	})
+	if (output.LastStoryT == "") && (output.LastUrl == "") {
+		timedoc := doc.Find("div.Typography_fontSize-m__mskXq.Typography_color-gray__ObCRz.Typography_lineHeight-3s__OOxkK.Base_block__H4wj4")
+		timedata, _ := timedoc.Find("time").Attr("datetime")
+		t, _ := time.Parse("2006-01-02T15:04:05Z", timedata)
+		output.Lastdate = t.Local()
+		output.LastStoryT = "sample"
+		output.LastUrl = output.Url
+
+	}
 	return output
 
 }
