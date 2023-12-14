@@ -116,7 +116,7 @@ spec:
                     - arm64
       containers:
         - name: jellyfin
-          image: lscr.io/linuxserver/jellyfin:10.8.10
+          image: lscr.io/linuxserver/jellyfin:10.8.13
           imagePullPolicy: IfNotPresent
           envFrom:
           - configMapRef:

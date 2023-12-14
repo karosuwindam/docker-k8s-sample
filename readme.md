@@ -35,6 +35,11 @@ sudo dpkg -i libseccomp2_2.5.4-1+b2_armhf.deb
 rm -rf libseccomp2_2.5.4-1+b2_armhf.deb
 ```
 
+動いているpodのイメージリストを確認するコマンド
+```
+kubectl get deployment -A -o  jsonpath="Name{'\t'}Spec{'\t'}Pods{'\t'}image{'\t'}terminationGracePeriodSeconds{'\t'}nodeSelector{'\n'}{range .items[*]}{.metadata.name}{'\t'}{.spec.template.spec.containers[].resources.requests}{'\t'}{.status.replicas}{'\t'}{.spec.template.spec.containers[].image}{'\t'}{.spec.template.spec.terminationGracePeriodSeconds}{'\t'}{.spec.template.spec.nodeSelector.*}{'\n'}{end}"
+```
+
 
 ## 復旧手順について
 ```
