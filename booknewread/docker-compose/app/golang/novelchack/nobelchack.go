@@ -289,8 +289,14 @@ func chackKakuyomu(data documentdata) List {
 	var output List
 	output.Url = data.url
 	doc := data.data
+	//div.NewBox_box__45ont.NewBox_padding-px-4l__Kx_xT.NewBox_padding-pt-7l__Czm59
 	output.Title = doc.Find("div#workHeader-inner").Find("h1#workTitle").Text()
-
+	if output.Title == "" {
+		tmpTitle, _ := doc.Find("div.NewBox_box__45ont.NewBox_padding-px-4l__Kx_xT.NewBox_padding-pt-7l__Czm59").Find("a").Attr("title")
+		if tmpTitle != "" {
+			output.Title = tmpTitle
+		}
+	}
 	doc.Find("div.widget-toc-main").Each(func(i int, s *goquery.Selection) {
 		s.Find("li.widget-toc-episode").Each(func(j int, ss *goquery.Selection) {
 			output.LastStoryT = ss.Find("a").Find("span").Text()
@@ -306,6 +312,23 @@ func chackKakuyomu(data documentdata) List {
 		})
 
 	})
+	if (output.LastStoryT == "") && (output.LastUrl == "") {
+		infoTmp := doc.Find("div.Typography_fontSize-m__mskXq.Typography_color-gray__ObCRz.Typography_lineHeight-3s__OOxkK.Base_block__H4wj4")
+		timedata, _ := infoTmp.Find("time").Attr("datetime")
+		t, _ := time.Parse("2006-01-02T15:04:05Z", timedata)
+		output.Lastdate = t.Local()
+
+		countTmp := infoTmp.Find("ul.Meta_meta__7tVPt.Meta_disc__uPSnA.Meta_lightGray__mzmje.Meta_lineHeightXsmall__66NnD").Find("div.Meta_metaItem__8eZTP")
+		countTmp.Each(func(i int, s *goquery.Selection) {
+			if strings.Index(s.Text(), "話") > 0 {
+				if output.LastStoryT == "" {
+					output.LastStoryT = s.Text()
+				}
+			}
+		})
+		output.LastUrl = output.Url
+
+	}
 	return output
 
 }
