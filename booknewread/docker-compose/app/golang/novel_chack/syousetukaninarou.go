@@ -76,7 +76,7 @@ func ChackUrldata(url string) (List, error) {
 		}
 		if url_tmp != "" {
 			channel_data.Ch_Narou.Lock()
-			data, err := getDocument(url)
+			data, err := getDocumentNarou(url)
 			wp.Add(1)
 			go func() {
 				defer wp.Done()
@@ -155,6 +155,32 @@ func ChackUrldata(url string) (List, error) {
 }
 
 // なろうの取得
+func getDocumentNarou(url string) (documentdata, error) {
+	var output documentdata
+	output.url = url
+	doc, err := goquery.NewDocument(url)
+	if err != nil {
+		return output, err
+	}
+	output.data = doc
+	// novelview_pager-last
+	doc.Find("a.novelview_pager-last").Each(func(i int, s *goquery.Selection) {
+		if i == 0 {
+			tmp, _ := s.Attr("href")
+			atmp := strings.Split(tmp, "/")
+			count := strings.Index(output.url, atmp[1])
+			output.url = output.url[:count] + atmp[1] + "/" + atmp[2]
+		}
+	})
+	doc, err = goquery.NewDocument(output.url)
+	if err != nil {
+		return output, err
+	} else {
+		output.data = doc
+	}
+	return output, err
+}
+
 // アルファポリスの取得
 func getDocument(url string) (documentdata, error) {
 	var output documentdata

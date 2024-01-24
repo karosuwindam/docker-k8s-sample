@@ -14,4 +14,11 @@ func TestChackKuyoumu(t *testing.T) {
 		fmt.Println(tmp)
 	}
 
+	url = "https://ncode.syosetu.com/n9350eg/?p=6"
+	if tmp, err := ChackUrldata(url); err != nil {
+		t.Error(err)
+	} else {
+		fmt.Println(tmp)
+	}
+
 }

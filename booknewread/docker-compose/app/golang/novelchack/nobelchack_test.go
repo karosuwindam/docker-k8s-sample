@@ -15,5 +15,12 @@ func TestChackUrlData(t *testing.T) {
 	} else {
 		fmt.Println(tmp)
 	}
+	url = "https://ncode.syosetu.com/n1976ey/"
+	// url := "https://kakuyomu.jp/works/16816452218254294002"
+	if tmp, err := novelchack.ChackUrlData(novelchack.NAROU_WEB, url); err != nil {
+		t.Error(err)
+	} else {
+		fmt.Println(tmp)
+	}
 
 }

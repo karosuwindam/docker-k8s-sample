@@ -96,7 +96,7 @@ func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 	case NAROU_WEB:
 		url = strings.Replace(url, "http://", "https://", 1)
 		for i := 0; i < 3; i++ {
-			if data, err := getDocument(url, narou_ch); err != nil {
+			if data, err := getDocumentNarout(url, narou_ch); err != nil {
 				log.Println(err)
 				outerr = err
 			} else {
@@ -164,6 +164,33 @@ func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 // }
 
 // なろうの取得
+func getDocumentNarout(url string, ch chan string) (documentdata, error) {
+	var output documentdata
+	output.url = url
+	ch <- url
+	defer func(ch chan string) {
+		<-ch
+	}(ch)
+	doc, err := goquery.NewDocument(url)
+	if err == nil {
+		output.data = doc
+	}
+	// novelview_pager-last
+	doc.Find("a.novelview_pager-last").Each(func(i int, s *goquery.Selection) {
+		if i == 0 {
+			tmp, _ := s.Attr("href")
+			atmp := strings.Split(tmp, "/")
+			count := strings.Index(output.url, atmp[1])
+			output.url = output.url[:count] + atmp[1] + "/" + atmp[2]
+		}
+	})
+	doc, err = goquery.NewDocument(output.url)
+	if err == nil {
+		output.data = doc
+	}
+	return output, err
+}
+
 // アルファポリスの取得
 func getDocument(url string, ch chan string) (documentdata, error) {
 	var output documentdata
