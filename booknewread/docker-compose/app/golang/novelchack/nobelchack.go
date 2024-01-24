@@ -94,6 +94,7 @@ func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 	var outerr error
 	switch nwt {
 	case NAROU_WEB:
+		url = strings.Replace(url, "http://", "https://", 1)
 		for i := 0; i < 3; i++ {
 			if data, err := getDocument(url, narou_ch); err != nil {
 				log.Println(err)
@@ -118,6 +119,7 @@ func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 			time.Sleep(time.Microsecond * 200)
 		}
 	case NNOCKU_WEB:
+		url = strings.Replace(url, "http://", "https://", 1)
 		for i := 0; i < 3; i++ {
 			if data, err := getNokutarn(url, nnocku_ch); err != nil {
 				log.Println(err)
