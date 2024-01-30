@@ -172,11 +172,13 @@ func getDocumentNarou(url string) (documentdata, error) {
 			output.url = output.url[:count] + atmp[1] + "/" + atmp[2]
 		}
 	})
-	doc, err = goquery.NewDocument(output.url)
-	if err != nil {
-		return output, err
-	} else {
-		output.data = doc
+	if url != output.url {
+		doc, err = goquery.NewDocument(output.url)
+		if err != nil {
+			return output, err
+		} else {
+			output.data = doc
+		}
 	}
 	return output, err
 }
@@ -266,6 +268,21 @@ func chackNokutarn(data documentdata) List {
 	var output List
 	output.Url = data.url
 	doc := data.data
+
+	data.data.Find("a.novelview_pager-last").Each(func(i int, s *goquery.Selection) {
+		if i == 0 {
+			tmp, _ := s.Attr("href")
+			atmp := strings.Split(tmp, "/")
+			count := strings.Index(data.url, atmp[1])
+			output.Url = output.Url[:count] + atmp[1] + "/" + atmp[2]
+		}
+	})
+	if output.Url != data.url {
+		tmp, err := getNokutarn(output.Url)
+		if err == nil {
+			doc = tmp.data
+		}
+	}
 	output.Title = doc.Find("p.novel_title").Text()
 	doc.Find("dl.novel_sublist2").Each(func(i int, s *goquery.Selection) {
 		output.LastStoryT = strings.TrimSpace(s.Find("dd.subtitle").Text())

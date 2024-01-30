@@ -20,5 +20,11 @@ func TestChackKuyoumu(t *testing.T) {
 	} else {
 		fmt.Println(tmp)
 	}
+	url = "https://novel18.syosetu.com/n6719in/"
+	if tmp, err := ChackUrldata(url); err != nil {
+		t.Error(err)
+	} else {
+		fmt.Println(tmp)
+	}
 
 }
