@@ -23,4 +23,11 @@ func TestChackUrlData(t *testing.T) {
 		fmt.Println(tmp)
 	}
 
+	url = "https://novel18.syosetu.com/n6719in/"
+	if tmp, err := novelchack.ChackUrlData(novelchack.NNOCKU_WEB, url); err != nil {
+		t.Error(err)
+	} else {
+		fmt.Println(tmp)
+	}
+
 }

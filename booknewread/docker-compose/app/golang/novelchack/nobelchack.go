@@ -125,6 +125,13 @@ func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 				log.Println(err)
 				outerr = err
 			} else {
+				if tmp := chackLastPage(data); tmp != data.url {
+					tmpdata := data
+					data, err = getNokutarn(tmp, nnocku_ch)
+					if err != nil {
+						data = tmpdata
+					}
+				}
 				outerr = nil
 				output = chackNokutarn(data)
 				break
@@ -184,9 +191,12 @@ func getDocumentNarout(url string, ch chan string) (documentdata, error) {
 			output.url = output.url[:count] + atmp[1] + "/" + atmp[2]
 		}
 	})
-	doc, err = goquery.NewDocument(output.url)
-	if err == nil {
-		output.data = doc
+	if output.url != url {
+		doc, err = goquery.NewDocument(output.url)
+		if err == nil {
+			output.data = doc
+		}
+
 	}
 	return output, err
 }
@@ -431,4 +441,18 @@ func GetSyousetu(url string) List {
 		})
 	}
 	return output
+}
+
+// なろうとノクターンの最終頁確認
+func chackLastPage(data documentdata) string {
+	url := data.url
+	data.data.Find("a.novelview_pager-last").Each(func(i int, s *goquery.Selection) {
+		if i == 0 {
+			tmp, _ := s.Attr("href")
+			atmp := strings.Split(tmp, "/")
+			count := strings.Index(data.url, atmp[1])
+			url = url[:count] + atmp[1] + "/" + atmp[2]
+		}
+	})
+	return url
 }
