@@ -12,7 +12,7 @@ const (
 	HTMLPASS = "./html"
 )
 
-//ファイルチェック
+// ファイルチェック
 func Exists(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil
@@ -68,7 +68,7 @@ func ConvertData(str string, data map[string]string) string {
 	return output
 }
 
-//テキスト以外の対応について
+// テキスト以外の対応について
 func ReadOther(path string) []byte {
 	fp, err := os.Open(path)
 	if err != nil {

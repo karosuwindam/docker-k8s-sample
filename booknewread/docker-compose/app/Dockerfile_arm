@@ -22,7 +22,7 @@ RUN go build -o app
 # FROM balenalib/raspberrypi3-debian
 FROM ubuntu:22.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.17.6"
+LABEL version="0.17.7"
 LABEL docker_arch="armv6l"
 LABEL go_version="1.19.9"
 LABEL name="booknewread"

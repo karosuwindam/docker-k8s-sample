@@ -17,12 +17,14 @@ spec:
     spec:
       containers:
         - name: booknewread
-          image: bookserver2:31000/karosu/booknewread:0.17.6
+          image: bookserver2:31000/karosu/booknewread:0.17.7
           imagePullPolicy: IfNotPresent
           # imagePullPolicy: Always
           env:
             - name: TZ
               value: "Asia/Tokyo"
+            - name: WEB_TITLE
+              value: "新刊取得:local"
           ports:
             - containerPort: 8080
           volumeMounts:

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -17,6 +18,12 @@ func viewhtml(w http.ResponseWriter, r *http.Request) {
 	textdata := []string{".html", ".htm", ".css", ".js"}
 	upath := r.URL.Path
 	tmp := map[string]string{}
+	tmp["base_title"] = "新刊取得"
+	title := os.Getenv("WEB_TITLE")
+	if title != "" {
+		tmp["base_title"] = title
+	}
+
 	if !strings.HasPrefix(upath, "/") {
 		upath = "/" + upath
 		r.URL.Path = upath
