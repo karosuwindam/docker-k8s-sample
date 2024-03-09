@@ -1,10 +1,13 @@
 package novelchack
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,6 +23,48 @@ type List struct {
 	LastUrl    string    `json:lasturl`
 }
 
+type NarouAPIOUT struct {
+	Allcount        int    `json:allcount`
+	Title           string `json:title`
+	Ncode           string `json:ncode`
+	Userid          int    `json:userid`
+	Writer          string `json:writer`
+	Story           string `json:story`
+	Biggenre        int    `json:biggenre`
+	Genre           int    `json:genre`
+	Gensaku         string `json:gensaku`
+	Keyword         string `json:keyword`
+	General_firstup string `json:general_firstup`
+	General_lastup  string `json:general_lastup`
+	Novel_type      int    `json:novel_type`
+	End             int    `json:end`
+	General_all_no  int    `json:general_all_no`
+	Length          int    `json:length`
+	Time            int    `json:time`
+	Isstop          int    `json:isstop`
+	Isr15           int    `json:isr15`
+	Isbl            int    `json:isbl`
+	Isgl            int    `json:isgl`
+	Iszankoku       int    `json:iszankoku`
+	Istensei        int    `json:istensei`
+	Istenni         int    `json:istenni`
+	Global_point    int    `json:global_point`
+	Daily_point     int    `json:daily_point`
+	Weekly_point    int    `json:weekly_point`
+	Monthly_point   int    `json:monthly_point`
+	Quarter_point   int    `json:quarter_point`
+	Yearly_point    int    `json:yearly_point`
+	Fav_novel_cnt   int    `json:fav_novel_cnt`
+	Impression_cnt  int    `json:impression_cnt`
+	Review_cnt      int    `json:review_cnt`
+	All_point       int    `json:all_point`
+	All_hyoka_cnt   int    `json:all_hyoka_cnt`
+	Sasie_cnt       int    `json:sasie_cnt`
+	Kaiwaritu       int    `json:kaiwaritu`
+	Novelupdated_at int    `json:novelupdated_at`
+	Updated_at      int    `json:updated_at`
+}
+
 type documentdata struct {
 	url  string
 	data *goquery.Document
@@ -33,6 +78,8 @@ const (
 	BASE_URL_NOCKUS   = "https://novel18.syosetu.com"
 	BASE_URL_ALPHA    = "http://www.alphapolis.co.jp"
 	BASE_URL_ALPHAS   = "https://www.alphapolis.co.jp"
+	API_URL_NAROU     = "https://api.syosetu.com/novelapi/api/"
+	API_URL_NOCKU     = "https://api.syosetu.com/novel18api/api/"
 )
 
 const (
@@ -95,16 +142,21 @@ func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 	switch nwt {
 	case NAROU_WEB:
 		url = strings.Replace(url, "http://", "https://", 1)
-		for i := 0; i < 3; i++ {
-			if data, err := getDocumentNarout(url, narou_ch); err != nil {
-				log.Println(err)
-				outerr = err
-			} else {
-				outerr = nil
-				output = chackSyousetu(data)
-				break
-			}
-			time.Sleep(time.Microsecond * 100)
+		// for i := 0; i < 3; i++ {
+		// 	if data, err := getDocumentNarout(url, narou_ch); err != nil {
+		// 		log.Println(err)
+		// 		outerr = err
+		// 	} else {
+		// 		outerr = nil
+		// 		output = chackSyousetu(data)
+		// 		break
+		// 	}
+		// 	time.Sleep(time.Microsecond * 100)
+		// }
+		if tmpOut, err := getAPINarout(url, narou_ch); err != nil {
+			log.Println(err)
+		} else {
+			output = tmpOut
 		}
 	case KAKUYOMU_WEB:
 		for i := 0; i < 3; i++ {
@@ -120,23 +172,28 @@ func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 		}
 	case NNOCKU_WEB:
 		url = strings.Replace(url, "http://", "https://", 1)
-		for i := 0; i < 3; i++ {
-			if data, err := getNokutarn(url, nnocku_ch); err != nil {
-				log.Println(err)
-				outerr = err
-			} else {
-				if tmp := chackLastPage(data); tmp != data.url {
-					tmpdata := data
-					data, err = getNokutarn(tmp, nnocku_ch)
-					if err != nil {
-						data = tmpdata
-					}
-				}
-				outerr = nil
-				output = chackNokutarn(data)
-				break
-			}
-			time.Sleep(time.Microsecond * 200)
+		// for i := 0; i < 3; i++ {
+		// 	if data, err := getNokutarn(url, nnocku_ch); err != nil {
+		// 		log.Println(err)
+		// 		outerr = err
+		// 	} else {
+		// 		if tmp := chackLastPage(data); tmp != data.url {
+		// 			tmpdata := data
+		// 			data, err = getNokutarn(tmp, nnocku_ch)
+		// 			if err != nil {
+		// 				data = tmpdata
+		// 			}
+		// 		}
+		// 		outerr = nil
+		// 		output = chackNokutarn(data)
+		// 		break
+		// 	}
+		// 	time.Sleep(time.Microsecond * 200)
+		// }
+		if tmpOut, err := getAPINokutarn(url, narou_ch); err != nil {
+			log.Println(err)
+		} else {
+			output = tmpOut
 		}
 	case ALPHA_WEB:
 		for i := 0; i < 3; i++ {
@@ -156,19 +213,57 @@ func ChackUrlData(nwt nobelWebType, url string) (List, error) {
 	return output, outerr
 }
 
-// func Loop(ctx context.Context){
-// loop:
-// for{
-// 	select{
-// 	case <-ctx.Done():
-// 		break loop
-// 	case url:=<-narou_ch:
-// 	case url:=<-kakuyomu_ch:
-// 	case url:=<-nnocku_ch:
-// 	case url:=<-alpha_ch:
-// 	}
-// }
-// }
+// なろうのAPIによる取得
+func getAPINarout(url string, ch chan string) (List, error) {
+	var out List
+	var apikey string
+	base_url := BASE_URL_NAROUS
+	api_url := API_URL_NAROU
+	ch <- url
+	defer func(ch chan string) {
+		<-ch
+	}(ch)
+	if n := strings.Index(url, base_url); n >= 0 {
+		tmp_url := url[n+len(base_url):]
+		if tmp_url[0:1] == "/" {
+			tmp_url = tmp_url[1:]
+		}
+		if i := strings.Index(tmp_url, "/"); i >= 1 {
+			apikey = tmp_url[:i]
+		}
+		req, err := http.NewRequest(http.MethodGet, api_url+"?ncode="+apikey+"&out=json", nil)
+		if err != nil {
+			return out, err
+		}
+		client := new(http.Client)
+		resp, err := client.Do(req)
+
+		if err != nil {
+			return out, err
+		}
+		defer resp.Body.Close()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return out, err
+		}
+		tmpdata := []NarouAPIOUT{}
+		json.Unmarshal(b, &tmpdata)
+		if len(tmpdata) == 2 {
+			if tmpdata[1].Title != "" {
+				out.Title = tmpdata[1].Title
+			}
+			out.Url = base_url + "/" + apikey + "/"
+			tmpLTime := tmpdata[1].General_lastup
+			t, _ := time.Parse("2006-01-02 15:04:05 JST", tmpLTime+" JST")
+			out.Lastdate = t.UTC().Add(-9 * time.Hour)
+			count := tmpdata[1].General_all_no
+			out.LastUrl = out.Url + strconv.Itoa(count) + "/"
+			out.LastStoryT = strconv.Itoa(count) + "話"
+		}
+
+	}
+	return out, nil
+}
 
 // なろうの取得
 func getDocumentNarout(url string, ch chan string) (documentdata, error) {
@@ -241,6 +336,58 @@ func getKakuyomu(urldata string, ch chan string) (documentdata, error) {
 	}
 	output.data = doc
 	return output, nil
+}
+
+// なろうのR18 APIによる取得(ノクターン)
+func getAPINokutarn(url string, ch chan string) (List, error) {
+	var out List
+	var apikey string
+	base_url := BASE_URL_NOCKUS
+	api_url := API_URL_NOCKU
+	ch <- url
+	defer func(ch chan string) {
+		<-ch
+	}(ch)
+	if n := strings.Index(url, base_url); n >= 0 {
+		tmp_url := url[n+len(base_url):]
+		if tmp_url[0:1] == "/" {
+			tmp_url = tmp_url[1:]
+		}
+		if i := strings.Index(tmp_url, "/"); i >= 1 {
+			apikey = tmp_url[:i]
+		}
+		req, err := http.NewRequest(http.MethodGet, api_url+"?ncode="+apikey+"&out=json", nil)
+		if err != nil {
+			return out, err
+		}
+		client := new(http.Client)
+		resp, err := client.Do(req)
+
+		if err != nil {
+			return out, err
+		}
+		defer resp.Body.Close()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return out, err
+		}
+		tmpdata := []NarouAPIOUT{}
+		json.Unmarshal(b, &tmpdata)
+		if len(tmpdata) == 2 {
+			if tmpdata[1].Title != "" {
+				out.Title = tmpdata[1].Title
+			}
+			out.Url = base_url + "/" + apikey + "/"
+			tmpLTime := tmpdata[1].General_lastup
+			t, _ := time.Parse("2006-01-02 15:04:05 JST", tmpLTime+" JST")
+			out.Lastdate = t.UTC().Add(-9 * time.Hour)
+			count := tmpdata[1].General_all_no
+			out.LastUrl = out.Url + strconv.Itoa(count) + "/"
+			out.LastStoryT = strconv.Itoa(count) + "話"
+		}
+
+	}
+	return out, nil
 }
 
 // ノクターンノベルのゲット

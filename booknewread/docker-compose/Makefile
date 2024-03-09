@@ -1,5 +1,5 @@
 # TAG = 24.0.0-fpm-alpine
-TAG = 0.17.7
+TAG = 0.18.0
 DOCKER = docker
 NAME = bookserver2:31000/karosu/booknewread
 
@@ -12,7 +12,7 @@ TEMPLATE = ./app/Dockerfile_tmp
 TARGET = Dockerfile_arm
 TARGET_FILE = ./app
 GO_VERSION = 1.19.9
-ARCH = armv6l
+ARCH = aarch64
 OPT = "--privileged"
 
 all: build push
@@ -27,7 +27,7 @@ push:
 	${DOCKER} push ${NAME}:${TAG}
 build-kit: create
 	@echo "--- buildkit build --"
-	${BUILD} --addr ${BUILD_ADDR_ARM} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${TARGET_FILE} --opt source=${TARGET}
+	${BUILD} --addr ${BUILD_ADDR} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${TARGET_FILE} --opt source=${TARGET}
 run:
 	${DOCKER} run --rm --name=booknewread -p 18080:8080 ${NAME}:${TAG}
 help:
