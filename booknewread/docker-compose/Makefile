@@ -12,7 +12,7 @@ TEMPLATE = ./app/Dockerfile_tmp
 TARGET = Dockerfile_arm
 TARGET_FILE = ./app
 GO_VERSION = 1.19.9
-ARCH = armv6l
+ARCH = aarch64
 OPT = "--privileged"
 
 all: build push
