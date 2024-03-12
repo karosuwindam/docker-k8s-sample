@@ -77,21 +77,18 @@ func addNovelChack(nl novelchack.List) {
 	}
 }
 
-func Read(v interface{}) {
+func Read(v interface{}) error {
 	listtemp.mu.Lock()
 	defer listtemp.mu.Unlock()
 	switch v.(type) {
-	case *Listdata:
-		tmp := listtemp.newData
-		v = &tmp
-	case *novelchack.List:
-		tmp := listtemp.data
-		v = &tmp
 	case *Status:
-		tmp := listtemp.status
-		v = &tmp
-
+		*v.(*Status) = listtemp.status
+	case *[]novelchack.List:
+		*v.(*[]novelchack.List) = listtemp.data
+	case *[]BListData:
+		*v.(*[]BListData) = listtemp.newData
 	}
+	return nil
 }
 
 func ReadCount() int {
