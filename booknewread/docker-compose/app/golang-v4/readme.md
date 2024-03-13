@@ -9,6 +9,7 @@ https://calendar.gameiroiro.com/
 
 ver 0.19
 全体的に作成し直す
+goのversion 1.22に対応したhttpの処理
 
 ver 0.18
 なろうをAPIに変更

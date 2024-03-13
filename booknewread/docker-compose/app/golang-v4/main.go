@@ -20,6 +20,7 @@ func Init() error {
 }
 
 func Start() error {
+	webserver.Start()
 	return nil
 }
 
