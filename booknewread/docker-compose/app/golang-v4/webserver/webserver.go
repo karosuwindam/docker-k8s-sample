@@ -47,6 +47,8 @@ func Init() error {
 	}
 	ctx, cancel = context.WithCancel(context.Background())
 	api.Init(cfg.mux)
+	fileserver := http.FileServer(http.Dir(config.Web.StaticPage))
+	cfg.mux.Handle("/", fileserver)
 	return nil
 }
 
