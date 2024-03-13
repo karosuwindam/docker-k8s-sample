@@ -4,6 +4,11 @@ import (
 	"book-newread/config"
 	"book-newread/loop"
 	"book-newread/webserver"
+	"context"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 func Init() error {
@@ -20,12 +25,35 @@ func Init() error {
 }
 
 func Start() error {
-	webserver.Start()
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go func(ctx context.Context) {
+		defer wg.Done()
+		if err := loop.Run(ctx); err != nil {
+			panic(err)
+		}
+	}(ctx)
+	go func() {
+		defer wg.Done()
+		if err := webserver.Start(); err != nil {
+			panic(err)
+		}
+	}()
+
+	<-sigs
+	cancel()
+	Stop()
+	wg.Wait()
 	return nil
 }
 
 func Stop() {
-
+	loop.Stop()
+	webserver.Stop()
 }
 
 func main() {
@@ -35,5 +63,4 @@ func main() {
 	if err := Start(); err != nil {
 		panic(err)
 	}
-	Stop()
 }

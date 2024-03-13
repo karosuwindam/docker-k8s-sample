@@ -18,11 +18,12 @@ type BListData struct {
 
 // 基本データストア
 type Listdata struct {
-	data    []novelchack.List
-	newData []BListData
-	status  Status
-	count   int
-	mu      sync.Mutex
+	data     []novelchack.List
+	newData  []BListData
+	status   Status
+	count    int //URLの処理結果
+	maxcount int //URLの最大処理
+	mu       sync.Mutex
 }
 
 type Status struct { //状態確認について
@@ -55,7 +56,6 @@ func Write(v interface{}) error {
 		listtemp.newData = v.([]BListData)
 	case novelchack.List:
 		addNovelChack(v.(novelchack.List))
-		listtemp.count++
 	}
 	return nil
 }
@@ -95,4 +95,31 @@ func ReadCount() int {
 	listtemp.mu.Lock()
 	defer listtemp.mu.Unlock()
 	return listtemp.count
+}
+
+func ReadPerCount() float64 {
+	listtemp.mu.Lock()
+	defer listtemp.mu.Unlock()
+	c := float64(listtemp.count)
+	m := float64(listtemp.maxcount)
+	return c / m
+
+}
+
+func ClearCount() {
+	listtemp.mu.Lock()
+	defer listtemp.mu.Unlock()
+	listtemp.count = 0
+}
+
+func AddCount() {
+	listtemp.mu.Lock()
+	defer listtemp.mu.Unlock()
+	listtemp.count++
+}
+
+func SetMaxCount(i int) {
+	listtemp.mu.Lock()
+	defer listtemp.mu.Unlock()
+	listtemp.maxcount = i
 }

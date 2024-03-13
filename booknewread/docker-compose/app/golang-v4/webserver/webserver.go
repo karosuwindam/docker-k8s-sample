@@ -63,8 +63,10 @@ func Start() error {
 		return err
 	}
 	go func() {
-		if err := srv.Serve(l); err != nil && err != http.ErrServerClosed {
+		if err = srv.Serve(l); err != nil && err != http.ErrServerClosed {
 			panic(err)
+		} else {
+			err = nil
 		}
 	}()
 	<-ctx.Done()

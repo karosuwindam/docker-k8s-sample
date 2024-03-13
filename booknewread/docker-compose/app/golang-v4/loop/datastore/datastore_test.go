@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"book-newread/loop/novelchack"
+	"sync"
 	"testing"
 	"time"
 )
@@ -103,5 +104,33 @@ func TestDataStore(t *testing.T) {
 	}
 	if len(tListdata) != 2 {
 		t.Fatal("Listdata Error")
+	}
+}
+
+func TestCount(t *testing.T) {
+	var wg sync.WaitGroup
+	if err := Init(); err != nil {
+		t.Fatal(err)
+	}
+	max := 10
+	SetMaxCount(max)
+	AddCount()
+	if ReadCount() != 1 {
+		t.Fatal("Not Add count")
+	}
+	if ReadPerCount() != 0.1 {
+		t.Fatal("Not Set Max")
+	}
+
+	for i := 0; i < 9; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			AddCount()
+		}()
+	}
+	wg.Wait()
+	if ReadPerCount() != 1 {
+		t.Fatal("Not Add ")
 	}
 }
