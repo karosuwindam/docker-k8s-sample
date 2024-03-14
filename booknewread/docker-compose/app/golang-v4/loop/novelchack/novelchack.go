@@ -139,6 +139,8 @@ func chackUrlPage(url string) nobelWebType {
 	return output
 }
 
+var ErrAtherUrl = errors.New("other url data")
+
 // URLから小説の種類を判別してデータを取得
 func ChackURLData(url string) (List, error) {
 	var output List
@@ -186,7 +188,7 @@ func ChackURLData(url string) (List, error) {
 			time.Sleep(time.Microsecond * 200)
 		}
 	case OTHOR_WEB:
-		outerr = errors.New("other url data")
+		outerr = ErrAtherUrl
 	}
 	return output, outerr
 }

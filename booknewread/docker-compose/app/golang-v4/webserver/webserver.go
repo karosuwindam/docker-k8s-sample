@@ -4,6 +4,7 @@ import (
 	"book-newread/config"
 	"book-newread/webserver/api"
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 )
@@ -62,6 +63,7 @@ func Start() error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("Start Server", cfg.hostname+":"+cfg.port)
 	go func() {
 		if err = srv.Serve(l); err != nil && err != http.ErrServerClosed {
 			panic(err)

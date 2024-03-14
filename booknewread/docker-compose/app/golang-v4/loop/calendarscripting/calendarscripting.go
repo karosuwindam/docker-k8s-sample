@@ -31,7 +31,7 @@ const (
 	MAGAZINE  = 2 //雑誌
 )
 
-func FilterComicList(data []BookList, lastday int) []BookList {
+func FilterComicList(data []BookList) []BookList {
 	output := []BookList{}
 	for _, tmp := range data {
 		output = append(output, tmp)

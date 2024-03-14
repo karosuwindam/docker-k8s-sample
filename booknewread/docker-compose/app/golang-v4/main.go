@@ -5,6 +5,7 @@ import (
 	"book-newread/loop"
 	"book-newread/webserver"
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -37,6 +38,9 @@ func Start() error {
 			panic(err)
 		}
 	}(ctx)
+	if err := loop.RunWait(); err != nil {
+		fmt.Println("Runloop wait timeout :", err)
+	}
 	go func() {
 		defer wg.Done()
 		if err := webserver.Start(); err != nil {
