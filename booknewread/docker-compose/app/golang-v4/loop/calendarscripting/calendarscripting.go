@@ -26,9 +26,9 @@ const (
 	MAGAZINEURL  string = "magazine.php"
 )
 const (
-	COMIC     = 0
-	LITENOVEL = 1
-	MAGAZINE  = 2
+	COMIC     = 0 //漫画
+	LITENOVEL = 1 //ライトノベル
+	MAGAZINE  = 2 //雑誌
 )
 
 func FilterComicList(data []BookList, lastday int) []BookList {
