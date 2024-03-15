@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"sync"
 	"time"
@@ -220,6 +221,7 @@ func readNarouData() {
 				}
 				datastore.AddCount()
 				per := datastore.ReadPerCount()
+				per = math.Floor(per*10) / 10
 				// float64をstringに変換
 				pers := strconv.FormatFloat(per*100, 'f', -1, 64)
 				statusUpdate(NOBEL_SELECT, "Reload:"+pers+"%")
