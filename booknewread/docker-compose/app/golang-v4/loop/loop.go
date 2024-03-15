@@ -219,7 +219,10 @@ func readNarouData() {
 					fmt.Println(err)
 				}
 				datastore.AddCount()
-				statusUpdate(NOBEL_SELECT, "Reload:"+strconv.Itoa(int(datastore.ReadPerCount())*100)+"%")
+				per := datastore.ReadPerCount()
+				// float64をstringに変換
+				pers := strconv.FormatFloat(per*100, 'f', -1, 64)
+				statusUpdate(NOBEL_SELECT, "Reload:"+pers+"%")
 			}(url)
 		}
 		wg.Wait()
