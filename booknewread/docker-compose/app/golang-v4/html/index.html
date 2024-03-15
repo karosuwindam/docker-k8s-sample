@@ -1,8 +1,201 @@
 <html>
   <head>
-    <title>test</title>
+    <link rel="stylesheet" href="css/data.css" />
+    <script src="./javascript/getjson.js"></script>
+    <style>
+      input[type="radio"] {
+        display: none; /* ラジオボタンを非表示にする */
+      }
+      input[type="radio"]:checked + label {
+        background: #31a9ee; /* マウス選択時の背景色を指定する */
+        color: #ffffff; /* マウス選択時のフォント色を指定する */
+      }
+    </style>
+    <script>
+      function geturl() {
+        // document.getElementById("output").innerHTML="aa"
+        serchgetJSON("output");
+      }
+      function geturlb(data) {
+        var page = document.getElementById("page").value;
+        if (data != undefined) {
+          document.getElementById("pagetype").value = data.value;
+          sessionStorage.setItem("pagetype", data.value);
+        }
+        getnewJSON("output", page);
+      }
+      function getnewnoble(data) {
+        if (data != undefined) {
+          sessionStorage.setItem("pagetype", data.value);
+          document.getElementById("pagetype").value = data.value;
+        }
+        getnobleJSON("output");
+      }
+      function chmonth(data) {
+        sessionStorage.setItem("page", data.value);
+        document.getElementById("page").value = data.value;
+        if (document.getElementById("pagetype").value == "2") {
+          getnewnoble();
+        } else {
+          geturlb();
+        }
+      }
+      function clearSerch() {
+        document.getElementById("text2").value = "";
+        serche_keyword("", "output");
+      }
+      function keySerch() {
+        var keydata = document.getElementById("text2").value;
+        serche_keyword(keydata, "output");
+      }
+      function reload() {
+        var req = new window.XMLHttpRequest();
+        req.onreadystatechange = function () {
+          if (req.readyState == 4 && req.status == 200) {
+            var data = req.responseText;
+            // data = JSON.parse(data);
+            console.log(data);
+            // document.getElementById(output).innerHTML = data;
+          }
+        };
+        req.open("POST", "/v1/restart", true);
+        // req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        // var str = "page="+page
+        req.send(null);
+      }
+      window.onload = function () {
+        // getnobleJSON("output");
+        var temp = sessionStorage.getItem("page");
+        var temp2 = sessionStorage.getItem("pagetype");
+        if (isSmartPhone()) {
+          //モバイル判断
+          document;
+        } else {
+        }
+        if (temp != null) {
+          document.getElementById("page").value = temp - 0;
+          if (temp - 0 == 0) {
+          } else {
+            document.getElementsByName("month")[0].checked = false;
+            document.getElementsByName("month")[temp - 0].checked = true;
+          }
+        }
+        if (temp2 != null) {
+          document.getElementById("pagetype").value = temp2 - 0;
+          if (temp2 - 0 == 0) {
+          } else {
+            document.getElementsByName("type")[0].checked = false;
+            document.getElementsByName("type")[temp2 - 0].checked = true;
+          }
+        }
+        if (temp2 != "2") {
+          var page = document.getElementById("page").value;
+          getnewJSON("output", page);
+        } else {
+          getnobleJSON("output");
+        }
+      };
+    </script>
+    <title><%base_title%></title>
   </head>
   <body>
-    <h1>test</h1>
+    <!-- <li><input type="button" value="get" onclick="geturl()"></li> -->
+    <input
+      type="button"
+      value="status"
+      onclick="statusckJSON('status')"
+      class="c-button"
+    />
+    <input type="button" value="reload" onclick="reload()" class="c-button" />
+    <div id="status" style="float: right"></div>
+    <div class="group">
+      <label for="text2">検索</label>
+      <div class="search_bar">
+        <i class="fas fa-search search_icon"></i>
+        <input
+          id="text2"
+          type="text"
+          placeholder="キーワードを入力"
+          onkeyup="serche_keyword(this.value,'output')"
+        />
+        <i class="fas fa-times search_icon"></i>
+        <input
+          type="button"
+          value="検索"
+          onclick="keySerch()"
+          class="c-button"
+        />
+        <input
+          type="button"
+          value="Clear"
+          onclick="clearSerch()"
+          class="c-button"
+        />
+      </div>
+    </div>
+    <li class="cg_button">
+      <!-- <input type="button" value="getb" onclick="geturlb()"> -->
+      <input type="hidden" name="pagetype" id="pagetype" value="0" />
+      <input
+        type="radio"
+        name="type"
+        id="type1"
+        value="0"
+        oncLick="geturlb(this)"
+        checked
+      />
+      <label for="type1">漫画</label>
+      <input
+        type="radio"
+        name="type"
+        id="type2"
+        value="1"
+        oncLick="geturlb(this)"
+      />
+      <label for="type2">小説</label>
+      <input
+        type="radio"
+        name="type"
+        id="type3"
+        value="2"
+        oncLick="getnewnoble(this)"
+      />
+      <label for="type3">小説になろう更新</label>
+      <input type="hidden" name="page" id="page" value="0" />
+      <input
+        type="radio"
+        name="month"
+        id="month1"
+        value="0"
+        oncLick="chmonth(this)"
+        checked
+      />
+      <label for="month1">今月</label>
+      <input
+        type="radio"
+        name="month"
+        id="month2"
+        value="1"
+        oncLick="chmonth(this)"
+      />
+      <label for="month2">来月</label>
+      <input
+        type="radio"
+        name="month"
+        id="month3"
+        value="2"
+        oncLick="chmonth(this)"
+      />
+      <label for="month3">再来月</label>
+      <input
+        type="radio"
+        name="month"
+        id="month4"
+        value="3"
+        oncLick="chmonth(this)"
+      />
+      <label for="month4">今日</label>
+    </li>
+    <div id="output" class="output"></div>
   </body>
 </html>

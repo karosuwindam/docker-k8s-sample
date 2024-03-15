@@ -1,5 +1,5 @@
 # TAG = 24.0.0-fpm-alpine
-TAG = 0.18.0
+TAG = 0.19.0
 DOCKER = docker
 NAME = bookserver2:31000/karosu/booknewread
 
@@ -11,7 +11,7 @@ BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 TEMPLATE = ./app/Dockerfile_tmp
 TARGET = Dockerfile_arm
 TARGET_FILE = ./app
-GO_VERSION = 1.19.9
+GO_VERSION = 1.22.0
 ARCH = aarch64
 OPT = "--privileged"
 
