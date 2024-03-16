@@ -11,7 +11,7 @@ BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 TEMPLATE = ./app/Dockerfile_tmp
 TARGET = Dockerfile_arm
 TARGET_FILE = ./app
-GO_VERSION = 1.22.0
+GO_VERSION = 1.22.1
 ARCH = aarch64
 OPT = "--privileged"
 

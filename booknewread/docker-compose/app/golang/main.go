@@ -1,113 +1,71 @@
 package main
 
 import (
-	"book-newread/api"
 	"book-newread/config"
 	"book-newread/loop"
-	"book-newread/pyroscopesetup"
-	"book-newread/textroot"
 	"book-newread/webserver"
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 )
 
-func Config(cfg *config.Config) (*webserver.SetupServer, error) {
-	api.Setup(cfg)
-	loop.Setup(cfg)
-	scfg, err := webserver.NewSetup(cfg)
-	if err != nil {
-		return nil, err
+func Init() error {
+	if err := config.Init(); err != nil {
+		return err
 	}
-	webserver.Config(scfg, api.Route, "/v1")
-	webserver.Config(scfg, textroot.Route, "/")
-	return scfg, nil
+	if err := loop.Init(); err != nil {
+		return err
+	}
+	if err := webserver.Init(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func Run(ctx context.Context, wg *sync.WaitGroup) {
-	defer wg.Done()
-	ctx, cancel := context.WithCancel(ctx)
-	serverch := make(chan error)
-	bookch := make(chan error)
-	commonch := make(chan error)
-	nobelch := make(chan error)
-	var wgg sync.WaitGroup
-	wgg.Add(1)
-	go func() {
-		defer wgg.Done()
-		loop.BookloopStart()
-	}()
-	if cfg, err := config.EnvRead(); err != nil {
-		cancel()
-		return
-	} else {
-		if scfg, err := Config(cfg); err == nil {
-			if s, err := scfg.NewServer(); err != nil {
-				cancel()
-				return
-			} else {
-				go loop.BookLoop(ctx, bookch)
-				go loop.CommonLoop(ctx, commonch)
-				go loop.NobelLoop(ctx, nobelch)
-				wgg.Wait()
-				go s.Run(ctx, serverch)
-				<-ctx.Done()
-				cancel()
-				if err := s.Shutdown(); err != nil {
-					log.Println(err)
-				}
-			}
+func Start() error {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-		} else {
-			cancel()
-			return
+	ctx, cancel := context.WithCancel(context.Background())
+	go func(ctx context.Context) {
+		defer wg.Done()
+		if err := loop.Run(ctx); err != nil {
+			panic(err)
 		}
+	}(ctx)
+	if err := loop.RunWait(); err != nil {
+		fmt.Println("Runloop wait timeout :", err)
 	}
 	go func() {
-		select {
-		case <-time.After(time.Second):
-			log.Println("time out")
-			close(serverch)
-			close(bookch)
-			close(commonch)
-			close(nobelch)
+		defer wg.Done()
+		if err := webserver.Start(); err != nil {
+			panic(err)
 		}
 	}()
-	if err := <-serverch; err != nil {
-		log.Println(err)
-	}
-	if err := <-bookch; err != nil {
-		log.Println(err)
-	}
-	if err := <-commonch; err != nil {
-		log.Println(err)
-	}
-	if err := <-nobelch; err != nil {
-		log.Println(err)
-	}
-	return
+
+	<-sigs
+	cancel()
+	Stop()
+	wg.Wait()
+	return nil
 }
 
-func Shutdown() {
+func Stop() {
+	loop.Stop()
+	webserver.Stop()
 	fmt.Println("main Shutdown")
 }
 
 func main() {
-	pyro := pyroscopesetup.Setup()
-	pyroscopesetup.Add("base", "v1")
-	pyro.Run()
-	ctx := context.Background()
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go Run(ctx, &wg)
-	<-ctx.Done()
-	stop()
-	wg.Done()
-	Shutdown()
+	if err := Init(); err != nil {
+		panic(err)
+	}
+	if err := Start(); err != nil {
+		panic(err)
+	}
 }
