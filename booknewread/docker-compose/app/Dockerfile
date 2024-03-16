@@ -1,4 +1,4 @@
-FROM golang:1.19.9-buster As builder
+FROM golang:1.22.1 As builder
 #RUN apt update && apt upgrade -y
 WORKDIR /app
 ADD ./golang .
@@ -7,7 +7,7 @@ RUN go build -o app
 
 FROM debian:unstable-slim
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.18.0"
+LABEL version="0.19.0"
 LABEL name="booknewread"
 # RUN <<EOF
 # apt-get update

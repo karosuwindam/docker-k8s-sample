@@ -2,14 +2,12 @@ package webserver
 
 import (
 	"book-newread/config"
+	"book-newread/webserver/api"
+	"book-newread/webserver/indexpage"
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
-
-	"github.com/caarlos0/env/v6"
-	"golang.org/x/sync/errgroup"
 )
 
 // SetupServer
@@ -31,69 +29,55 @@ type Server struct {
 	l net.Listener
 }
 
-type Status struct {
-	Status string `json:status`
+var cfg SetupServer
+
+var ctx context.Context
+var cancel context.CancelFunc
+
+func HelloWeb(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Hello Web"))
 }
 
-var passList map[string]bool //登録したパスリスト
-
-func NewSetup(data *config.Config) (*SetupServer, error) {
-	cfg := &SetupServer{
-		protocol: data.Server.Protocol,
-		hostname: data.Server.Hostname,
-		port:     data.Server.Port,
+func Init() error {
+	cfg = SetupServer{
+		protocol: config.Web.Protocol,
+		hostname: config.Web.Hostname,
+		port:     config.Web.Port,
+		mux:      http.NewServeMux(),
 	}
-	if err := env.Parse(cfg); err != nil {
-		return nil, err
-	}
-	passList = map[string]bool{}
-	cfg.mux = http.NewServeMux()
-	return cfg, nil
-}
-
-func (t *SetupServer) NewServer() (*Server, error) {
-	fmt.Println("Setup server", t.protocol, t.hostname+":"+t.port)
-	l, err := net.Listen(t.protocol, t.hostname+":"+t.port)
-	if err != nil {
-		return nil, err
-	}
-	return &Server{
-		srv: &http.Server{Handler: t.muxHandler()},
-		l:   l,
-	}, nil
-}
-
-func (t *SetupServer) Add(route string, handler func(http.ResponseWriter, *http.Request)) error {
-	if passList[route] {
-		return errors.New("Added Root data :" + route)
-	}
-	passList[route] = true
-	t.mux.HandleFunc(route, handler)
+	ctx, cancel = context.WithCancel(context.Background())
+	api.Init(cfg.mux)
+	// fileserver := http.FileServer(http.Dir(config.Web.StaticPage))
+	// cfg.mux.Handle("/", fileserver)
+	cfg.mux.HandleFunc("/", indexpage.Init("/"))
 	return nil
 }
 
-func (t *SetupServer) muxHandler() http.Handler { return t.mux }
-
-func (s *Server) Run(ctx context.Context, ch chan<- error) {
-	// ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	// defer stop()
-	ctx, cancel := context.WithCancel(ctx)
-	eg, ctx := errgroup.WithContext(ctx)
-	eg.Go(func() error {
-		fmt.Println("Start Server")
-		if err := s.srv.Serve((s.l)); err != nil {
-			return err
+func Start() error {
+	var err error = nil
+	srv := &http.Server{
+		Addr:    cfg.hostname + ":" + cfg.port,
+		Handler: cfg.mux,
+	}
+	l, err := net.Listen(cfg.protocol, srv.Addr)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Start Server", cfg.hostname+":"+cfg.port)
+	go func() {
+		if err = srv.Serve(l); err != nil && err != http.ErrServerClosed {
+			panic(err)
+		} else {
+			err = nil
 		}
-		return nil
-	})
+	}()
 	<-ctx.Done()
-	cancel()
-	ch <- eg.Wait()
+	return err
 }
 
-func (s *Server) Shutdown() error {
-	err := s.srv.Shutdown(context.Background())
-	fmt.Println("Server shutdown")
-	return err
-
+func Stop() error {
+	cancel()
+	return nil
 }

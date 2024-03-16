@@ -11,4 +11,4 @@ if [ -z "$(ls bookmark)" ]; then
     cp bookmarks.html bookmark
 fi
 
-./app
+exec ./app

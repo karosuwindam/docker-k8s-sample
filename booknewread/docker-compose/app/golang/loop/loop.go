@@ -1,120 +1,235 @@
 package loop
 
 import (
-	"book-newread/calendarscripting"
-	"book-newread/novelchack"
+	"book-newread/config"
+	"book-newread/loop/bookmarkfileread"
+	"book-newread/loop/calendarscripting"
+	"book-newread/loop/datastore"
+	"book-newread/loop/novelchack"
 	"context"
+	"errors"
 	"fmt"
-	"sort"
+	"math"
 	"strconv"
 	"sync"
 	"time"
 )
 
-type BListData struct {
-	NowTime   time.Time                    `json:Nowtime`
-	Month     string                       `json:Month`
-	Year      string                       `json:Year`
-	Comic     []calendarscripting.BookList `json:Comic`
-	LiteNobel []calendarscripting.BookList `json:LiteNobel`
-}
+var shutdown chan bool
+var resetflag bool
+var resetCH chan bool
+var loogflag bool
 
-var booklistdata []BListData
-var booklistdata_mux sync.Mutex
-
-var maxaccess int  //一つのサイトに対してアクセスできる限界数
-var maxbackday int //今日を基準に表示する前日数
-
-// 対象のURLからWeb小説の更新確認
-func (t *Listdata) chackurl(url string) novelchack.List {
-	if t, err := novelchack.ChackUrlType(url); err != nil {
-		return novelchack.List{}
-	} else {
-		if tmp, err := novelchack.ChackUrlData(t, url); err != nil {
-			return tmp
-		} else {
-			return tmp
-		}
+func Init() error {
+	if err := novelchack.Init(); err != nil {
+		return err
 	}
+	if err := datastore.Init(); err != nil {
+		return err
+	}
+	if err := bookmarkfileread.Init(); err != nil {
+		return err
+	}
+	shutdown = make(chan bool, 1)
+	resetCH = make(chan bool, 1)
+	return nil
 }
 
-var nobelloop_ch chan []string
+func Run(ctx context.Context) error {
+	var wg sync.WaitGroup
+	fmt.Println("start loop")
+	resetflag = true
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		readNarouData()
+	}()
+	go func() {
+		defer wg.Done()
+		readNewBookData()
+		loogflag = true
+	}()
+	defer func() {
+		loogflag = false
+	}()
+	wg.Wait()
+	resetflag = false
 
-func NobelLoop(ctx context.Context, ch chan<- error) {
-	fmt.Println("Nobel loop start")
-nobelloop:
+loop:
 	for {
 		select {
 		case <-ctx.Done():
-			break nobelloop
-		case list := <-nobelloop_ch:
-			nobelLoopStart(list)
+			break loop
+		case <-shutdown:
+			break loop
+		case <-resetCH:
+			resetflag = true
+			wg.Add(2)
+			go func() { //新刊を取得する
+				defer wg.Done()
+				readNewBookData()
+			}()
+			go func() { //小説のデータを取得する
+				defer wg.Done()
+				readNarouData()
+			}()
+			wg.Wait()
+			resetflag = false
+		case <-time.After(time.Duration(config.Loop.LoopTIme) * time.Second):
+			resetflag = true
+			wg.Add(2)
+			go func() { //新刊を取得する
+				defer wg.Done()
+				readNewBookData()
+			}()
+			go func() { //小説のデータを取得する
+				defer wg.Done()
+				readNarouData()
+			}()
+			wg.Wait()
+			resetflag = false
 		}
 	}
-	close(nobelloop_ch)
-	fmt.Println("Nobel loop end")
-	ch <- nil
+	fmt.Println("end loop")
+	return nil
 }
 
-// Web小説の更新確認
-func nobelLoopStart(urlLists []string) {
-	fmt.Println("start novel data count")
-	dataStatusSet(NOBEL_SELECT, "Reload")
-	now := time.Now()
-	listtemp.count = 1
-	novelchack.Setup()
+// ループがスタートするまでの確認待ち
+func RunWait() error {
+	if loogflag {
+		return nil
+	}
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+loop:
+	for {
+		select {
+		case <-ctx.Done():
+			return errors.New("10 sec over")
+		case <-time.After(500 * time.Microsecond):
+			if loogflag {
+				break loop
+
+			}
+		}
+	}
+	return nil
+}
+
+func Stop() error {
+	if loogflag {
+		shutdown <- true
+	}
+	time.Sleep(1 * time.Second)
+	return nil
+}
+
+// ループを強制的に実行
+func Reset() {
+	if resetflag {
+		return
+	}
+	if len(resetCH) == 0 {
+		resetCH <- true
+	}
+}
+
+// 新刊情報の取得
+func readNewBookData() {
+	fmt.Println("start new book data count")
+	statusUpdate(BOOK_SELECT, "Reload")
+	t := time.Now()
 	var wg sync.WaitGroup
-	for i, url := range urlLists {
+	var output []datastore.BListData = make([]datastore.BListData, 3)
+	for i := 0; i < 3; i++ {
 		wg.Add(1)
-		go func(i int, url string) {
+		go func(i int) {
 			defer wg.Done()
-			tmp := listtemp.chackurl(url)
-			addNovelChack(tmp)
-			dataStatusSet(NOBEL_SELECT, "Reload:"+strconv.Itoa(ReadListCount()*100/len(urlLists))+"%")
-		}(i, url)
+			var listdata datastore.BListData
+			var listdata_mux sync.Mutex
+			if (int(t.Month()) + i) <= 12 {
+				listdata.Month = strconv.Itoa((int(t.Month()) + i))
+				listdata.Year = strconv.Itoa(int(t.Year()))
+			} else {
+				listdata.Month = strconv.Itoa((int(t.Month()) + i) % 12)
+				listdata.Year = strconv.Itoa(int(t.Year()) + 1)
+			}
+			var wgg sync.WaitGroup
+			wgg.Add(2)
+			go func() {
+				defer wgg.Done()
+				tmp := calendarscripting.GetComicList(listdata.Year, listdata.Month, calendarscripting.LITENOVEL)
+				tmp = calendarscripting.FilterComicList(tmp)
+				listdata_mux.Lock()
+				listdata.LiteNobel = tmp
+				listdata_mux.Unlock()
+			}()
+			go func() {
+				defer wgg.Done()
+				tmp := calendarscripting.GetComicList(listdata.Year, listdata.Month, calendarscripting.COMIC)
+				tmp = calendarscripting.FilterComicList(tmp)
+				listdata_mux.Lock()
+				listdata.Comic = tmp
+				listdata_mux.Unlock()
+			}()
+			wgg.Wait()
+			output[i] = listdata
+		}(i)
 	}
 	wg.Wait()
-	endtime := time.Now()
-	timeStatusSet(NOBEL_SELECT, endtime)
-	dataStatusSet(NOBEL_SELECT, "OK")
-	fmt.Println("read novel data end", (endtime.Sub(now)).Seconds(), "s")
-}
-
-func addNovelChack(data novelchack.List) {
-	listtemp_mux.Lock()
-	listtemp.count++
-	if data.Url != "" {
-		flag := true
-		for i, tmp := range listtemp.data {
-			if data.Title == "" {
-				flag = false
-				break
-			}
-			if tmp.Url == data.Url {
-				listtemp.data[i] = data
-				flag = false
-				break
-			}
-		}
-		if flag {
-			listtemp.data = append(listtemp.data, data)
-		}
+	if err := datastore.Write(output); err != nil {
+		fmt.Println(err)
 	}
-	listtemp_mux.Unlock()
-	return
+
+	endtime := time.Now()
+	fmt.Println("read new book data end", (endtime.Sub(t)).Seconds(), "s")
+	statusUpdate(BOOK_SELECT, "ok")
+
 }
 
-func ReadListCount() int {
-	listtemp_mux.Lock()
-	count := listtemp.count
-	listtemp_mux.Unlock()
-	return count
-}
+// Web小説のデータを取得する
+func readNarouData() {
+	fmt.Println("start novel data count")
+	statusUpdate(NOBEL_SELECT, "Reload")
+	now := time.Now()
+	limit := 10
+	slots := make(chan struct{}, limit)
+	var wg sync.WaitGroup
+	// bookmarkのファイル読み取り
+	urls := bookmarkfileread.ReadBookmark()
+	if len(urls) != 0 {
+		datastore.ClearCount()
+		datastore.SetMaxCount(len(urls))
+		wg.Add(len(urls))
+		for _, url := range urls {
+			slots <- struct{}{}
 
-func ReadNListData() []novelchack.List {
-	listtemp_mux.Lock()
-	tmp := listtemp.data
-	listtemp_mux.Unlock()
-	sort.Slice(tmp, func(i, j int) bool { return tmp[i].Lastdate.Unix() > tmp[j].Lastdate.Unix() })
-	return tmp
+			go func(url string) {
+				defer func() {
+					<-slots
+					wg.Done()
+				}()
+				//urlによる解析処理
+
+				if tmp, err := novelchack.ChackURLData(url); err == nil {
+					if err = datastore.Write(tmp); err != nil {
+						fmt.Println(err)
+					}
+				} else if err != novelchack.ErrAtherUrl {
+					fmt.Println(err)
+				}
+				datastore.AddCount()
+				per := datastore.ReadPerCount()
+				per = math.Floor(per*1000) / 1000
+				// float64をstringに変換
+				pers := strconv.FormatFloat(per*100, 'f', -1, 64)
+				statusUpdate(NOBEL_SELECT, "Reload:"+pers+"%")
+			}(url)
+		}
+		wg.Wait()
+	}
+	endtime := time.Now()
+	fmt.Println("read novel data end", (endtime.Sub(now)).Seconds(), "s")
+	statusUpdate(NOBEL_SELECT, "ok")
 }
