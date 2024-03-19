@@ -1,4 +1,4 @@
-FROM golang:1.19 As builder
+FROM golang:1.22 As builder
 
 WORKDIR /app
 RUN apt-get update && \
@@ -7,9 +7,9 @@ ADD ./ .
 RUN CGO_ENABLED=0 go build -o app
 
 FROM debian:11
-LABEL version="0.0.7"
+LABEL version="0.0.8"
 LABEL name="gotext-server"
-LABEL goversion="1.19"
+LABEL goversion="1.22"
 RUN cp /etc/apt/sources.list /etc/apt/sources.list.bak && \
     echo "deb http://deb.debian.org/debian experimental main" >> /etc/apt/sources.list
 RUN apt-get update && \

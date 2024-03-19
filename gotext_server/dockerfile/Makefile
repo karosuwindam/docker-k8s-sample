@@ -34,6 +34,8 @@ build-kit: create
 	@echo "--- buildkit build --"
 	${BUILD} --addr ${BUILD_ADDR} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${TARGET_FILE} --opt source=${TARGET_FILE}/${TARGET}
 run:
-	${DOCKER} run --rm --name=gotext-server -p 18080:8080 ${NAME}:${TAG}
+	${DOCKER} run --rm -d --name=gotext-server -p 18080:8080 ${NAME}:${TAG}
+stop:
+	${DOCKER} stop gotext-server
 help:
 	@echo "make |all|create|build|push"
