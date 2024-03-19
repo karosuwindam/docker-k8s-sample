@@ -1,8 +1,8 @@
-TAG = 0.0.7
+TAG = 0.0.8
 DOCKER = docker
 NAME = bookserver2:31000/tool/gotext-server
 APPNAME = "gotext-server"
-GOVERSION = "1.19"
+GOVERSION = "1.22"
 TEMPLATE = ./Dockerfile_tmp
 BASE_CONTANER = "debian:11"
 
@@ -14,7 +14,7 @@ BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 TEMPLATE = ./gotext_server/Dockerfile_tmp
 TARGET = Dockerfile
 TARGET_FILE = ./gotext_server
-ARCH = armv6l
+ARCH = aarch64
 OPT = "--privileged"
 
 all: build push
@@ -32,7 +32,7 @@ rmi:
 	${DOCKER} image prune -f
 build-kit: create
 	@echo "--- buildkit build --"
-	${BUILD} --addr ${BUILD_ADDR_ARM} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${TARGET_FILE} --opt source=${TARGET_FILE}/${TARGET}
+	${BUILD} --addr ${BUILD_ADDR} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${TARGET_FILE} --opt source=${TARGET_FILE}/${TARGET}
 run:
 	${DOCKER} run --rm --name=gotext-server -p 18080:8080 ${NAME}:${TAG}
 help:

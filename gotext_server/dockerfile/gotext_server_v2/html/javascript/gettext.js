@@ -494,6 +494,7 @@ function hiragana2katakana(str) {
     { from: "ゃ", to: "ャ" },
     { from: "ゅ", to: "ュ" },
     { from: "ょ", to: "ョ" },
+    { from: "っ", to: "ッ" },
   ];
   for (var i = 0; i < reples_data.length; i++) {
     str = str.replace(new RegExp(reples_data[i].from, "g"), reples_data[i].to);
