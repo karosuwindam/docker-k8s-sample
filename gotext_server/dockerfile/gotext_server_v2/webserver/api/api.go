@@ -1,13 +1,18 @@
 package api
 
-import "net/http"
+import (
+	"gocsvserver/webserver/api/text"
+	"net/http"
+)
 
 type api struct {
 	Router string
 	Func   func(string, *http.ServeMux) error
 }
 
-var v1apis = []api{}
+var v1apis = []api{
+	{"/text", text.Init},
+}
 
 func Init(mux *http.ServeMux) error {
 	if err := v1apisetup(mux, "/v1"); err != nil {

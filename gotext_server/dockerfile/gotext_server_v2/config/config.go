@@ -10,7 +10,7 @@ type WebConfig struct {
 }
 
 type ReadConfig struct {
-	FilePass string `env:"READ_FILEPASS" envDefault:"./txt"`
+	FilePass string `env:"READ_FILEPASS" envDefault:"./txt-tmp"`
 }
 
 var Web WebConfig
