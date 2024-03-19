@@ -234,11 +234,17 @@ function roma2hiragana(str) {
     { from: "shu", to: "しゅ" },
     { from: "she", to: "しぇ" },
     { from: "sho", to: "しょ" },
+    { from: "sya", to: "しゃ" },
+    { from: "syu", to: "しゅ" },
+    { from: "syo", to: "しょ" },
     { from: "cha", to: "ちゃ" },
     { from: "chi", to: "ち" },
     { from: "chu", to: "ちゅ" },
     { from: "che", to: "ちぇ" },
     { from: "cho", to: "ちょ" },
+    { from: "tya", to: "ちゃ" },
+    { from: "tyu", to: "ちゅ" },
+    { from: "tyo", to: "ちょ" },
     { from: "nya", to: "にゃ" },
     { from: "nyi", to: "にぃ" },
     { from: "nyu", to: "にゅ" },
@@ -494,6 +500,7 @@ function hiragana2katakana(str) {
     { from: "ゃ", to: "ャ" },
     { from: "ゅ", to: "ュ" },
     { from: "ょ", to: "ョ" },
+    { from: "っ", to: "ッ" },
   ];
   for (var i = 0; i < reples_data.length; i++) {
     str = str.replace(new RegExp(reples_data[i].from, "g"), reples_data[i].to);

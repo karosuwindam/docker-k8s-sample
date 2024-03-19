@@ -11,4 +11,4 @@ if [ -z "$(ls txt)" ]; then
     cp txt-tmp/* txt
 fi
 
-exec ./app
+./app
