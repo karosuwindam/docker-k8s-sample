@@ -75,7 +75,8 @@ function viewdata() {
 
 function createList1() {
   var output = "";
-  output += '<select name="year" id="year" onchange="changeList2(this.value)">';
+  output +=
+    '<select name="year" id="year" onchange="clearText();changeList2(this.value)">';
   for (var i = 0; i < Yearlist.length; i++) {
     output +=
       '<option value="' + Yearlist[i] + '">' + Yearlist[i] + "</option>";
@@ -188,8 +189,10 @@ function createList3() {
   return output;
 }
 function titleOut(str) {
+  //strから,で行列化する
+  var tmp = str.split(",");
   var data = document.getElementById("titledata");
-  data.value = str;
+  data.value = tmp[0];
 }
 
 function clearText() {
@@ -398,7 +401,7 @@ function roma2hiragana(str) {
     { from: "u", to: "う" },
     { from: "e", to: "え" },
     { from: "o", to: "お" },
-    { from: "-", to: "ー"}
+    { from: "-", to: "ー" },
   ];
   for (var i = 0; i < reples_data.length; i++) {
     if (str.indexOf(reples_data[i].from) != -1) {
