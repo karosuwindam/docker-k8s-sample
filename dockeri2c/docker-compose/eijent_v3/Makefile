@@ -10,7 +10,7 @@ BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 
 TARGET = ./Dockerfile
 TARGET_FILE = ./golang
-GO_VERSION = 1.19.2
+GO_VERSION = 1.22.1
 DOCKERFILE_FOLDER = .
 
 all: build push
@@ -23,8 +23,11 @@ build: create
 	${DOCKER} build -t ${NAME}:${TAG} -f ${TARGET} ${TARGET_FILE}
 push:
 	${DOCKER} push ${NAME}:${TAG}
-build-kit: create
+build-kit-arm: create
 	@echo "--- buildkit build --"
 	${BUILD} --addr ${BUILD_ADDR_ARM} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${DOCKERFILE_FOLDER}
+build-kit: create
+	@echo "--- buildkit build --"
+	${BUILD} --addr ${BUILD_ADDR} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${DOCKERFILE_FOLDER}
 help:
 	@echo "make |all|create|build|push"
