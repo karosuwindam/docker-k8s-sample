@@ -4,6 +4,7 @@ go 1.22.1
 
 require (
 	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
 	github.com/d2r2/go-dht v0.0.0-20200119175940-4ba96621a218
 	github.com/davecheney/i2c v0.0.0-20140823063045-caf08501bef2
 	github.com/pkg/errors v0.9.1

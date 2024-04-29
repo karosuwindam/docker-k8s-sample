@@ -141,7 +141,7 @@ func (t *Tsl2561) Init(i2cMu *sync.Mutex) error {
 // 動作チェック
 func (t *Tsl2561) Test() bool {
 	if byte, err := readByte(IDDATA, 0x1); err != nil {
-		log.Println("errors:", err)
+		log.Println("error:", err)
 		return false
 	} else {
 		if byte[0] != 0x50 {

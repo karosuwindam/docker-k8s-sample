@@ -1,8 +1,16 @@
 package controller
 
-import "context"
+import (
+	"context"
+	"eijent/controller/senser"
+
+	"github.com/pkg/errors"
+)
 
 func Init() error {
+	if err := senser.Init(); err != nil {
+		return errors.Wrap(err, "senser.Init()")
+	}
 	return nil
 }
 

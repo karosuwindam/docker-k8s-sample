@@ -1,6 +1,9 @@
 package config
 
-import "github.com/caarlos0/env"
+import (
+	"github.com/caarlos0/env"
+	"github.com/pkg/errors"
+)
 
 // Webサーバの設定
 type WebConfig struct {
@@ -10,12 +13,20 @@ type WebConfig struct {
 	StaticPage string `env:"WEB_FOLDER" envDefault:"./html"` //静的ページの参照先
 }
 
+type LogConfig struct {
+	Colors bool `env:"LOG_COLORS" envDefault:"true"`
+}
+
 var Web WebConfig
+var Log LogConfig
 
 // 環境設定
 func Init() error {
 	if err := env.Parse(&Web); err != nil {
-		return err
+		return errors.Wrap(err, "env.Parse(Web)")
+	}
+	if err := env.Parse(&Log); err != nil {
+		return errors.Wrap(err, "env.Parse(Log)")
 	}
 	return nil
 }
