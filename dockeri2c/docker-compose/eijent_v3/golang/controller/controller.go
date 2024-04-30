@@ -15,9 +15,19 @@ func Init() error {
 }
 
 func Run(ctx context.Context) error {
+	if err := senser.Run(ctx); err != nil {
+		return errors.Wrap(err, "senser.Run()")
+	}
 	return nil
 }
 
-func Stop() error {
+func Stop(ctx context.Context) error {
+	if err := senser.Stop(ctx); err != nil {
+		return err
+	}
 	return nil
+}
+
+func Wait() {
+	senser.Wait()
 }

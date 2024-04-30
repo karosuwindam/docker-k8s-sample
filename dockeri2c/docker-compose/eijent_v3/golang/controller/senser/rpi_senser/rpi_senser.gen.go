@@ -28,6 +28,7 @@ type Rpi struct {
 var datastore rpi_data
 var shutdown chan bool
 var done chan bool
+var wait chan bool
 
 func Init() error {
 	if _, err := os.Stat(CPU_TMP_PASS); err != nil {
@@ -36,11 +37,17 @@ func Init() error {
 	datastore.temp = []float64{}
 	shutdown = make(chan bool, 1)
 	done = make(chan bool, 1)
+	wait = make(chan bool, 1)
 	return nil
 }
 
 func Run(ctx context.Context) error {
 	log.Println("info:", "start rpi read loop")
+	if tmp, err := cpu_temp_read(); err != nil { //CPUの温度読み取り
+		log.Println("error:", err)
+	} else {
+		datastore.temp_Add(tmp)
+	}
 loop:
 	for {
 		select {
@@ -49,6 +56,8 @@ loop:
 		case <-shutdown:
 			done <- true
 			break loop
+		case <-wait:
+			done <- true
 		case <-time.After(500 * time.Millisecond): //500msあと
 			if tmp, err := cpu_temp_read(); err != nil { //CPUの温度読み取り
 				log.Println("error:", err)
@@ -74,6 +83,16 @@ func Stop() error {
 		return errors.New("time over 1 sec")
 	}
 	return nil
+}
+
+func Wait() {
+	wait <- true
+	select {
+	case <-done:
+		break
+	case <-time.After(1 * time.Second):
+		log.Panic("time over 1 sec")
+	}
 }
 
 func ReadNow() Rpi {

@@ -3,10 +3,17 @@ package webserver
 import (
 	"context"
 	"eijent/config"
+	"eijent/webserver/health"
+	"eijent/webserver/jsonout"
+	"eijent/webserver/metricsout"
+	"eijent/webserver/reset"
+	"eijent/webserver/rootpage"
 	"log"
 	"net"
 	"net/http"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 // SetupServer
@@ -34,6 +41,19 @@ func APIInit(mux *http.ServeMux) error {
 	return nil
 }
 
+type api struct {
+	Router string
+	Func   func(string, *http.ServeMux) error
+}
+
+var routes = []api{
+	{"/metrics", metricsout.Init},
+	{"/json", jsonout.Init},
+	{"/reset", reset.Init},
+	{"/health", health.Init},
+	{"/", rootpage.Init},
+}
+
 func Init() error {
 	cfg = SetupServer{
 		protocol: config.Web.Protocol,
@@ -41,14 +61,11 @@ func Init() error {
 		port:     config.Web.Port,
 		mux:      http.NewServeMux(),
 	}
-	// api.Init(cfg.mux)
-	// if err := healthcheck.Init(cfg.mux); err != nil {
-	// 	return errors.Wrap(err, "healthcheck.Init()")
-	// }
-	// if err := viewpage.Init("/view", cfg.mux); err != nil {
-	// 	return errors.Wrap(err, "viewpage.Init()")
-	// }
-	// cfg.mux.HandleFunc("/", indexpage.Init("/"))
+	for _, r := range routes {
+		if err := r.Func(r.Router, cfg.mux); err != nil {
+			return errors.Wrapf(err, "setup %v", r.Router)
+		}
+	}
 	return nil
 }
 
