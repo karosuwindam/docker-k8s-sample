@@ -133,7 +133,7 @@ func Init(i2cMu *sync.Mutex) error {
 	done = make(chan bool, 1)
 	reset = make(chan bool, 1)
 	wait = make(chan bool, 1)
-	memory.msg.Create("TSL2561")
+	memory.msg.Create("tsl256")
 	for i := 0; i < 3; i++ {
 		if Test() {
 			break
@@ -229,7 +229,7 @@ func Wait() {
 	case <-done:
 		break
 	case <-time.After(1 * time.Second):
-		log.Panic("time over 1 sec")
+		log.Println("error:", "time over 1 sec")
 	}
 }
 
@@ -260,7 +260,7 @@ func ResetMessage() {
 	if len(reset) > 0 {
 		return
 	}
-	reset < true
+	reset <- true
 }
 
 // 状態確認
@@ -310,7 +310,7 @@ func (v *datastore) readRunFlag() bool {
 func ReadValue() (int, bool) {
 	memory.mu.Lock()
 	defer memory.mu.Unlock()
-	return memory.Lux, memory.readFlag()
+	return memory.Lux, memory.Flag
 }
 
 func (v *datastore) readMsg() msgsenser.Msg {
@@ -328,37 +328,37 @@ func readVisibleLux() int {
 	if full < 500 && timing == 0 {
 		timing = 1
 		time.Sleep(time.Millisecond * 5)
-		fmt.Println("dark 13.7ms to 101ms")
+		log.Println("dark 13.7ms to 101ms")
 		full, ir = readLux(gain, timing)
 	}
 	if full < 500 && timing == 1 {
 		timing = 2
 		time.Sleep(time.Millisecond * 5)
-		fmt.Println("dark 101ms to 402ms")
+		log.Println("dark 101ms to 402ms")
 		full, ir = readLux(gain, timing)
 	}
 	if full < 500 && timing == 2 && gain == 0 {
 		gain = 1
 		time.Sleep(time.Millisecond * 5)
-		fmt.Println("dark high gain")
+		log.Println("dark high gain")
 		full, ir = readLux(gain, timing)
 	}
 	if (full < 20000 || ir > 20000) && timing == 2 && gain == 1 {
 		gain = 0
 		time.Sleep(time.Millisecond * 5)
-		fmt.Println("light low gain")
+		log.Println("light low gain")
 		full, ir = readLux(gain, timing)
 	}
 	if (full < 20000 || ir > 20000) && timing == 2 {
 		timing = 1
 		time.Sleep(time.Millisecond * 5)
-		fmt.Println("light 402ms to 101ms")
+		log.Println("light 402ms to 101ms")
 		full, ir = readLux(gain, timing)
 	}
 	if (full < 10000 || ir > 10000) && timing == 1 {
 		timing = 0
 		time.Sleep(time.Millisecond * 5)
-		fmt.Println("light 101ms to 13.7ms")
+		log.Println("light 101ms to 13.7ms")
 		full, ir = readLux(gain, timing)
 	}
 	down()

@@ -20,6 +20,7 @@ func (t *Msg) Write(str string) {
 type HealthData struct {
 	Sennserdata string `json:sennserdata`
 	Message     string `json:message`
+	Run         string `json:run`
 }
 
 type SenserData struct {

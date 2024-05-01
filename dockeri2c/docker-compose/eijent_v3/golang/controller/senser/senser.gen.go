@@ -2,6 +2,7 @@ package senser
 
 import (
 	"context"
+	gpiosenser "eijent/controller/senser/gpio_senser"
 	i2csenser "eijent/controller/senser/i2c_senser"
 	msgsenser "eijent/controller/senser/msg_senser"
 	rpisenser "eijent/controller/senser/rpi_senser"
@@ -16,12 +17,22 @@ func Init() error {
 	if err := i2csenser.Init(); err != nil {
 		log.Println("error:", err)
 	}
+	if err := gpiosenser.Init(); err != nil {
+		log.Panicln("error:", err)
+	}
 	return nil
 }
 
 func Run(ctx context.Context) error {
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+		if err := gpiosenser.Run(); err != nil {
+			log.Println("error:", err)
+		}
+	}()
 	go func() {
 		defer wg.Done()
 		if err := i2csenser.Run(); err != nil {
@@ -40,7 +51,14 @@ func Run(ctx context.Context) error {
 
 func Stop(ctx context.Context) error {
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		if err := gpiosenser.Stop(); err != nil {
+
+			log.Println("errors:", err)
+		}
+	}()
 	go func() {
 		defer wg.Done()
 		if err := i2csenser.Stop(); err != nil {
@@ -61,6 +79,7 @@ func Stop(ctx context.Context) error {
 func Wait() {
 	rpisenser.Wait()
 	i2csenser.Wait()
+	gpiosenser.Wait()
 }
 
 type SenserData struct {
@@ -109,11 +128,16 @@ func Health() []HealthData {
 		tt := HealthData{tmp}
 		out = append(out, tt)
 	}
+	for _, tmp := range gpiosenser.Health() {
+		tt := HealthData{tmp}
+		out = append(out, tt)
+	}
 	return out
 }
 
 // senserの再確認動作
 func Reset() {
 	i2csenser.Reset()
+	gpiosenser.Reset()
 	return
 }

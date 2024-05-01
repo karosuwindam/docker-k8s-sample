@@ -1,17 +1,16 @@
-package i2csenser
+package gpiosenser
 
 import (
-	"eijent/controller/senser/i2c_senser/tsl2561"
-	msgsenser "eijent/controller/senser/msg_senser"
 	"log"
 	"sync"
 	"time"
+
+	dhtsenser "eijent/controller/senser/gpio_senser/dht_senser"
+	msgsenser "eijent/controller/senser/msg_senser"
 )
 
-var i2cMus sync.Mutex
-
 type APIList interface {
-	Init(i2cMu *sync.Mutex) error
+	Init() error
 	Stop() error
 	Run() error
 	Health() (bool, msgsenser.Msg)
@@ -28,16 +27,16 @@ func AddApi(api APIList) {
 }
 
 func Init() error {
-	AddApi(tsl2561.NewAPI())
+	AddApi(dhtsenser.NewAPI())
 	var wg sync.WaitGroup
 	wg.Add(len(apilists))
 	for _, api := range apilists {
-		go func(i2cMus *sync.Mutex) {
+		go func() {
 			defer wg.Done()
-			if err := api.Init(i2cMus); err != nil {
+			if err := api.Init(); err != nil {
 				log.Println("error:", err)
 			}
-		}(&i2cMus)
+		}()
 	}
 	wg.Wait()
 	return nil

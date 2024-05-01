@@ -14,7 +14,10 @@ type WebConfig struct {
 }
 
 type SenserConfig struct {
-	Tsl2561_Count int `env:"TSL2561_INTERVAL" envDefault:"100"` //Tsl2561のセンサーのインターバル ms
+	Tsl2561_Count    int    `env:"TSL2561_INTERVAL" envDefault:"100"`  //Tsl2561のセンサーのインターバル ms
+	DHT_senser_type  string `env:"DHT_SENSER_TYPE" envDefault:"DHT11"` //DHT系のセンサーの種類
+	DHT_senser_pin   int    `env:"DHT_SENSER_PIN" envDefault:"583"`    //DHT系のセンサーのピン番号
+	DHT_senser_Count int    `env:"DHT_SENSER_PIN" envDefault:"200"`    //DHT系のセンサーのインターバル ms
 }
 
 type LogConfig struct {

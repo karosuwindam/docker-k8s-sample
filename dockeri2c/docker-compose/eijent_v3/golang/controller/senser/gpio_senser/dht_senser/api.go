@@ -1,9 +1,8 @@
-package tsl2561
+package dhtsenser
 
 import (
 	msgsenser "eijent/controller/senser/msg_senser"
 	"strconv"
-	"sync"
 )
 
 type API struct{}
@@ -16,8 +15,8 @@ func (api *API) Run() error {
 	return Run()
 }
 
-func (api *API) Init(i2cMu *sync.Mutex) error {
-	return Init(i2cMu)
+func (api *API) Init() error {
+	return Init()
 }
 
 func (api *API) Stop() error {
@@ -42,8 +41,13 @@ func (api *API) Read() ([]msgsenser.SenserData, bool) {
 	v, ok := ReadValue()
 	out = append(out, msgsenser.SenserData{
 		Senser: memory.readMsg().Senser,
-		Type:   "lux",
-		Data:   strconv.Itoa(v),
+		Type:   "hum",
+		Data:   strconv.FormatFloat(v.Hum, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "tmp",
+		Data:   strconv.FormatFloat(v.Temp, 'f', 1, 64),
 	})
 	return out, ok
 }
