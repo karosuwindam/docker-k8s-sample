@@ -1,6 +1,8 @@
 package i2csenser
 
 import (
+	"eijent/controller/senser/i2c_senser/am2320"
+	"eijent/controller/senser/i2c_senser/bme280"
 	"eijent/controller/senser/i2c_senser/tsl2561"
 	msgsenser "eijent/controller/senser/msg_senser"
 	"log"
@@ -29,6 +31,8 @@ func AddApi(api APIList) {
 
 func Init() error {
 	AddApi(tsl2561.NewAPI())
+	AddApi(am2320.NewAPI())
+	AddApi(bme280.NewAPI())
 	var wg sync.WaitGroup
 	wg.Add(len(apilists))
 	for _, api := range apilists {

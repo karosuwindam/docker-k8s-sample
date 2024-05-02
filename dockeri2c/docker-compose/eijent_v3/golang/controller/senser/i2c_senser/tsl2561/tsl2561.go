@@ -101,29 +101,12 @@ const (
 var packageType int = 0
 
 var (
-	I2C_BUS = 1
+	SENSER_NAME = "tsl256"
+	I2C_BUS     = 1
 )
-
-type datastore struct {
-	Lux      int
-	Flag     bool
-	StopFlag bool
-	msg      msgsenser.Msg
-
-	mu    sync.Mutex
-	i2cMu *sync.Mutex
-}
-
-var memory datastore
-
-var shudown chan bool
-var reset chan bool
-var done chan bool
-var wait chan bool
 
 func Init(i2cMu *sync.Mutex) error {
 	memory = datastore{
-		Lux:      -1,
 		Flag:     false,
 		StopFlag: false,
 		msg:      msgsenser.Msg{},
@@ -148,14 +131,14 @@ func Init(i2cMu *sync.Mutex) error {
 }
 
 func Test() bool {
-	if byte, err := readByte(IDDATA, 0x1); err != nil {
+	if byted, err := readByte(IDDATA, 0x1); err != nil {
 		log.Println("error:", err)
 		memory.changeMsg("Read Error I2C")
 		memory.changeFlag(false)
 		return false
 	} else {
-		if byte[0] != 0x50 {
-			msg := fmt.Sprintf("TSL2561 test header data 0x50 !=%x", byte[0])
+		if byted[0] != 0x50 {
+			msg := fmt.Sprintf("TSL2561 test header data 0x50 !=%x", byted[0])
 			log.Println("error:", msg)
 			memory.changeMsg(msg)
 			memory.changeFlag(false)
@@ -169,13 +152,12 @@ func Test() bool {
 
 // xミリ秒ごとの読み取り開始
 func Run() error {
-	// if !memory.Flag {
-	// 	return errors.New("errors Run")
-	// }
 	memory.chageRunFlag(true)
 	log.Println("info:", "TSL2561 loop start")
 	var readone chan bool = make(chan bool, 1)
-	readone <- true
+	if memory.readFlag() {
+		readone <- true
+	}
 loop:
 	for {
 		select {
@@ -234,26 +216,18 @@ func Wait() {
 }
 
 func readdate() {
-	flag := true
-	for i := 0; i < 3; i++ {
-		num := readVisibleLux()
-		if num > 0 {
-			memory.changeValue(num)
-			memory.changeMsg("OK")
-			flag = false
-			break
-		} else {
-			msg := fmt.Sprintf("Error Read Tsl2561 Count %v", i)
-			memory.changeMsg(msg)
+	num := readVisibleLux()
+	if num > 0 {
+		memory.changeValue(num)
+		memory.changeMsg("OK")
+	} else {
+		msg := fmt.Sprintf("Error Read Tsl2561 Count %v", i)
+		memory.changeMsg(msg)
+		if !memory.chackEnable() {
+			memory.changeFlag(false)
+			memory.changeMsg("Stop Tsl2561")
 		}
-		time.Sleep(time.Duration(config.Senser.Tsl2561_Count) * time.Millisecond)
 	}
-	if flag {
-		memory.changeFlag(false)
-		memory.changeMsg("Stop Tsl2561")
-
-	}
-
 }
 
 func ResetMessage() {
@@ -269,54 +243,13 @@ func Health() (bool, msgsenser.Msg) {
 	return memory.readFlag(), memory.readMsg()
 }
 
-func (v *datastore) changeFlag(flag bool) {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	v.Flag = flag
-
-}
-
-func (v *datastore) chageRunFlag(flag bool) {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	v.StopFlag = flag
-}
-
-func (v *datastore) changeValue(num int) {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	v.Lux = num
-}
-
-func (v *datastore) changeMsg(str string) {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	v.msg.Write(str)
-}
-
-func (v *datastore) readFlag() bool {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return v.Flag
-}
-
-func (v *datastore) readRunFlag() bool {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return v.StopFlag
-}
-
 // データストアの値を読み取る
 func ReadValue() (int, bool) {
-	memory.mu.Lock()
-	defer memory.mu.Unlock()
-	return memory.Lux, memory.Flag
-}
-
-func (v *datastore) readMsg() msgsenser.Msg {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return v.msg
+	num, ok := memory.readValue().(int)
+	if !ok {
+		return -1, memory.readFlag()
+	}
+	return num, memory.readFlag()
 }
 
 // 現在の値を読み取る
@@ -415,7 +348,9 @@ func readLux(onoff, gain int) (int, int) {
 }
 
 func calculateLux(gain, timing, full, ir int) int {
-
+	if full == -1 && ir == -1 {
+		return -1
+	}
 	chScale := 0
 	ratio := 0
 	b := 0
