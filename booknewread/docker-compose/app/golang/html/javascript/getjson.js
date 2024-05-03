@@ -125,7 +125,14 @@ function timech(timedata) {
   format_str = format_str.replace(/ss/g, second_str);
   return format_str;
 }
+
+var statusRun = function(output) {
+  statusckJSON(output)
+}
+var timer = nil
 function statusckJSON(output) {
+  clearInterval(timer);
+ 
   var req = new window.XMLHttpRequest();
   req.onreadystatechange = function () {
     if (req.readyState == 4 && req.status == 200) {
@@ -134,15 +141,20 @@ function statusckJSON(output) {
       console.log(data);
       document.getElementById(output).innerHTML =
         "Book:" +
-        data.BookStatus +
+        statusLoad(data.BookStatus) +
         "(" +
         timech(data.BookNowTIme) +
         ")" +
-        ",Bookmark:" +
-        data.BookMarkStatus +
+        "<br>Bookmark:" +
+        statusLoad(data.BookMarkStatus) +
         "(" +
         timech(data.BookMarkNowTime) +
         ")";
+        if (data.BookMarkStatus!="ok") {
+          timer = setInterval(statusRun, 3000, output);
+        }else {
+          timer = nil
+        }
       // document.getElementById(output).innerHTML = data;
     }
   };
@@ -150,6 +162,13 @@ function statusckJSON(output) {
   req.send();
 }
 
+function statusLoad(value) {
+  if (value=="ok"){
+    return value
+  }
+  var num = value.substr("Reload:".length,value.length-1-"Reload:".length) - 0
+  return "<progress max='100'value='"+num+"' >"+num+"</progress>"
+}
 function serchgetJSON(output) {
   var req = new window.XMLHttpRequest();
   req.onreadystatechange = function () {

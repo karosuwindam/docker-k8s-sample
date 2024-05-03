@@ -311,7 +311,8 @@ func chackKakuyomu(data documentdata) List {
 	//div.NewBox_box__45ont.NewBox_padding-px-4l__Kx_xT.NewBox_padding-pt-7l__Czm59
 	output.Title = doc.Find("div#workHeader-inner").Find("h1#workTitle").Text()
 	if output.Title == "" {
-		tmpTitle, _ := doc.Find("div.NewBox_box__45ont.NewBox_padding-px-4l__Kx_xT.NewBox_padding-pt-7l__Czm59").Find("a").Attr("title")
+		// tmpTitle, _ := doc.Find("div.NewBox_box__45ont.NewBox_padding-px-4l__Kx_xT.NewBox_padding-pt-7l__Czm59").Find("a").Attr("title")
+		tmpTitle, _ := doc.Find("div.NewBox_box__45ont.NewBox_padding-px-4l__Kx_xT").Find("a").Attr("title")
 		if tmpTitle != "" {
 			output.Title = tmpTitle
 		}
