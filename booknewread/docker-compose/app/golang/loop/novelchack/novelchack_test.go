@@ -18,6 +18,14 @@ func TestNovelChack(t *testing.T) {
 	} else {
 		fmt.Println(tmp)
 	}
+
+	url = "https://kakuyomu.jp/works/16817330662159451369"
+	if tmp, err := novelchack.ChackURLData(url); err != nil {
+		t.Error(err)
+	} else {
+		fmt.Println(tmp)
+	}
+
 	url = "https://ncode.syosetu.com/n1976ey/"
 	// url := "https://kakuyomu.jp/works/16816452218254294002"
 	if tmp, err := novelchack.ChackURLData(url); err != nil {
