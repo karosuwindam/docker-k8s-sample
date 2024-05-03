@@ -225,7 +225,12 @@ func down() {
 //
 // press, temp, hum
 func rawRead() (int, int, int) {
-	buf, _ := readByte(BME280_PRESS_MSB, 8)
+	buf, err := readByte(BME280_PRESS_MSB, 8)
+	if err != nil {
+		log.Println("error:", err)
+		memory.changeMsg(err.Error())
+	}
+	memory.changeMsg("OK")
 	tmp := 0
 	for _, bt := range buf {
 		tmp += int(bt)

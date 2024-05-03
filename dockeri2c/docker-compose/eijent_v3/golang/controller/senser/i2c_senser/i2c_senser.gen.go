@@ -33,6 +33,7 @@ func Init() error {
 	AddApi(tsl2561.NewAPI())
 	AddApi(am2320.NewAPI())
 	AddApi(bme280.NewAPI())
+	// AddApi(tsl2561.NewAPI())
 	var wg sync.WaitGroup
 	wg.Add(len(apilists))
 	for _, api := range apilists {
