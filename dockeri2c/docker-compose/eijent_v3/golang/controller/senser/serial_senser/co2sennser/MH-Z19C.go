@@ -8,6 +8,25 @@ import (
 	"time"
 )
 
+var (
+	INIT_DATA = []byte{0xff, 0x87, 0x87, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf2}
+	READ_DATA = []byte{0xff, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79}
+)
+
+const (
+	GROVENAME  string = "Grove - CO2 Sensor"
+	MHZ19CNAME string = "MH-Z19C"
+	CO2_MAX           = 5000
+	CO2_MIN           = 400
+)
+const (
+	INIT       = 0
+	READ       = 1
+	BAUDRATE   = 9600
+	CO2SLEEP   = 10                    //10us	Time out count interval
+	CO2TIMEOUT = 500 * 1000 / CO2SLEEP //500ms Time Out
+)
+
 func Init(i2cMu *sync.Mutex) error {
 	memory = datastore{
 		Flag:     false,
