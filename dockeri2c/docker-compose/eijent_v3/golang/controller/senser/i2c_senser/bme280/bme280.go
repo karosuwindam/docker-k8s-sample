@@ -282,7 +282,7 @@ func calibRead() bme280_cal {
 	out.hum = append(out.hum, (calib[30]<<4)|((calib[29]>>4)&0x0F))
 	out.hum = append(out.hum, calib[31])
 	for i := 0; i < len(out.hum); i++ {
-		if (i != 0) || (i != 2) {
+		if (i != 0) && (i != 2) {
 			if (out.hum[i] & 0x8000) != 0 {
 				out.hum[i] = (-out.hum[i] ^ 0xffff) + 1
 			}

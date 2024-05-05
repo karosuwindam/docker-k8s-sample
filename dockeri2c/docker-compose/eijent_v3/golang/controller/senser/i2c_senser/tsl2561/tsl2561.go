@@ -221,7 +221,7 @@ func readdate() {
 		memory.changeValue(num)
 		memory.changeMsg("OK")
 	} else {
-		msg := fmt.Sprintf("Error Read Tsl2561 Count %v", i)
+		msg := fmt.Sprintf("Error Read Tsl2561 Count %v", num)
 		memory.changeMsg(msg)
 		if !memory.chackEnable() {
 			memory.changeFlag(false)

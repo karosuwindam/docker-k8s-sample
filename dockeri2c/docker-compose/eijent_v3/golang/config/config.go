@@ -20,7 +20,7 @@ type SenserConfig struct {
 	BME280_Count     int    `env:"BME280_INTERVAL" envDefault:"100"`     //BME280のセンサーのインターバル ms
 	MMA8452Q_Count   int    `env:"MMA8452Q_INTERVAL" envDefault:"500"`   //MMA8452Qのセンサーのインターバル µs
 	DHT_senser_type  string `env:"DHT_SENSER_TYPE" envDefault:"DHT11"`   //DHT系のセンサーの種類
-	DHT_senser_pin   int    `env:"DHT_SENSER_PIN" envDefault:"583"`      //DHT系のセンサーのピン番号
+	DHT_senser_pin   int    `env:"DHT_SENSER_PIN" envDefault:"12"`       //DHT系のセンサーのピン番号
 	DHT_senser_Count int    `env:"DHT_SENSER_INTERVAL" envDefault:"200"` //DHT系のセンサーのインターバル ms
 	CO2_SENSER_Count int    `env:"CO2_SENSER_INTERVAL" envDefault:"200"` //CO2のセンサーのインターバル ms
 }
