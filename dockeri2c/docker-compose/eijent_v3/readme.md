@@ -63,6 +63,9 @@ curl localhost:9140/reset -X POST
  http://www.ne.jp/asahi/shared/o-family/ElecRoom/AVRMCOM/TSL2561/TSL2561.html
  https://www.switch-science.com/catalog/1801/
 
+* BMX055 \
+ https://akizukidenshi.com/catalog/g/g113010/
+
 ## 実行参考
  https://www.denshi.club/pc/raspi/5raspberry-pi-zeroiot27-1-i2c-tls2561.html
 
