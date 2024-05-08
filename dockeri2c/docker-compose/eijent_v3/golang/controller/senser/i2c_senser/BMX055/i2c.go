@@ -10,6 +10,8 @@ var (
 )
 
 func writeByte(i2c_addr uint8, command, data byte) error {
+	memory.i2cMu.Lock()
+	defer memory.i2cMu.Unlock()
 	i2c, err := i2c.New(i2c_addr, I2C_BUS)
 	if err != nil {
 		return errors.Wrapf(err, "i2c.New(%v,%v)", i2c_addr, I2C_BUS)
@@ -24,6 +26,8 @@ func writeByte(i2c_addr uint8, command, data byte) error {
 
 func readByte(i2c_addr uint8, command byte, size int) ([]byte, error) {
 	buf := make([]byte, size)
+	memory.i2cMu.Lock()
+	defer memory.i2cMu.Unlock()
 	i2c, err := i2c.New(i2c_addr, I2C_BUS)
 	if err != nil {
 		return buf, errors.Wrapf(err, "i2c.New(%v,%v)", i2c_addr, I2C_BUS)
