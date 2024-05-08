@@ -427,6 +427,7 @@ func accInit() {
 	writeByte(BMX055_MAG, MAG_CTL_INTERPUT_3, MAG_CTL_DATA_READY_PIN_ON|MAG_CTL_DR_POLARITY_HIGH)
 	writeByte(BMX055_MAG, MAG_REPXY, 0x04) //1+2*4=9
 	writeByte(BMX055_MAG, MAG_REPZ, 0x16)  //1+22=23
+	time.Sleep(100 * time.Millisecond)
 }
 
 type Axis struct {
