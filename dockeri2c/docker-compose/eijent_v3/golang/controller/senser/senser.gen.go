@@ -2,6 +2,7 @@ package senser
 
 import (
 	"context"
+	"eijent/config"
 	gpiosenser "eijent/controller/senser/gpio_senser"
 	i2csenser "eijent/controller/senser/i2c_senser"
 	msgsenser "eijent/controller/senser/msg_senser"
@@ -14,11 +15,15 @@ func Init() error {
 	if err := rpisenser.Init(); err != nil {
 		return err
 	}
-	if err := i2csenser.Init(); err != nil {
-		log.Println("error:", err)
+	if config.Senser.I2C_ON {
+		if err := i2csenser.Init(); err != nil {
+			log.Println("error:", err)
+		}
 	}
-	if err := gpiosenser.Init(); err != nil {
-		log.Panicln("error:", err)
+	if config.Senser.GPIO_ON {
+		if err := gpiosenser.Init(); err != nil {
+			log.Panicln("error:", err)
+		}
 	}
 	return nil
 }
@@ -29,14 +34,18 @@ func Run(ctx context.Context) error {
 
 	go func() {
 		defer wg.Done()
-		if err := gpiosenser.Run(); err != nil {
-			log.Println("error:", err)
+		if config.Senser.GPIO_ON {
+			if err := gpiosenser.Run(); err != nil {
+				log.Println("error:", err)
+			}
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		if err := i2csenser.Run(); err != nil {
-			log.Println("error:", err)
+		if config.Senser.I2C_ON {
+			if err := i2csenser.Run(); err != nil {
+				log.Println("error:", err)
+			}
 		}
 	}()
 	go func(ctx context.Context) {
@@ -54,16 +63,20 @@ func Stop(ctx context.Context) error {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		if err := gpiosenser.Stop(); err != nil {
+		if config.Senser.GPIO_ON {
+			if err := gpiosenser.Stop(); err != nil {
 
-			log.Println("errors:", err)
+				log.Println("errors:", err)
+			}
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		if err := i2csenser.Stop(); err != nil {
+		if config.Senser.I2C_ON {
+			if err := i2csenser.Stop(); err != nil {
 
-			log.Println("errors:", err)
+				log.Println("errors:", err)
+			}
 		}
 	}()
 	go func(ctx context.Context) {

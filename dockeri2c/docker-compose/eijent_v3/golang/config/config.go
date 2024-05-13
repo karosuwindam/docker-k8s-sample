@@ -14,6 +14,9 @@ type WebConfig struct {
 }
 
 type SenserConfig struct {
+	GPIO_ON          bool   `env:"GPIO_ON" envDefault:"true"`            //GPIO読み取りの有効
+	I2C_ON           bool   `env:"I2C_ON" envDefault:"true"`             //I2C読み取りの有効
+	UART_ON          bool   `env:"UART_ON" envDefault:"true"`            //UART読み取りの有効
 	HorldTime        int    `env:"HOLDTIME" envDefault:"30"`             //センサー読み取りの有効読み込み保持時間 (分)
 	Am2320_Count     int    `env:"AM2320_INTERVAL" envDefault:"100"`     //Am2320のセンサーのインターバル ms
 	Tsl2561_Count    int    `env:"TSL2561_INTERVAL" envDefault:"100"`    //Tsl2561のセンサーのインターバル ms
