@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
+	"sort"
 	"sync"
 	"time"
 )
@@ -282,7 +284,22 @@ const (
 	BMX055_ID      byte    = 0xfa
 	ACC_THRESHOLD  float64 = 0.0196
 	GYRO_THRESHOLD float64 = 0.0038
+	AVE_COUNT      int     = 200
 )
+
+type ZeroAxis struct {
+	X float64
+	Y float64
+	Z float64
+}
+
+type Value struct {
+	acc       []ACCAxis
+	acc_zero  ZeroAxis
+	gyro      []GyroAxis
+	gyro_zero ZeroAxis
+	mag       []Axis
+}
 
 func Init(i2cMu *sync.Mutex) error {
 	memory = datastore{
@@ -295,6 +312,7 @@ func Init(i2cMu *sync.Mutex) error {
 	done = make(chan bool, 1)
 	reset = make(chan bool, 1)
 	wait = make(chan bool, 1)
+	busy = make(chan bool, 1)
 	memory.msg.Create(SENSER_NAME)
 	for i := 0; i < 3; i++ {
 		if Test() {
@@ -330,12 +348,19 @@ loop:
 			done <- true
 			break loop
 		case <-wait:
-			done <- true
+			tmp, _ := ReadValue()
+			if tmp.acc_zero.X == 0 && tmp.acc_zero.Y == 0 && tmp.acc_zero.Z == 0 {
+				readdate()
+				busy <- true
+			} else {
+				done <- true
+
+			}
 		case <-readone:
 			if memory.readFlag() {
 				readdate()
 			}
-		case <-time.After(time.Duration(config.Senser.MMA8452Q_Count) * time.Microsecond):
+		case <-time.After(time.Duration(config.Senser.BMX055_Count) * time.Millisecond):
 			if memory.readFlag() {
 				readdate()
 			}
@@ -369,16 +394,34 @@ func Health() (bool, msgsenser.Msg) {
 func Wait() {
 
 	wait <- true
-	select {
-	case <-done:
-		break
-	case <-time.After(1 * time.Second):
-		log.Println("error:", "time over 1 sec")
+loop:
+	for {
+		select {
+		case <-busy:
+			time.Sleep(100 * time.Millisecond)
+			wait <- true
+		case <-done:
+			break loop
+		case <-time.After(1 * time.Second):
+			log.Println("error:", "time over 1 sec")
+			break loop
+		}
 	}
 }
 
-func ReadValue() (interface{}, bool) {
-	return nil, true
+func ReadValue() (Value, bool) {
+	tmp, ok := memory.readValue().(Value)
+	if !ok {
+		tmp = Value{
+			acc:       []ACCAxis{},
+			acc_zero:  ZeroAxis{},
+			gyro:      []GyroAxis{},
+			gyro_zero: ZeroAxis{},
+			mag:       []Axis{},
+		}
+		return tmp, false
+	}
+	return tmp, memory.readFlag()
 }
 
 func ResetMessage() {
@@ -389,6 +432,106 @@ func ResetMessage() {
 }
 
 func readdate() {
+	var wg sync.WaitGroup
+	flag := true
+	var acc ACCAxis
+	var gyro GyroAxis
+	var mag Axis
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		tmp, err := getACCRAW()
+		if err != nil {
+			log.Println("error:", err)
+			flag = false
+		}
+		acc = axis_to_ACC(tmp)
+
+	}()
+	go func() {
+		defer wg.Done()
+		tmp, err := getGyroRAW()
+		if err != nil {
+			log.Println("error:", err)
+			flag = false
+		}
+		gyro = axis_to_Gyro(tmp)
+	}()
+	go func() {
+		defer wg.Done()
+		tmp, err := getMag()
+		if err != nil {
+			log.Println("error:", err)
+			flag = false
+		}
+		mag = tmp
+	}()
+	v, ok := memory.readValue().(Value)
+	wg.Wait()
+	if !flag { //読み取りに失敗時
+		memory.changeMsg("Read NG")
+		return
+	} else {
+		memory.changeMsg("OK")
+	}
+	if ok {
+		v.acc = append(v.acc, acc)
+		v.gyro = append(v.gyro, gyro)
+		v.mag = append(v.mag, mag)
+		if len(v.acc) > config.Senser.BMX055_ARY_MAX {
+			v.acc = v.acc[1:]
+		}
+		if len(v.gyro) > config.Senser.BMX055_ARY_MAX {
+			v.gyro = v.gyro[1:]
+		}
+		if len(v.mag) > config.Senser.BMX055_ARY_MAX {
+			v.mag = v.mag[1:]
+		}
+		if len(v.acc) >= AVE_COUNT {
+			avg := average_zero(v.acc[len(v.acc)-200:])
+			mid := median_zero(v.acc[len(v.acc)-200:])
+			flag = true
+			for i := 0; i < len(avg); i++ {
+				if math.Abs(avg[i])*0.95 > math.Abs(mid[i]) || math.Abs(mid[i]) > math.Abs(avg[i])*1.05 {
+					flag = false
+					break
+				}
+			}
+			if flag {
+				v.acc_zero.X = avg[0]
+				v.acc_zero.Y = avg[1]
+				v.acc_zero.Z = avg[2]
+			}
+
+		}
+		if len(v.gyro) >= AVE_COUNT {
+			avg := average_zero(v.gyro[len(v.gyro)-200:])
+			mid := median_zero(v.gyro[len(v.gyro)-200:])
+			flag = true
+			for i := 0; i < len(avg); i++ {
+				if math.Abs(avg[i])*0.95 > math.Abs(mid[i]) || math.Abs(mid[i]) > math.Abs(avg[i])*1.05 {
+					flag = false
+					break
+				}
+			}
+			if flag {
+				v.gyro_zero.X = avg[0]
+				v.gyro_zero.Y = avg[1]
+				v.gyro_zero.Z = avg[2]
+			}
+
+		}
+	} else {
+		v = Value{
+			acc:       []ACCAxis{acc},
+			gyro:      []GyroAxis{gyro},
+			mag:       []Axis{mag},
+			acc_zero:  ZeroAxis{0, 0, 0},
+			gyro_zero: ZeroAxis{0, 0, 0},
+		}
+	}
+	memory.changeValue(v)
+
 }
 
 func Test() bool {
@@ -399,6 +542,7 @@ func Test() bool {
 	} else if buf[0] != BMX055_ID {
 		msg = fmt.Sprintf("%v Test test header data %x !=%x", SENSER_NAME, BMX055_ID, buf[0])
 	} else {
+		accInit()
 		msg = "OK"
 		flag = true
 	}
@@ -511,14 +655,98 @@ func getMag() (Axis, error) {
 		tmp := make([]int, 3)
 		tmp[0] = int(uint16(buf[1])<<8|uint16(buf[0]&0xf8)) / 8
 		tmp[1] = int(uint16(buf[3])<<8|uint16(buf[2]&0xf8)) / 8
-		tmp[2] = int(uint16(buf[5])<<8|uint16(buf[4]&0xf8)) / 8
+		tmp[2] = int(uint16(buf[5])<<8|uint16(buf[4]&0xfE)) / 2
 		for i := 0; i < len(tmp); i++ {
-			if tmp[i] > 4095 {
-				tmp[i] -= 8192
+			if i == 2 {
+				if tmp[i] > 16383 {
+					tmp[i] -= 32768
+				}
+			} else {
+				if tmp[i] > 4095 {
+					tmp[i] -= 8192
+				}
+
 			}
 		}
 		out = Axis{tmp[0], tmp[1], tmp[2]}
 	}
 
 	return out, nil
+}
+
+func average_zero(nums interface{}) []float64 {
+	out := []float64{0, 0, 0}
+	switch nums.(type) {
+	case []ACCAxis:
+		for i, num := range nums.([]ACCAxis) {
+			out[0] = (out[0]*float64(i) + num.X) / float64(i+1)
+			out[1] = (out[1]*float64(i) + num.Y) / float64(i+1)
+			out[2] = (out[2]*float64(i) + num.Z) / float64(i+1)
+		}
+	case []GyroAxis:
+		for i, num := range nums.([]GyroAxis) {
+			out[0] = (out[0]*float64(i) + num.X) / float64(i+1)
+			out[1] = (out[1]*float64(i) + num.Y) / float64(i+1)
+			out[2] = (out[2]*float64(i) + num.Z) / float64(i+1)
+		}
+	case []Axis:
+		for i, num := range nums.([]GyroAxis) {
+			out[0] = (out[0]*float64(i) + num.X) / float64(i+1)
+			out[1] = (out[1]*float64(i) + num.Y) / float64(i+1)
+			out[2] = (out[2]*float64(i) + num.Z) / float64(i+1)
+		}
+	}
+	return out
+}
+
+func median_zero(nums interface{}) []float64 {
+	out := []float64{0, 0, 0}
+	var tmps_x []float64
+	var tmps_y []float64
+	var tmps_z []float64
+	switch nums.(type) {
+	case []ACCAxis:
+		for _, num := range nums.([]ACCAxis) {
+			tmps_x = append(tmps_x, float64(num.X))
+			tmps_y = append(tmps_y, float64(num.Y))
+			tmps_z = append(tmps_z, float64(num.Z))
+		}
+	case []GyroAxis:
+		for _, num := range nums.([]GyroAxis) {
+			tmps_x = append(tmps_x, float64(num.X))
+			tmps_y = append(tmps_y, float64(num.Y))
+			tmps_z = append(tmps_z, float64(num.Z))
+		}
+	case []Axis:
+		for _, num := range nums.([]Axis) {
+			tmps_x = append(tmps_x, float64(num.X))
+			tmps_y = append(tmps_y, float64(num.Y))
+			tmps_z = append(tmps_z, float64(num.Z))
+		}
+
+	}
+	if len(tmps_x) == 0 {
+		return out
+	} else {
+		if len(tmps_x) == 1 {
+			out[0] = tmps_x[0]
+			out[1] = tmps_y[0]
+			out[2] = tmps_z[0]
+			return out
+		}
+		sort.Slice(tmps_x, func(i, j int) bool { return tmps_x[i] < tmps_x[j] })
+		sort.Slice(tmps_y, func(i, j int) bool { return tmps_y[i] < tmps_y[j] })
+		sort.Slice(tmps_z, func(i, j int) bool { return tmps_z[i] < tmps_z[j] })
+		if (len(tmps_x)/2)*2 != len(tmps_x) {
+			out[0] = tmps_x[(len(tmps_x) / 2)]
+			out[1] = tmps_y[(len(tmps_y) / 2)]
+			out[2] = tmps_z[(len(tmps_z) / 2)]
+		} else {
+			out[0] = (tmps_x[(len(tmps_x)/2)] + tmps_x[(len(tmps_x)/2+1)]) / 2
+			out[1] = (tmps_y[(len(tmps_y)/2)] + tmps_y[(len(tmps_y)/2+1)]) / 2
+			out[2] = (tmps_z[(len(tmps_z)/2)] + tmps_z[(len(tmps_z)/2+1)]) / 2
+
+		}
+	}
+	return out
 }

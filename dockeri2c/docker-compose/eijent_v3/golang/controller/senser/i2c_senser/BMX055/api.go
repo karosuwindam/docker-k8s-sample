@@ -2,6 +2,7 @@ package bmx055
 
 import (
 	msgsenser "eijent/controller/senser/msg_senser"
+	"strconv"
 	"sync"
 )
 
@@ -38,12 +39,82 @@ func (api *API) Name() string {
 
 func (api *API) Read() ([]msgsenser.SenserData, bool) {
 	var out []msgsenser.SenserData
-	_, ok := ReadValue()
-	// out = append(out, msgsenser.SenserData{
-	// 	Senser: memory.readMsg().Senser,
-	// 	Type:   "lux",
-	// 	Data:   strconv.Itoa(v),
-	// })
+	v, ok := ReadValue()
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "ax",
+		Data:   strconv.FormatFloat(v.acc[len(v.acc)-1].X, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "ay",
+		Data:   strconv.FormatFloat(v.acc[len(v.acc)-1].Y, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "az",
+		Data:   strconv.FormatFloat(v.acc[len(v.acc)-1].Z, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "zero_x",
+		Data:   strconv.FormatFloat(v.acc_zero.X, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "zero_y",
+		Data:   strconv.FormatFloat(v.acc_zero.Y, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "zero_z",
+		Data:   strconv.FormatFloat(v.acc_zero.Z, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "gx",
+		Data:   strconv.FormatFloat(v.gyro[len(v.gyro)-1].X, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "gy",
+		Data:   strconv.FormatFloat(v.gyro[len(v.gyro)-1].Y, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "gz",
+		Data:   strconv.FormatFloat(v.gyro[len(v.gyro)-1].Z, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "zero_gx",
+		Data:   strconv.FormatFloat(v.gyro_zero.X, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "zero_gy",
+		Data:   strconv.FormatFloat(v.gyro_zero.Y, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "zero_gz",
+		Data:   strconv.FormatFloat(v.gyro_zero.Z, 'f', 1, 64),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "mx",
+		Data:   strconv.Itoa(v.mag[len(v.mag)-1].X),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "my",
+		Data:   strconv.Itoa(v.mag[len(v.mag)-1].Y),
+	})
+	out = append(out, msgsenser.SenserData{
+		Senser: memory.readMsg().Senser,
+		Type:   "mz",
+		Data:   strconv.Itoa(v.mag[len(v.mag)-1].Z),
+	})
 	return out, ok
 }
 

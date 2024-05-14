@@ -3,6 +3,7 @@ package bmx055
 import (
 	"fmt"
 	"log"
+	"math"
 	"sort"
 	"sync"
 	"testing"
@@ -19,15 +20,34 @@ func TestRead(t *testing.T) {
 	wg.Add(3)
 	go func() {
 		tmp := []ACCAxis{}
+		tmp_zero := ACCAxis{}
+
 		defer wg.Done()
 		for i := 0; i < 1000; i++ {
+			nowTime := time.Now()
 			if d, err := getACCRAW(); err != nil {
 				log.Println("error:", err)
 			} else {
 				num := axis_to_ACC(d)
 				tmp = append(tmp, num)
 			}
-			time.Sleep(time.Millisecond * 10)
+			if len(tmp) > 200 {
+				avg := average_zero(tmp[len(tmp)-200:])
+				mid := median_zero(tmp[len(tmp)-200:])
+				flag := true
+				for i := 0; i < len(avg); i++ {
+					if math.Abs(avg[i])*0.95 > math.Abs(mid[i]) || math.Abs(mid[i]) > math.Abs(avg[i])*1.05 {
+						flag = false
+						break
+					}
+				}
+				if flag {
+					tmp_zero.X = avg[0]
+					tmp_zero.Y = avg[1]
+					tmp_zero.Z = avg[2]
+				}
+			}
+			time.Sleep(time.Millisecond*5 - time.Now().Sub(nowTime))
 		}
 		x := []float64{}
 		y := []float64{}
@@ -40,24 +60,44 @@ func TestRead(t *testing.T) {
 		fmt.Println("ACC Read End")
 		ch <- true
 		fmt.Println("ACC-X:", x)
-		fmt.Println("ACC ave:", average(x), "ACC med:", median(x))
+		fmt.Println("ACC-X ave:", average(x), "ACC-X med:", median(x))
 		fmt.Println("ACC-Y:", y)
-		fmt.Println("ACC ave:", average(y), "ACC med:", median(y))
+		fmt.Println("ACC-Y ave:", average(y), "ACC-Y med:", median(y))
 		fmt.Println("ACC-Z:", z)
-		fmt.Println("ACC ave:", average(z), "ACC med:", median(z))
+		fmt.Println("ACC-Z ave:", average(z), "ACC-Z med:", median(z))
+		fmt.Println("ACC_Zero:", tmp_zero)
 		<-ch
 	}()
 	go func() {
 		tmp := []GyroAxis{}
+		tmp_zero := GyroAxis{}
 		defer wg.Done()
 		for i := 0; i < 1000; i++ {
+			nowTime := time.Now()
 			if d, err := getGyroRAW(); err != nil {
 				log.Println("error:", err)
 			} else {
 				num := axis_to_Gyro(d)
 				tmp = append(tmp, num)
 			}
-			time.Sleep(time.Millisecond * 10)
+			if len(tmp) > 200 {
+				avg := average_zero(tmp[len(tmp)-200:])
+				mid := median_zero(tmp[len(tmp)-200:])
+				flag := true
+				for i := 0; i < len(avg); i++ {
+					if math.Abs(avg[i])*0.95 > math.Abs(mid[i]) || math.Abs(mid[i]) > math.Abs(avg[i])*1.05 {
+						flag = false
+						break
+					}
+				}
+				if flag {
+					tmp_zero.X = avg[0]
+					tmp_zero.Y = avg[1]
+					tmp_zero.Z = avg[2]
+				}
+			}
+			time.Sleep(time.Millisecond*5 - time.Now().Sub(nowTime))
+
 		}
 		x := []float64{}
 		y := []float64{}
@@ -75,18 +115,21 @@ func TestRead(t *testing.T) {
 		fmt.Println("GYRO ave:", average(y), "GYRO med:", median(y))
 		fmt.Println("GYRO-Z:", z)
 		fmt.Println("GYRO ave:", average(z), "GYRO med:", median(z))
+		fmt.Println("GYRO_Zero:", tmp_zero)
 		<-ch
 	}()
 	go func() {
 		tmp := []Axis{}
 		defer wg.Done()
 		for i := 0; i < 1000; i++ {
+			nowTime := time.Now()
 			if d, err := getMag(); err != nil {
 				log.Println("error:", err)
 			} else {
 				tmp = append(tmp, d)
 			}
-			time.Sleep(time.Millisecond * 10)
+			time.Sleep(time.Millisecond*5 - time.Now().Sub(nowTime))
+
 		}
 
 		x := []int{}

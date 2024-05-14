@@ -23,6 +23,7 @@ var memory datastore
 var shudown chan bool
 var reset chan bool
 var done chan bool
+var busy chan bool
 var wait chan bool
 
 func (v *datastore) changeFlag(flag bool) {
