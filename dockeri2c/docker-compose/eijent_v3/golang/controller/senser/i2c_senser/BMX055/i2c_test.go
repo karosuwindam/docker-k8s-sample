@@ -34,9 +34,10 @@ func TestRead(t *testing.T) {
 		z := []float64{}
 		for _, tm := range tmp {
 			x = append(x, tm.X)
-			y = append(x, tm.Y)
-			z = append(x, tm.Z)
+			y = append(y, tm.Y)
+			z = append(z, tm.Z)
 		}
+		fmt.Println("ACC Read End")
 		ch <- true
 		fmt.Println("ACC-X:", x)
 		fmt.Println("ACC ave:", average(x), "ACC med:", median(x))
@@ -63,9 +64,10 @@ func TestRead(t *testing.T) {
 		z := []float64{}
 		for _, tm := range tmp {
 			x = append(x, tm.X)
-			y = append(x, tm.Y)
-			z = append(x, tm.Z)
+			y = append(y, tm.Y)
+			z = append(z, tm.Z)
 		}
+		fmt.Println("GYRO Read End")
 		ch <- true
 		fmt.Println("GYRO-X:", x)
 		fmt.Println("GYRO ave:", average(x), "GYRO med:", median(x))
@@ -92,9 +94,10 @@ func TestRead(t *testing.T) {
 		z := []int{}
 		for _, tm := range tmp {
 			x = append(x, tm.X)
-			y = append(x, tm.Y)
-			z = append(x, tm.Z)
+			y = append(y, tm.Y)
+			z = append(z, tm.Z)
 		}
+		fmt.Println("MAG Read End")
 		ch <- true
 		fmt.Println("MAG-X:", x)
 		fmt.Println("MAG ave:", average(x), "MAG med:", median(x))
