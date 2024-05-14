@@ -14,6 +14,7 @@ func TestRead(t *testing.T) {
 	Init(&i2cMu)
 	Test()
 	accInit()
+	var ch chan bool = make(chan bool, 1)
 	var wg sync.WaitGroup
 	wg.Add(3)
 	go func() {
@@ -28,8 +29,22 @@ func TestRead(t *testing.T) {
 			}
 			time.Sleep(time.Millisecond * 10)
 		}
-		fmt.Println("ACC:", tmp)
-		fmt.Println("ACC ave:", average(tmp), "ACC med:", median(tmp))
+		x := []float64{}
+		y := []float64{}
+		z := []float64{}
+		for _, tm := range tmp {
+			x = append(x, tm.X)
+			y = append(x, tm.Y)
+			z = append(x, tm.Z)
+		}
+		ch <- true
+		fmt.Println("ACC-X:", x)
+		fmt.Println("ACC ave:", average(x), "ACC med:", median(x))
+		fmt.Println("ACC-Y:", y)
+		fmt.Println("ACC ave:", average(y), "ACC med:", median(y))
+		fmt.Println("ACC-Z:", z)
+		fmt.Println("ACC ave:", average(z), "ACC med:", median(z))
+		<-ch
 	}()
 	go func() {
 		tmp := []GyroAxis{}
@@ -43,8 +58,22 @@ func TestRead(t *testing.T) {
 			}
 			time.Sleep(time.Millisecond * 10)
 		}
-		fmt.Println("GYRO:", tmp)
-		fmt.Println("GYRO ave:", average(tmp), "GYRO med:", median(tmp))
+		x := []float64{}
+		y := []float64{}
+		z := []float64{}
+		for _, tm := range tmp {
+			x = append(x, tm.X)
+			y = append(x, tm.Y)
+			z = append(x, tm.Z)
+		}
+		ch <- true
+		fmt.Println("GYRO-X:", x)
+		fmt.Println("GYRO ave:", average(x), "GYRO med:", median(x))
+		fmt.Println("GYRO-Y:", y)
+		fmt.Println("GYRO ave:", average(y), "GYRO med:", median(y))
+		fmt.Println("GYRO-Z:", z)
+		fmt.Println("GYRO ave:", average(z), "GYRO med:", median(z))
+		<-ch
 	}()
 	go func() {
 		tmp := []Axis{}
@@ -57,8 +86,23 @@ func TestRead(t *testing.T) {
 			}
 			time.Sleep(time.Millisecond * 10)
 		}
-		fmt.Println("MAG:", tmp)
-		fmt.Println("MAG ave:", average(tmp), "MAG med:", median(tmp))
+
+		x := []int{}
+		y := []int{}
+		z := []int{}
+		for _, tm := range tmp {
+			x = append(x, tm.X)
+			y = append(x, tm.Y)
+			z = append(x, tm.Z)
+		}
+		ch <- true
+		fmt.Println("MAG-X:", x)
+		fmt.Println("MAG ave:", average(x), "MAG med:", median(x))
+		fmt.Println("MAG-Y:", y)
+		fmt.Println("MAG ave:", average(y), "MAG med:", median(y))
+		fmt.Println("MAG-Z:", z)
+		fmt.Println("MAG ave:", average(z), "MAG med:", median(z))
+		<-ch
 	}()
 	wg.Wait()
 }
