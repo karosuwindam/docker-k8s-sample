@@ -4,6 +4,8 @@ import (
 	"eijent/config"
 	msgsenser "eijent/controller/senser/msg_senser"
 	"log"
+	"math"
+	"sort"
 	"sync"
 	"time"
 
@@ -41,12 +43,10 @@ const (
 )
 
 type Mma8452q_Vaule struct {
-	X      int
-	Y      int
-	Z      int
-	Zero_X int
-	Zero_Y int
-	Zero_Z int
+	Acc    []AccValue
+	Zero_X float64
+	Zero_Y float64
+	Zero_Z float64
 }
 
 type Mma8452q_Raw struct {
@@ -55,9 +55,16 @@ type Mma8452q_Raw struct {
 	z int
 }
 
+type AccValue struct {
+	X float64
+	Y float64
+	Z float64
+}
+
 const (
 	SENSER_NAME string = "MMA8452Q"
 	MAX_HOLED   int    = 1000
+	AVE_COUNT   int    = 200
 )
 
 func Init(i2cMu *sync.Mutex) error {
@@ -72,6 +79,7 @@ func Init(i2cMu *sync.Mutex) error {
 	done = make(chan bool, 1)
 	reset = make(chan bool, 1)
 	wait = make(chan bool, 1)
+	busy = make(chan bool, 1)
 	memory.msg.Create(SENSER_NAME)
 	for i := 0; i < 3; i++ {
 		if Test() {
@@ -111,7 +119,14 @@ loop:
 			done <- true
 			break loop
 		case <-wait:
-			done <- true
+			tmp, _ := ReadValue()
+			if tmp.Zero_X == 0 && tmp.Zero_Y == 0 && tmp.Zero_Z == 0 {
+				readdate()
+				busy <- true
+			} else {
+				done <- true
+			}
+
 		case <-readone:
 			if memory.readFlag() {
 				readdate()
@@ -152,6 +167,9 @@ func Wait() {
 
 	wait <- true
 	select {
+	case <-busy:
+		time.Sleep(10 * time.Millisecond)
+		wait <- true
 	case <-done:
 		break
 	case <-time.After(1 * time.Second):
@@ -159,8 +177,17 @@ func Wait() {
 	}
 }
 
-func ReadValue() (interface{}, bool) {
-	return nil, true
+func ReadValue() (Mma8452q_Vaule, bool) {
+	tmp, ok := memory.readValue().(Mma8452q_Vaule)
+	if !ok {
+		tmp = Mma8452q_Vaule{
+			Acc:    []AccValue{},
+			Zero_X: 0,
+			Zero_Y: 0,
+			Zero_Z: 0,
+		}
+	}
+	return tmp, memory.readFlag()
 }
 
 func ResetMessage() {
@@ -171,19 +198,44 @@ func ResetMessage() {
 }
 
 func readdate() {
-	v := readSenserData()
-	if v.x == 0 && v.y == 0 && v.z == 0 {
+	tmp := readSenserData()
+	if tmp.x == 0 && tmp.y == 0 && tmp.z == 0 {
 		return
 	}
-	tmps, ok := memory.readValue().([]Mma8452q_Raw)
-	if !ok {
-		tmps = []Mma8452q_Raw{}
+	vv := tmp.ChangeToAccell()
+	v, ok := memory.readValue().(Mma8452q_Vaule)
+	if ok {
+		v.Acc = append(v.Acc, vv)
+		if len(v.Acc) > MAX_HOLED {
+			v.Acc = v.Acc[1:]
+		}
+	} else {
+		v = Mma8452q_Vaule{
+			Acc:    []AccValue{vv},
+			Zero_X: 0,
+			Zero_Y: 0,
+			Zero_Z: 0,
+		}
 	}
-	tmps = append(tmps, v)
-	if len(tmps) > MAX_HOLED {
-		tmps = tmps[1:]
+	if len(v.Acc) > AVE_COUNT {
+
+		avg := average_zero(v.Acc[len(v.Acc)-200:])
+		mid := median_zero(v.Acc[len(v.Acc)-200:])
+		flag := true
+		for i := 0; i < len(avg); i++ {
+			if math.Abs(avg[i])*0.95 > math.Abs(mid[i]) || math.Abs(mid[i]) > math.Abs(avg[i])*1.05 {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			v.Zero_X = avg[0]
+			v.Zero_Y = avg[1]
+			v.Zero_Z = avg[2]
+		}
 	}
-	memory.changeValue(tmps)
+	memory.changeValue(v)
+
 }
 
 func Test() bool {
@@ -245,7 +297,54 @@ func readSenserData() Mma8452q_Raw {
 }
 
 // 読み取ったx,y,zの値を加速度へ変換する
-func (t *Mma8452q_Raw) ChangeToAccell() (float64, float64, float64) {
+func (t *Mma8452q_Raw) ChangeToAccell() AccValue {
 	tmp := []float64{float64(t.x), float64(t.y), float64(t.z)}
-	return tmp[0] / 512.0, tmp[1] / 512.0, tmp[2] / 512.0
+	return AccValue{tmp[0] / 512.0, tmp[1] / 512.0, tmp[2] / 512.0}
+}
+
+func average_zero(nums []AccValue) []float64 {
+	out := []float64{0, 0, 0}
+	for i, num := range nums {
+		out[0] = (out[0]*float64(i) + num.X) / float64(i+1)
+		out[1] = (out[1]*float64(i) + num.Y) / float64(i+1)
+		out[2] = (out[2]*float64(i) + num.Z) / float64(i+1)
+	}
+	return out
+}
+
+func median_zero(nums []AccValue) []float64 {
+	out := []float64{0, 0, 0}
+	var tmps_x []float64
+	var tmps_y []float64
+	var tmps_z []float64
+	for _, num := range nums {
+		tmps_x = append(tmps_x, float64(num.X))
+		tmps_y = append(tmps_y, float64(num.Y))
+		tmps_z = append(tmps_z, float64(num.Z))
+
+	}
+
+	if len(tmps_x) == 0 {
+		return out
+	} else {
+		if len(tmps_x) == 1 {
+			out[0] = tmps_x[0]
+			out[1] = tmps_y[0]
+			out[2] = tmps_z[0]
+			return out
+		}
+		sort.Slice(tmps_x, func(i, j int) bool { return tmps_x[i] < tmps_x[j] })
+		sort.Slice(tmps_y, func(i, j int) bool { return tmps_y[i] < tmps_y[j] })
+		sort.Slice(tmps_z, func(i, j int) bool { return tmps_z[i] < tmps_z[j] })
+		if (len(tmps_x)/2)*2 != len(tmps_x) {
+			out[0] = tmps_x[(len(tmps_x) / 2)]
+			out[1] = tmps_y[(len(tmps_y) / 2)]
+			out[2] = tmps_z[(len(tmps_z) / 2)]
+		} else {
+			out[0] = (tmps_x[(len(tmps_x)/2)] + tmps_x[(len(tmps_x)/2+1)]) / 2
+			out[1] = (tmps_y[(len(tmps_y)/2)] + tmps_y[(len(tmps_y)/2+1)]) / 2
+			out[2] = (tmps_z[(len(tmps_z)/2)] + tmps_z[(len(tmps_z)/2+1)]) / 2
+		}
+	}
+	return out
 }

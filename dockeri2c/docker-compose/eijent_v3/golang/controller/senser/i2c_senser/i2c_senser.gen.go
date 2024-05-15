@@ -4,6 +4,7 @@ import (
 	bmx055 "eijent/controller/senser/i2c_senser/BMX055"
 	"eijent/controller/senser/i2c_senser/am2320"
 	"eijent/controller/senser/i2c_senser/bme280"
+	"eijent/controller/senser/i2c_senser/mma8452q"
 	"eijent/controller/senser/i2c_senser/tsl2561"
 	msgsenser "eijent/controller/senser/msg_senser"
 	"log"
@@ -35,7 +36,7 @@ func Init() error {
 	AddApi(am2320.NewAPI())
 	AddApi(bme280.NewAPI())
 	AddApi(bmx055.NewAPI())
-	// AddApi(tsl2561.NewAPI())
+	AddApi(mma8452q.NewAPI())
 	var wg sync.WaitGroup
 	wg.Add(len(apilists))
 	for _, api := range apilists {

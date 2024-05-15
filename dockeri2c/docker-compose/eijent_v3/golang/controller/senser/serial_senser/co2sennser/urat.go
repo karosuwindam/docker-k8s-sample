@@ -74,5 +74,16 @@ func (t *UartSet) close() {
 	t.port.Close()
 }
 
-func (t *UartSet) read()  {}
-func (t *UartSet) Write() {}
+func (t *UartSet) read() ([]byte, error) {
+	buf := make([]byte, 32)
+	n, err := t.port.Read(buf)
+	output := []byte{}
+	for _, v := range buf[:n] {
+		output = append(output, v)
+	}
+	return output, err
+}
+func (t *UartSet) Write(b []byte) error {
+	_, err := t.port.Write(b)
+	return err
+}

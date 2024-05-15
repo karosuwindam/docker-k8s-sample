@@ -443,6 +443,7 @@ func readdate() {
 		tmp, err := getACCRAW()
 		if err != nil {
 			log.Println("error:", err)
+			memory.changeMsg(err.Error())
 			flag = false
 		}
 		acc = axis_to_ACC(tmp)
@@ -453,6 +454,7 @@ func readdate() {
 		tmp, err := getGyroRAW()
 		if err != nil {
 			log.Println("error:", err)
+			memory.changeMsg(err.Error())
 			flag = false
 		}
 		gyro = axis_to_Gyro(tmp)
@@ -462,6 +464,7 @@ func readdate() {
 		tmp, err := getMag()
 		if err != nil {
 			log.Println("error:", err)
+			memory.changeMsg(err.Error())
 			flag = false
 		}
 		mag = tmp
@@ -469,7 +472,6 @@ func readdate() {
 	v, ok := memory.readValue().(Value)
 	wg.Wait()
 	if !flag { //読み取りに失敗時
-		memory.changeMsg("Read NG")
 		return
 	} else {
 		memory.changeMsg("OK")
