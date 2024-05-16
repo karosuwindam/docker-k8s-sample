@@ -49,7 +49,7 @@ type UartSet struct {
 var uartdata UartSet
 
 func uartInit(v ...interface{}) error {
-	c, err := uartInitConfig(v)
+	c, err := uartInitConfig(v...)
 	if err != nil {
 		return errors.Wrap(err, "uartInitConfig")
 	}
@@ -75,15 +75,31 @@ func (t *UartSet) close() {
 }
 
 func (t *UartSet) read() ([]byte, error) {
+	// if !t.openflag {
+	// 	return []byte{}, nil
+	// }
 	buf := make([]byte, 32)
-	n, err := t.port.Read(buf)
 	output := []byte{}
-	for _, v := range buf[:n] {
-		output = append(output, v)
+	var outerr chan error = make(chan error, 1)
+	go func() {
+		n, err := t.port.Read(buf)
+		for _, v := range buf[:n] {
+			output = append(output, v)
+		}
+		outerr <- err
+	}()
+	select {
+	case err := <-outerr:
+		return output, err
+	case <-time.After(time.Second):
+		return output, errors.New("Time out")
 	}
-	return output, err
+	return output, nil
 }
 func (t *UartSet) Write(b []byte) error {
+	if !t.openflag {
+		return nil
+	}
 	_, err := t.port.Write(b)
 	return err
 }
