@@ -37,6 +37,12 @@ func uartInitConfig(v ...interface{}) (*serial.Config, error) {
 			return &out, errors.New(msg)
 		}
 	}
+	if out.ReadTimeout == 0 {
+		out.ReadTimeout = time.Second
+	}
+	if out.Name == "" || out.Baud == 0 {
+		return &out, errors.New("Error setup input Data for name or band")
+	}
 	return &out, nil
 }
 
@@ -75,27 +81,15 @@ func (t *UartSet) close() {
 }
 
 func (t *UartSet) read() ([]byte, error) {
-	// if !t.openflag {
-	// 	return []byte{}, nil
-	// }
 	buf := make([]byte, 32)
+	n, err := t.port.Read(buf)
 	output := []byte{}
-	var outerr chan error = make(chan error, 1)
-	go func() {
-		n, err := t.port.Read(buf)
-		for _, v := range buf[:n] {
-			output = append(output, v)
-		}
-		outerr <- err
-	}()
-	select {
-	case err := <-outerr:
-		return output, err
-	case <-time.After(time.Second):
-		return output, errors.New("Time out")
+	for _, v := range buf[:n] {
+		output = append(output, v)
 	}
-	return output, nil
+	return output, err
 }
+
 func (t *UartSet) Write(b []byte) error {
 	if !t.openflag {
 		return nil

@@ -25,6 +25,7 @@ func TestConfig(t *testing.T) {
 // このテストはTxとRxを直接接続した状態で行う
 func TestUart(t *testing.T) {
 	if err := uartInit("/dev/ttyAMA0", 9600); err != nil {
+		// if err := uartInit("/dev/ttyAMA0", 9600, time.Second); err != nil {
 		t.Fatal(err)
 	}
 	if err := uartdata.open(); err != nil {
