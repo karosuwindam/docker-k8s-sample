@@ -1,4 +1,4 @@
-TAG = 0.14.4
+TAG = 0.14.5
 DOCKER = docker
 NAME = bookserver2:31000/moni/dockeri2cmoni
 LABEL_NAME = "senser eijent"
@@ -10,7 +10,7 @@ BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 
 TARGET = ./Dockerfile
 TARGET_FILE = ./golang
-GO_VERSION = 1.18.2
+GO_VERSION = 1.22.2
 DOCKERFILE_FOLDER = .
 
 all: build push
@@ -24,6 +24,9 @@ build: create
 push:
 	${DOCKER} push ${NAME}:${TAG}
 build-kit: create
+	@echo "--- buildkit build --"
+	${BUILD} --addr ${BUILD_ADDR} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${DOCKERFILE_FOLDER}
+build-kit-arm: create
 	@echo "--- buildkit build --"
 	${BUILD} --addr ${BUILD_ADDR_ARM} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${DOCKERFILE_FOLDER}
 help:

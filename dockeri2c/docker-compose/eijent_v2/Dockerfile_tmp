@@ -1,4 +1,4 @@
-FROM multiarch/ubuntu-core:armhf-bionic As builder
+FROM ubuntu:24.04 As builder
 RUN apt-get update &&\
     apt-get install -y curl gcc git
 RUN curl -OL https://dl.google.com/go/goGO_VERSION.linux-armv6l.tar.gz
@@ -8,7 +8,7 @@ ENV PATH $PATH:/usr/local/go/bin
 WORKDIR /app
 ADD ./ ./
 RUN go build .
-FROM multiarch/ubuntu-core:armhf-bionic
+FROM ubuntu:24.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
 LABEL version="TAG"
 LABEL name="LABEL_NAME"
