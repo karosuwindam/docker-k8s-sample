@@ -47,6 +47,7 @@ func Init(i2cMu *sync.Mutex) error {
 	reset = make(chan bool, 1)
 	wait = make(chan bool, 1)
 	memory.msg.Create("MH-Z19C")
+	//起動してから7経過していることを
 	if err := uartInit(UART_DEV, BAUDRATE); err != nil {
 		return err
 	}

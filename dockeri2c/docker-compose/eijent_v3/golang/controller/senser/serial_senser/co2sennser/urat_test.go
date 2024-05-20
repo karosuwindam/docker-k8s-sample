@@ -53,10 +53,15 @@ func TestUart(t *testing.T) {
 		return
 	}()
 	//定期的に書き込み処理
-	if err := uartdata.Write([]byte("aa")); err != nil {
+	log.Println("Write start")
+	if err := uartdata.Write(INIT_DATA); err != nil {
 		t.Fatal(err)
 	}
-	log.Println("end")
+	time.Sleep(100 * time.Millisecond)
+	if err := uartdata.Write(READ_DATA); err != nil {
+		t.Fatal(err)
+	}
+	log.Println("Write end")
 	time.Sleep(time.Millisecond * 100)
 	shutdown <- true
 	wg.Wait()
