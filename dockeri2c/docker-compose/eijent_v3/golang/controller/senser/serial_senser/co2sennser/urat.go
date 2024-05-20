@@ -81,6 +81,9 @@ func (t *UartSet) close() {
 }
 
 func (t *UartSet) read() ([]byte, error) {
+	if !t.openflag {
+		return []byte{}, nil
+	}
 	buf := make([]byte, 32)
 	n, err := t.port.Read(buf)
 	output := []byte{}
