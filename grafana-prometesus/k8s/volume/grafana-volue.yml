@@ -15,8 +15,8 @@ spec:
 #   hostPath:
 #     path: /home/pi/usb/usb1/grafana
   nfs:
-    server: 192.168.0.25
-    path: /home/pi/usb/usb1/nfs/grafana-data
+    server: 192.168.0.32
+    path: /home/pi/usb/usb2/nfs/grafana-data
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

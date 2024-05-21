@@ -22,7 +22,7 @@ spec:
                 - key: kubernetes.io/hostname
                   operator: In
                   values:
-                    - "raspberrypi5"
+                    - "k8s-worker-4"
       serviceAccountName: prometheus
       serviceAccount: prometheus
       containers:
