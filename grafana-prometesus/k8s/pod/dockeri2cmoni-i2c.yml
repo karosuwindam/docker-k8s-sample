@@ -1,6 +1,74 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  name: dockeri2cmoni-i2c-gpio
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      name: dockeri2cmoni
+  template:
+    metadata:
+      labels:
+        name: dockeri2cmoni
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9140'
+        prometheus.io/path: /metrics
+        podinfo: "Raspberrypi用 Prometeusエージェント"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+                - key: i2c
+                  operator: In
+                  values:
+                    - "true"
+                - key: gpio
+                  operator: In
+                  values:
+                    - "true"
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
+      containers:
+      - name: dockeri2cmoni
+        image: bookserver2:31000/moni/dockeri2cmoni:0.14.5
+        env:
+          - name: GPIO_OK
+            value: 'true'
+          - name: I2C_ON
+            value: 'true'
+        ports:
+        - containerPort: 9140
+        resources:
+          limits:
+            cpu: 300m
+            memory: 400Mi
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        securityContext:
+          privileged: true
+      terminationGracePeriodSeconds: 30
+      hostNetwork: true
+      hostPID: true
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
   name: dockeri2cmoni-i2c
   namespace: gf-space
 spec:
@@ -29,12 +97,15 @@ spec:
                 - key: kubernetes.io/arch
                   operator: In
                   values:
-                    - arm
                     - arm64
                 - key: i2c
                   operator: In
                   values:
                     - "true"
+                - key: gpio
+                  operator: In
+                  values:
+                    - "false"
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -42,7 +113,12 @@ spec:
         effect: NoSchedule
       containers:
       - name: dockeri2cmoni
-        image: bookserver2:31000/moni/dockeri2cmoni:0.14.4
+        image: bookserver2:31000/moni/dockeri2cmoni:0.14.5
+        env:
+          - name: GPIO_OK
+            value: 'false'
+          - name: I2C_OK
+            value: 'true'
         ports:
         - containerPort: 9140
         resources:

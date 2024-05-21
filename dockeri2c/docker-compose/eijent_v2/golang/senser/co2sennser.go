@@ -55,7 +55,7 @@ func (t *MhZ19c) Init(name string) bool {
 	t.Name = MHZ19CNAME
 	t.Flag = false
 	t.com = name
-	c := &serial.Config{Name: t.com, Baud: BAUDRATE}
+	c := &serial.Config{Name: t.com, Baud: BAUDRATE, ReadTimeout: time.Second}
 	t.port, err = serial.OpenPort(c)
 	if err != nil {
 		fmt.Println(err.Error())
