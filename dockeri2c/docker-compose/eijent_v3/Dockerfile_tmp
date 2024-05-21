@@ -1,20 +1,22 @@
-FROM multiarch/ubuntu-core:armhf-bionic As builder
-RUN apt-get update &&\
-    apt-get install -y curl gcc git
-RUN curl -OL https://dl.google.com/go/goGO_VERSION.linux-armv6l.tar.gz
-RUN tar -C /usr/local -xzf goGO_VERSION.linux-armv6l.tar.gz
-RUN rm -rf goGO_VERSION.linux-armv6l.tar.gz
+FROM ubuntu:22.04 As builder
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y curl gcc git locales locales-all &&\
+    locale-gen ja_JP.UTF-8
+RUN curl -OL https://dl.google.com/go/goGO_VERSION.linux-ARCH.tar.gz &&\
+    tar -C /usr/local -xzf goGO_VERSION.linux-ARCH.tar.gz &&\
+    rm -rf goGO_VERSION.linux-ARCH.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
 WORKDIR /app
 ADD ./ ./
 RUN go build .
-FROM multiarch/ubuntu-core:armhf-bionic
+FROM ubuntu:22.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
 LABEL version="TAG"
 LABEL name="LABEL_NAME"
 LABEL go_version="GO_VERSION"
 RUN apt-get update && \
     apt-get upgrade -y && \
+    apt-get install -y locales locales-all curl && \
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
