@@ -9,15 +9,17 @@ BUILD_ADDR_ARM = tcp://buildkit-arm.bookserver.home:1235 #arm
 BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 
 TARGET = ./Dockerfile
+TEMPLATE = Dockerfile_tmp
 TARGET_FILE = ./golang
-GO_VERSION = 1.22.2
+GO_VERSION = 1.22.1
+ARCH = arm64
 DOCKERFILE_FOLDER = .
 
 all: build push
 create:
 	@echo "--- ${NAME} ${TAG} create ---"
 	@echo "--- create Dockerfile ---"
-	@cat Dockerfile_tmp | sed s/TAG/${TAG}/ | sed s/LABEL_NAME/${LABEL_NAME}/ | sed s/GO_VERSION/${GO_VERSION}/ > ${TARGET}
+	@cat ${TEMPLATE} | sed s/TAG/${TAG}/ | sed s/ARCH/${ARCH}/ | sed s/GO_VERSION/${GO_VERSION}/ > ${TARGET}
 build: create
 	@echo "--- build Dockerfile --"
 	${DOCKER} build -t ${NAME}:${TAG} -f ${TARGET} ${TARGET_FILE}

@@ -51,8 +51,8 @@ kubectl label node/k8s-worker-2 node-role.kubernetes.io/worker=k8s-worker-2
 kubectl label node/k8s-worker-2 type=k8s-worker-2
 kubectl label node/k8s-worker-3 type=k8s-worker-3
 kubectl label node/k8s-worker-3 node-role.kubernetes.io/worker=k8s-worker-3
-kubectl label node/raspberrypi5 node-role.kubernetes.io/worker=raspberrypi5
-kubectl label node/raspberrypi5 type=raspberrypi5
+kubectl label node/k8s-worker-4 node-role.kubernetes.io/worker=k8s-worker-4
+kubectl label node/k8s-worker-4 type=k8s-worker-4
 ```
 
 ```
@@ -65,7 +65,7 @@ kubectl apply -f inggress/controller-v1.8.0-deploy.yaml
 ```
 kubectl apply -f docker-registry/k8s/namespace/
 kubectl apply -f docker-registry/k8s/volume/
-kubectl apply -f docker-registry/k8s/arm/
+kubectl apply -f docker-registry/k8s/arm64/
 kubectl apply -f docker-registry/k8s/ingress/
 
 kubectl apply -f grafana-prometesus/k8s/namespace/
@@ -76,9 +76,15 @@ kubectl apply -f grafana-prometesus/k8s/kube-state-metrics/role/
 kubectl apply -f victoriametrics/k8s/deployment/deployment.yml
 kubectl apply -f grafana-prometesus/k8s/kube-state-metrics/pod/
 
-kubectl label nodes raspberrypi5 i2c=true
+kubectl label nodes k8s-worker-4 i2c=true
 kubectl label nodes k8s-worker-1 i2c=true
+kubectl label nodes k8s-worker-2 i2c=true
 kubectl label nodes bookserver2 i2c=true
+kubectl label nodes bookserver2 gpio=false
+kubectl label nodes k8s-worker-1 gpio=true
+kubectl label nodes k8s-worker-2 gpio=false
+kubectl label nodes k8s-worker-4 gpio=false
+
 
 kubectl apply -f grafana-prometesus/k8s/volume/
 kubectl apply -f grafana-prometesus/k8s/config/
