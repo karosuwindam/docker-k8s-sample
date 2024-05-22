@@ -14,8 +14,7 @@ type datastore struct {
 	StopFlag bool
 	msg      msgsenser.Msg
 
-	mu    sync.Mutex
-	i2cMu *sync.Mutex
+	mu sync.Mutex
 }
 
 var memory datastore

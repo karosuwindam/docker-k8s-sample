@@ -2,7 +2,7 @@ package co2sennser
 
 import (
 	msgsenser "eijent/controller/senser/msg_senser"
-	"sync"
+	"strconv"
 )
 
 type API struct{}
@@ -15,8 +15,8 @@ func (api *API) Run() error {
 	return Run()
 }
 
-func (api *API) Init(i2cMu *sync.Mutex) error {
-	return Init(i2cMu)
+func (api *API) Init() error {
+	return Init()
 }
 
 func (api *API) Stop() error {
@@ -38,12 +38,19 @@ func (api *API) Name() string {
 
 func (api *API) Read() ([]msgsenser.SenserData, bool) {
 	var out []msgsenser.SenserData
-	_, ok := ReadValue()
-	// out = append(out, msgsenser.SenserData{
-	// 	Senser: memory.readMsg().Senser,
-	// 	Type:   "lux",
-	// 	Data:   strconv.Itoa(v),
-	// })
+	v, ok := ReadValue()
+	if v.Co2 != -1 || v.Temp != -1 {
+		out = append(out, msgsenser.SenserData{
+			Senser: memory.readMsg().Senser,
+			Type:   "co2",
+			Data:   strconv.Itoa(v.Co2),
+		})
+		out = append(out, msgsenser.SenserData{
+			Senser: memory.readMsg().Senser,
+			Type:   "tmp",
+			Data:   strconv.Itoa(v.Temp),
+		})
+	}
 	return out, ok
 }
 

@@ -3,10 +3,10 @@ package co2sennser
 import (
 	"eijent/config"
 	msgsenser "eijent/controller/senser/msg_senser"
+	"eijent/controller/uptime"
 	"errors"
 	"io"
 	"log"
-	"sync"
 	"time"
 )
 
@@ -16,10 +16,11 @@ var (
 )
 
 const (
-	GROVENAME  string = "Grove - CO2 Sensor"
-	MHZ19CNAME string = "MH-Z19C"
-	CO2_MAX           = 5000
-	CO2_MIN           = 400
+	GROVENAME  string  = "Grove - CO2 Sensor"
+	MHZ19CNAME string  = "MH-Z19C"
+	CO2_MAX            = 5000
+	CO2_MIN            = 400
+	WAITTIME   float64 = 7 * 60 //wait time 7 min(420sec)
 )
 const (
 	INIT              = 0
@@ -35,12 +36,11 @@ type MhZ19c_Vaule struct {
 	Temp int
 }
 
-func Init(i2cMu *sync.Mutex) error {
+func Init() error {
 	memory = datastore{
 		Flag:     false,
 		StopFlag: false,
 		msg:      msgsenser.Msg{},
-		i2cMu:    i2cMu,
 	}
 	shudown = make(chan bool, 1)
 	done = make(chan bool, 1)
@@ -48,6 +48,11 @@ func Init(i2cMu *sync.Mutex) error {
 	wait = make(chan bool, 1)
 	memory.msg.Create("MH-Z19C")
 	//起動してから7経過していることを
+	waittime := int((WAITTIME - uptime.Read()) * 1000)
+	if waittime > 0 {
+		log.Println("info:", "Serial sleep", waittime, "ms")
+		time.Sleep(time.Millisecond * time.Duration(waittime))
+	}
 	if err := uartInit(UART_DEV, BAUDRATE); err != nil {
 		return err
 	}
@@ -177,8 +182,15 @@ func Wait() {
 	}
 }
 
-func ReadValue() (interface{}, bool) {
-	return nil, true
+func ReadValue() (MhZ19c_Vaule, bool) {
+	tmp, ok := memory.readValue().(MhZ19c_Vaule)
+	if !ok {
+		tmp = MhZ19c_Vaule{
+			Co2:  -1,
+			Temp: -1,
+		}
+	}
+	return tmp, memory.readFlag()
 }
 
 func readdate(b []byte) {

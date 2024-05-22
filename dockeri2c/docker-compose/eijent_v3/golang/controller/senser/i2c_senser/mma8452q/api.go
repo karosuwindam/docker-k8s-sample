@@ -2,6 +2,7 @@ package mma8452q
 
 import (
 	msgsenser "eijent/controller/senser/msg_senser"
+	"strconv"
 	"sync"
 )
 
@@ -38,12 +39,39 @@ func (api *API) Name() string {
 
 func (api *API) Read() ([]msgsenser.SenserData, bool) {
 	var out []msgsenser.SenserData
-	_, ok := ReadValue()
-	// out = append(out, msgsenser.SenserData{
-	// 	Senser: memory.readMsg().Senser,
-	// 	Type:   "lux",
-	// 	Data:   strconv.Itoa(v),
-	// })
+	v, ok := ReadValue()
+	if len(v.Acc) != 0 {
+		out = append(out, msgsenser.SenserData{
+			Senser: memory.readMsg().Senser,
+			Type:   "ax",
+			Data:   strconv.FormatFloat(v.Acc[len(v.Acc)-1].X, 'f', 1, 64),
+		})
+		out = append(out, msgsenser.SenserData{
+			Senser: memory.readMsg().Senser,
+			Type:   "ay",
+			Data:   strconv.FormatFloat(v.Acc[len(v.Acc)-1].Y, 'f', 1, 64),
+		})
+		out = append(out, msgsenser.SenserData{
+			Senser: memory.readMsg().Senser,
+			Type:   "az",
+			Data:   strconv.FormatFloat(v.Acc[len(v.Acc)-1].Z, 'f', 1, 64),
+		})
+		out = append(out, msgsenser.SenserData{
+			Senser: memory.readMsg().Senser,
+			Type:   "zero_x",
+			Data:   strconv.FormatFloat(v.Zero_X, 'f', 1, 64),
+		})
+		out = append(out, msgsenser.SenserData{
+			Senser: memory.readMsg().Senser,
+			Type:   "zero_y",
+			Data:   strconv.FormatFloat(v.Zero_Y, 'f', 1, 64),
+		})
+		out = append(out, msgsenser.SenserData{
+			Senser: memory.readMsg().Senser,
+			Type:   "zero_z",
+			Data:   strconv.FormatFloat(v.Zero_Z, 'f', 1, 64),
+		})
+	}
 	return out, ok
 }
 
