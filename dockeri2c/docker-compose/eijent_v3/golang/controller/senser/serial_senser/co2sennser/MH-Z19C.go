@@ -89,9 +89,9 @@ func Run() error {
 	go func() { //永続読み取り
 		for {
 			if memory.readFlag() {
-				if buf, err := uartdata.read(); err == nil && len(readCash) >= 10 {
+				if buf, err := uartdata.read(); err == nil {
 					readCash <- buf
-				} else if err != io.EOF {
+				} else if err != io.EOF && err != nil {
 					log.Println("error", err)
 					memory.changeMsg(err.Error())
 				}
@@ -99,7 +99,7 @@ func Run() error {
 			select {
 			case <-stopread:
 				return
-			case <-time.After(time.Millisecond * 10):
+			case <-time.After(time.Millisecond * 100):
 			}
 		}
 	}()
