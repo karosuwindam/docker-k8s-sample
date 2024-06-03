@@ -26,7 +26,7 @@ const (
 	INIT              = 0
 	READ              = 1
 	BAUDRATE   int    = 9600
-	UART_DEV   string = "/dev/ttyAMA0"
+	UART_DEV   string = "/dev/ttyS0"
 	CO2SLEEP          = 10                    //10us	Time out count interval
 	CO2TIMEOUT        = 500 * 1000 / CO2SLEEP //500ms Time Out
 )

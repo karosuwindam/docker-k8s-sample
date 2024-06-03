@@ -96,11 +96,11 @@ func Stop(ctx context.Context) error {
 	go func() {
 		defer wg.Done()
 		if config.Senser.UART_ON {
-			if err := serialsenser.Stop();err != nil {
-				log.Println("error:",err)
+			if err := serialsenser.Stop(); err != nil {
+				log.Println("error:", err)
 			}
 		}
-	}
+	}()
 	go func(ctx context.Context) {
 		defer wg.Done()
 		if err := rpisenser.Stop(); err != nil {
@@ -141,7 +141,7 @@ func ReadValue() OuteSenserData {
 		out.Data = append(out.Data, tmp)
 	}
 	//GPIO関連のセンサー読み取り
-	for _,msg := range gpiosenser.Read(){
+	for _, msg := range gpiosenser.Read() {
 		tmp := new(SenserData)
 		tmp.Senser = msg.Senser
 		tmp.Type = msg.Type
@@ -149,7 +149,7 @@ func ReadValue() OuteSenserData {
 		out.Data = append(out.Data, tmp)
 	}
 	//Serial関連のセンサー読み取り
-	for _,msg := range serialsenser.Read(){
+	for _, msg := range serialsenser.Read() {
 		tmp := new(SenserData)
 		tmp.Senser = msg.Senser
 		tmp.Type = msg.Type
@@ -184,7 +184,7 @@ func Health() []HealthData {
 		tt := HealthData{tmp}
 		out = append(out, tt)
 	}
-	for _,tmp := range serialsenser.Health(){
+	for _, tmp := range serialsenser.Health() {
 		tt := HealthData{tmp}
 		out = append(out, tt)
 	}

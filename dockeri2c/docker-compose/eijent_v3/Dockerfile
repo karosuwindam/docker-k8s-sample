@@ -2,18 +2,18 @@ FROM ubuntu:22.04 As builder
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y curl gcc git locales locales-all &&\
     locale-gen ja_JP.UTF-8
-RUN curl -OL https://dl.google.com/go/goGO_VERSION.linux-ARCH.tar.gz &&\
-    tar -C /usr/local -xzf goGO_VERSION.linux-ARCH.tar.gz &&\
-    rm -rf goGO_VERSION.linux-ARCH.tar.gz
+RUN curl -OL https://dl.google.com/go/go1.22.1.linux-arm64.tar.gz &&\
+    tar -C /usr/local -xzf go1.22.1.linux-arm64.tar.gz &&\
+    rm -rf go1.22.1.linux-arm64.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
 WORKDIR /app
 ADD ./ ./
 RUN go build .
 FROM ubuntu:22.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="TAG"
+LABEL version="0.15.0"
 LABEL name="LABEL_NAME"
-LABEL go_version="GO_VERSION"
+LABEL go_version="1.22.1"
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y locales locales-all curl && \
