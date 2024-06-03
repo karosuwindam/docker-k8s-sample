@@ -91,7 +91,7 @@ func Run() error {
 			if memory.readFlag() {
 				if buf, err := uartdata.read(); err == nil {
 					readCash <- buf
-				} else if err != io.EOF && err != nil {
+				} else if err != io.EOF {
 					log.Println("error", err)
 					memory.changeMsg(err.Error())
 				}

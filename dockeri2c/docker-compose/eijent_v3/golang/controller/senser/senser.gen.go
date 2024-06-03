@@ -7,6 +7,7 @@ import (
 	i2csenser "eijent/controller/senser/i2c_senser"
 	msgsenser "eijent/controller/senser/msg_senser"
 	rpisenser "eijent/controller/senser/rpi_senser"
+	serialsenser "eijent/controller/senser/serial_senser"
 	"log"
 	"sync"
 )
@@ -22,7 +23,12 @@ func Init() error {
 	}
 	if config.Senser.GPIO_ON {
 		if err := gpiosenser.Init(); err != nil {
-			log.Panicln("error:", err)
+			log.Println("error:", err)
+		}
+	}
+	if config.Senser.UART_ON {
+		if err := serialsenser.Init(); err != nil {
+			log.Println("error:", err)
 		}
 	}
 	return nil
@@ -30,7 +36,7 @@ func Init() error {
 
 func Run(ctx context.Context) error {
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(4)
 
 	go func() {
 		defer wg.Done()
@@ -48,6 +54,14 @@ func Run(ctx context.Context) error {
 			}
 		}
 	}()
+	go func() {
+		defer wg.Done()
+		if config.Senser.UART_ON {
+			if err := serialsenser.Run(); err != nil {
+				log.Println("error:", err)
+			}
+		}
+	}()
 	go func(ctx context.Context) {
 		defer wg.Done()
 		if err := rpisenser.Run(ctx); err != nil {
@@ -60,13 +74,13 @@ func Run(ctx context.Context) error {
 
 func Stop(ctx context.Context) error {
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(4)
 	go func() {
 		defer wg.Done()
 		if config.Senser.GPIO_ON {
 			if err := gpiosenser.Stop(); err != nil {
 
-				log.Println("errors:", err)
+				log.Println("error:", err)
 			}
 		}
 	}()
@@ -75,10 +89,18 @@ func Stop(ctx context.Context) error {
 		if config.Senser.I2C_ON {
 			if err := i2csenser.Stop(); err != nil {
 
-				log.Println("errors:", err)
+				log.Println("error:", err)
 			}
 		}
 	}()
+	go func() {
+		defer wg.Done()
+		if config.Senser.UART_ON {
+			if err := serialsenser.Stop();err != nil {
+				log.Println("error:",err)
+			}
+		}
+	}
 	go func(ctx context.Context) {
 		defer wg.Done()
 		if err := rpisenser.Stop(); err != nil {
@@ -93,6 +115,7 @@ func Wait() {
 	rpisenser.Wait()
 	i2csenser.Wait()
 	gpiosenser.Wait()
+	serialsenser.Wait()
 }
 
 type SenserData struct {
@@ -111,6 +134,22 @@ func ReadValue() OuteSenserData {
 	var out OuteSenserData
 	//i2cに関連したセンサーの読み取り
 	for _, msg := range i2csenser.Read() {
+		tmp := new(SenserData)
+		tmp.Senser = msg.Senser
+		tmp.Type = msg.Type
+		tmp.Data = msg.Data
+		out.Data = append(out.Data, tmp)
+	}
+	//GPIO関連のセンサー読み取り
+	for _,msg := range gpiosenser.Read(){
+		tmp := new(SenserData)
+		tmp.Senser = msg.Senser
+		tmp.Type = msg.Type
+		tmp.Data = msg.Data
+		out.Data = append(out.Data, tmp)
+	}
+	//Serial関連のセンサー読み取り
+	for _,msg := range serialsenser.Read(){
 		tmp := new(SenserData)
 		tmp.Senser = msg.Senser
 		tmp.Type = msg.Type
@@ -145,6 +184,10 @@ func Health() []HealthData {
 		tt := HealthData{tmp}
 		out = append(out, tt)
 	}
+	for _,tmp := range serialsenser.Health(){
+		tt := HealthData{tmp}
+		out = append(out, tt)
+	}
 	return out
 }
 
@@ -152,5 +195,6 @@ func Health() []HealthData {
 func Reset() {
 	i2csenser.Reset()
 	gpiosenser.Reset()
+	serialsenser.Reset()
 	return
 }
