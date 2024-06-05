@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: otel-ingress
+  namespace: gf-space
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: otel.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: otel-collector
+            port:
+              number: 8888
+  - host: otel-http.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: otel-collector
+            port:
+              number: 4318
+  - host: otel-grpc.bookserver.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: otel-collector
+            port:
+              number: 4317

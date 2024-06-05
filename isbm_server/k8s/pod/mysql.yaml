@@ -48,11 +48,12 @@ spec:
                 - key: kubernetes.io/arch
                   operator: In
                   values:
-                    - arm
+                    - arm64
       containers:
+      - name: mysqlhost
       #- image: hypriot/rpi-mysql    ##arm32用のみのコンテナ
-      - image: biarms/mysql
-        name: mysqlhost
+      # - image: biarms/mysql
+        image: mysql:8.3.0
         env:
         - name: MYSQL_ROOT_PASSWORD
           value: root
