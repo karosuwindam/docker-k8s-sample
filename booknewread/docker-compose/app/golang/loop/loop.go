@@ -42,7 +42,7 @@ func Run(ctx context.Context) error {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		readNarouData()
+		readNarouData(context.Background())
 	}()
 	go func() {
 		defer wg.Done()
@@ -71,7 +71,7 @@ loop:
 			}()
 			go func() { //小説のデータを取得する
 				defer wg.Done()
-				readNarouData()
+				readNarouData(context.Background())
 			}()
 			wg.Wait()
 			resetflag = false
@@ -84,7 +84,7 @@ loop:
 			}()
 			go func() { //小説のデータを取得する
 				defer wg.Done()
-				readNarouData()
+				readNarouData(context.Background())
 			}()
 			wg.Wait()
 			resetflag = false
@@ -189,8 +189,10 @@ func readNewBookData() {
 }
 
 // Web小説のデータを取得する
-func readNarouData() {
+func readNarouData(ctx context.Context) {
 	fmt.Println("start novel data count")
+	ctx, traceSpan := config.TracerS(ctx, "readNarouData", "loop Nobel")
+	defer traceSpan.End()
 	statusUpdate(NOBEL_SELECT, "Reload")
 	now := time.Now()
 	limit := 10
@@ -206,13 +208,15 @@ func readNarouData() {
 			slots <- struct{}{}
 
 			go func(url string) {
+				ctx, span := config.TracerS(ctx, "readNarouData_min", url)
 				defer func() {
+					span.End()
 					<-slots
 					wg.Done()
 				}()
 				//urlによる解析処理
 
-				if tmp, err := novelchack.ChackURLData(url); err == nil {
+				if tmp, err := novelchack.ChackURLData(ctx, url); err == nil {
 					if err = datastore.Write(tmp); err != nil {
 						fmt.Println(err)
 					}

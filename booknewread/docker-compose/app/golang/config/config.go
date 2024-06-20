@@ -23,9 +23,16 @@ type NobelChack struct {
 	MaxAlphaAPI    int `env:"NOBEL_MAX_ALPHA_API" envDefault:"2"`
 }
 
+type TracerData struct {
+	GrpcURL     string `env:"TRACER_GRPC_URL" envDefault:"otel-grpc.bookserver.home:4317"`
+	ServiceName string `env:"TRACER_SERVICE_URL" envDefault:"booknewRead"`
+	TracerUse   bool   `env:"TRACER_ON" envDefault:"false"`
+}
+
 var Web SetupServer
 var Loop SetupLoop
 var Nobel NobelChack
+var TraData TracerData
 
 func Init() error {
 	Web = SetupServer{}
@@ -38,6 +45,11 @@ func Init() error {
 	}
 	Nobel = NobelChack{}
 	if err := env.Parse(&Nobel); err != nil {
+		return err
+	}
+	TraData = TracerData{}
+
+	if err := env.Parse(&TraData); err != nil {
 		return err
 	}
 	return nil
