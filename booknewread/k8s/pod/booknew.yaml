@@ -25,7 +25,7 @@ spec:
               value: "Asia/Tokyo"
             - name: WEB_TITLE
               value: "新刊取得:local"
-            - name: TracerUse
+            - name: TRACER_ON
               value: "true"
           ports:
             - containerPort: 8080
