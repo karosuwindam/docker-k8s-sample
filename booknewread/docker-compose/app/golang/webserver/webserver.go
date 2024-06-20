@@ -6,8 +6,12 @@ import (
 	"book-newread/webserver/indexpage"
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
+	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // SetupServer
@@ -29,10 +33,12 @@ type Server struct {
 	l net.Listener
 }
 
+var srv *http.Server // Webサーバの管理関数
+
 var cfg SetupServer
 
-var ctx context.Context
-var cancel context.CancelFunc
+var shutdown chan bool
+var done chan bool
 
 func HelloWeb(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
@@ -41,13 +47,14 @@ func HelloWeb(w http.ResponseWriter, r *http.Request) {
 }
 
 func Init() error {
+	shutdown = make(chan bool, 1)
+	done = make(chan bool, 1)
 	cfg = SetupServer{
 		protocol: config.Web.Protocol,
 		hostname: config.Web.Hostname,
 		port:     config.Web.Port,
 		mux:      http.NewServeMux(),
 	}
-	ctx, cancel = context.WithCancel(context.Background())
 	api.Init(cfg.mux)
 	// fileserver := http.FileServer(http.Dir(config.Web.StaticPage))
 	// cfg.mux.Handle("/", fileserver)
@@ -55,11 +62,25 @@ func Init() error {
 	return nil
 }
 
-func Start() error {
+func Start(ctx context.Context) error {
 	var err error = nil
-	srv := &http.Server{
-		Addr:    cfg.hostname + ":" + cfg.port,
-		Handler: cfg.mux,
+	if config.TraData.TracerUse {
+		hander := otelhttp.NewHandler(cfg.mux, "http-server",
+			otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+		)
+		srv = &http.Server{
+			Addr:         cfg.hostname + ":" + cfg.port,
+			Handler:      hander,
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+		}
+	} else {
+		srv = &http.Server{
+			Addr:         cfg.hostname + ":" + cfg.port,
+			Handler:      cfg.mux,
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+		}
 	}
 	l, err := net.Listen(cfg.protocol, srv.Addr)
 	if err != nil {
@@ -73,11 +94,35 @@ func Start() error {
 			err = nil
 		}
 	}()
-	<-ctx.Done()
+	select {
+	case <-shutdown:
+		done <- true
+		break
+	case <-ctx.Done():
+		return nil
+	}
 	return err
 }
 
-func Stop() error {
-	cancel()
+func Stop(ctx context.Context) error {
+	if srv == nil {
+		return nil
+	}
+	ctx, _ = context.WithTimeout(ctx, time.Second)
+	if err := srv.Shutdown(ctx); err != nil {
+		return err
+	}
+	shutdown <- true
+
+	select {
+	case <-done:
+		break
+	case <-ctx.Done():
+		log.Println("ctx done")
+		break
+	case <-time.After(time.Microsecond * 500):
+		log.Println("errors:", "shutdown time out over 500 ms")
+		break
+	}
 	return nil
 }

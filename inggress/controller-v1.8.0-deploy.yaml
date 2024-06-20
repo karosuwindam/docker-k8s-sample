@@ -363,11 +363,16 @@ spec:
     port: 1234
     protocol: TCP
     targetPort: 1234
-  - appProtocol: buildkit-arm
-    name: buildkit-arm
-    port: 1235
+  # - appProtocol: buildkit-arm
+  #   name: buildkit-arm
+  #   port: 1235
+  #   protocol: TCP
+  #   targetPort: 1235
+  - appProtocol: otlp-grpc
+    name: otlp-grpc
+    port: 4317
     protocol: TCP
-    targetPort: 1235
+    targetPort: 4317
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
@@ -487,8 +492,11 @@ spec:
         - containerPort: 1234
           name: buildkit
           protocol: TCP
-        - containerPort: 1235
-          name: buildkit-arm
+        # - containerPort: 1235
+        #   name: buildkit-arm
+        #   protocol: TCP
+        - containerPort: 4317
+          name: otlp-grpc
           protocol: TCP
         - containerPort: 8443
           name: webhook

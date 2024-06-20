@@ -32,6 +32,9 @@ func Start() error {
 	wg.Add(2)
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	config.TracerStart(config.TraData.GrpcURL, config.TraData.ServiceName, ctx)
+	defer config.TracerStop(ctx)
 	go func(ctx context.Context) {
 		defer wg.Done()
 		if err := loop.Run(ctx); err != nil {
@@ -41,15 +44,14 @@ func Start() error {
 	if err := loop.RunWait(); err != nil {
 		fmt.Println("Runloop wait timeout :", err)
 	}
-	go func() {
+	go func(ctx context.Context) {
 		defer wg.Done()
-		if err := webserver.Start(); err != nil {
+		if err := webserver.Start(ctx); err != nil {
 			panic(err)
 		}
-	}()
+	}(ctx)
 
 	<-sigs
-	cancel()
 	Stop()
 	wg.Wait()
 	return nil
@@ -57,7 +59,7 @@ func Start() error {
 
 func Stop() {
 	loop.Stop()
-	webserver.Stop()
+	webserver.Stop(context.Background())
 	fmt.Println("main Shutdown")
 }
 

@@ -1,6 +1,7 @@
 package readdatastore
 
 import (
+	"book-newread/config"
 	"book-newread/loop/datastore"
 	"book-newread/loop/novelchack"
 	"encoding/json"
@@ -11,7 +12,20 @@ import (
 // データストアからWeb小説のデータを読み取る
 func readNewNobel(w http.ResponseWriter, r *http.Request) {
 	var data []novelchack.List
-	if err := datastore.Read(&data); err != nil {
+	var errch chan error = make(chan error, 1)
+	ctx := r.Context()
+	ctx, handerTracer := config.TracerS(ctx, "readNewNobel", r.URL.Path)
+	defer func() {
+		handerTracer.End()
+	}()
+	go func() {
+		_, span := config.TracerS(ctx, "datastore.Read", "datastore read")
+		defer func() {
+			span.End()
+		}()
+		errch <- datastore.Read(&data)
+	}()
+	if err := <-errch; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

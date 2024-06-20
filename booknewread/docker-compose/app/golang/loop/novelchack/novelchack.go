@@ -1,6 +1,7 @@
 package novelchack
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -13,6 +14,8 @@ import (
 	"book-newread/config"
 
 	"github.com/PuerkitoBio/goquery"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type List struct {
@@ -142,47 +145,58 @@ func chackUrlPage(url string) nobelWebType {
 var ErrAtherUrl = errors.New("other url data")
 
 // URLから小説の種類を判別してデータを取得
-func ChackURLData(url string) (List, error) {
+func ChackURLData(ctx context.Context, url string) (List, error) {
 	var output List
 	var outerr error = nil
 	url = strings.Replace(url, "http://", "https://", 1)
+
 	switch chackUrlPage(url) {
 	case NAROU_WEB:
+		ctx, span := config.TracerS(ctx, "ChackURLData", "Narou")
+		defer span.End()
 		//なろうのAPIを使用して解析
-		if d, err := narouAPIRead(API_URL_NAROU, url); err == nil {
-			output, outerr = d.narouChangeList()
+		if d, err := narouAPIRead(ctx, API_URL_NAROU, url); err == nil {
+			output, outerr = d.narouChangeList(ctx)
 		} else {
 			return output, err
 		}
 	case KAKUYOMU_WEB:
+
+		ctx, span := config.TracerS(ctx, "ChackURLData", "Kakuyomu")
+		defer span.End()
 		//カクヨムのページからスクレイピング
 		for i := 0; i < 3; i++ {
-			if data, err := getKakuyomu(url); err != nil {
+			if data, err := getKakuyomu(ctx, url); err != nil {
 				log.Println(err)
 				outerr = err
 			} else {
 				outerr = nil
-				output = chackKakuyomu(data)
+				output = chackKakuyomu(ctx, data)
 				break
 			}
 			time.Sleep(time.Microsecond * 200)
 		}
 	case NNOCKU_WEB:
+		ctx, span := config.TracerS(ctx, "ChackURLData", "Narou18")
+		defer span.End()
 		//なろうR18のAPIを使用して解析
-		if d, err := narouAPIRead(API_URL_NOCKU, url); err == nil {
-			output, outerr = d.narouChangeList()
+		if d, err := narouAPIRead(ctx, API_URL_NOCKU, url); err == nil {
+			output, outerr = d.narouChangeList(ctx)
 		} else {
 			return output, err
 		}
 	case ALPHA_WEB:
+
+		ctx, span := config.TracerS(ctx, "ChackURLData", "Alpha")
+		defer span.End()
 		//アルファポリスのページからスクレイピング
 		for i := 0; i < 3; i++ {
-			if data, err := getDocument(url); err != nil {
+			if data, err := getAlpha(ctx, url); err != nil {
 				log.Println(err)
 				outerr = err
 			} else {
 				outerr = nil
-				output = chackAlpha(data)
+				output = chackAlpha(ctx, data)
 				break
 			}
 			time.Sleep(time.Microsecond * 200)
@@ -194,7 +208,7 @@ func ChackURLData(url string) (List, error) {
 }
 
 // なろう系のAPIを使用して解析
-func narouAPIRead(api, url string) (NaroudData, error) {
+func narouAPIRead(ctx context.Context, api, url string) (NaroudData, error) {
 	var output NaroudData
 	// 起動制限
 	if api == API_URL_NAROU {
@@ -221,11 +235,14 @@ func narouAPIRead(api, url string) (NaroudData, error) {
 			output.apikey = tmp_url[:i]
 		}
 
-		req, err := http.NewRequest(http.MethodGet, api+"?ncode="+output.apikey+"&out=json", nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, api+"?ncode="+output.apikey+"&out=json", nil)
 		if err != nil {
 			return output, err
 		}
-		client := new(http.Client)
+		// client := new(http.Client)
+		client := http.Client{
+			Transport: otelhttp.NewTransport(http.DefaultTransport),
+		}
 		resp, err := client.Do(req)
 
 		if err != nil {
@@ -244,7 +261,9 @@ func narouAPIRead(api, url string) (NaroudData, error) {
 	return output, nil
 }
 
-func (nd *NaroudData) narouChangeList() (List, error) {
+func (nd *NaroudData) narouChangeList(ctx context.Context) (List, error) {
+	ctx, span := config.TracerS(ctx, "narouChangeList", nd.baseurl+"/"+nd.apikey+"/")
+	defer span.End()
 	out := List{}
 	if len(nd.body) == 2 {
 		if nd.body[1].Title != "" {
@@ -257,27 +276,17 @@ func (nd *NaroudData) narouChangeList() (List, error) {
 		count := nd.body[1].General_all_no
 		out.LastUrl = out.Url + strconv.Itoa(count) + "/"
 		out.LastStoryT = strconv.Itoa(count) + "話"
+		span.SetAttributes(attribute.String("url", out.Url))
+		span.SetAttributes(attribute.String("title", out.Title))
+		span.SetAttributes(attribute.String("LastUrl", out.LastUrl))
+		span.SetAttributes(attribute.String("LastStoryT", out.LastStoryT))
+
 	}
 	return out, nil
 }
 
 // アルファポリスの取得
-func getDocument(url string) (documentdata, error) {
-	var output documentdata
-	output.url = url
-	alpha_ch <- url
-	defer func(ch chan string) {
-		<-ch
-	}(alpha_ch)
-	doc, err := goquery.NewDocument(url)
-	if err == nil {
-		output.data = doc
-	}
-	return output, err
-}
-
-// カクヨムの取得
-func getKakuyomu(urldata string) (documentdata, error) {
+func getAlpha(ctx context.Context, urldata string) (documentdata, error) {
 	var output documentdata
 	output.url = urldata
 
@@ -285,10 +294,44 @@ func getKakuyomu(urldata string) (documentdata, error) {
 	defer func(ch chan string) {
 		<-ch
 	}(kakuyomu_ch)
-	req, err := http.NewRequest(http.MethodGet, urldata, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urldata, nil)
+	// client := new(http.Client)
+	client := http.Client{
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+	}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return output, err
+	}
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromResponse(resp)
+	if err != nil {
+		return output, err
+	}
+	output.data = doc
+	return output, nil
+
+}
+
+// カクヨムの取得
+func getKakuyomu(ctx context.Context, urldata string) (documentdata, error) {
+	var output documentdata
+	output.url = urldata
+
+	kakuyomu_ch <- urldata
+	defer func(ch chan string) {
+		<-ch
+	}(kakuyomu_ch)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urldata, nil)
 	req.Header.Add("Accept", `text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8`)
 	req.Header.Add("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11`)
-	client := new(http.Client)
+	// client := new(http.Client)
+	client := http.Client{
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+	}
+
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -304,9 +347,12 @@ func getKakuyomu(urldata string) (documentdata, error) {
 }
 
 // カクヨムのチェック
-func chackKakuyomu(data documentdata) List {
+func chackKakuyomu(ctx context.Context, data documentdata) List {
+	ctx, span := config.TracerS(ctx, "checkKakuyomu", data.url)
+	defer span.End()
 	var output List
 	output.Url = data.url
+	span.SetAttributes(attribute.String("url", output.Url))
 	doc := data.data
 	//div.NewBox_box__45ont.NewBox_padding-px-4l__Kx_xT.NewBox_padding-pt-7l__Czm59
 	output.Title = doc.Find("div#workHeader-inner").Find("h1#workTitle").Text()
@@ -317,6 +363,8 @@ func chackKakuyomu(data documentdata) List {
 			output.Title = tmpTitle
 		}
 	}
+	span.SetAttributes(attribute.String("title", output.Title))
+
 	doc.Find("div.widget-toc-main").Each(func(i int, s *goquery.Selection) {
 		s.Find("li.widget-toc-episode").Each(func(j int, ss *goquery.Selection) {
 			output.LastStoryT = ss.Find("a").Find("span").Text()
@@ -354,11 +402,16 @@ func chackKakuyomu(data documentdata) List {
 }
 
 // アルファポリスのチェック
-func chackAlpha(data documentdata) List {
+func chackAlpha(ctx context.Context, data documentdata) List {
+	ctx, span := config.TracerS(ctx, "chackAlpha", data.url)
+	defer span.End()
 	var output List
 	output.Url = data.url
 	doc := data.data
 	output.Title = doc.Find("h1.title").Text()
+	span.SetAttributes(attribute.String("url", output.Url))
+	span.SetAttributes(attribute.String("title", output.Title))
+
 	doc.Find("div.episode ").Each(func(i int, s *goquery.Selection) {
 		output.LastStoryT = strings.TrimSpace(s.Find("span.title").Text())
 		times := strings.TrimSpace(s.Find("span.open-date").Text())
@@ -370,8 +423,16 @@ func chackAlpha(data documentdata) List {
 		tmp, _ := s.Find("a").Attr("href")
 		if tmp != "" {
 			output.LastUrl = BASE_URL_ALPHAS + tmp
+			if len(tmp) > len(BASE_URL_ALPHAS) {
+				if BASE_URL_ALPHAS == tmp[:len(BASE_URL_ALPHAS)] {
+					output.LastUrl = tmp
+				}
+
+			}
 		}
 		output.Count = i + 1
 	})
+	span.SetAttributes(attribute.String("LastUrl", output.LastUrl))
+	span.SetAttributes(attribute.String("LastStoryT", output.LastStoryT))
 	return output
 }
