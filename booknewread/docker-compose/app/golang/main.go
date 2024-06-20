@@ -49,7 +49,7 @@ func Start() error {
 		if err := webserver.Start(ctx); err != nil {
 			panic(err)
 		}
-	}(ctx)
+	}(context.Background())
 
 	<-sigs
 	Stop()
@@ -70,4 +70,5 @@ func main() {
 	if err := Start(); err != nil {
 		panic(err)
 	}
+	fmt.Println("All Shutdown")
 }
