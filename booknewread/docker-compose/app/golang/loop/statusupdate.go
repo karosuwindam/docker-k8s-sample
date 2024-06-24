@@ -2,7 +2,7 @@ package loop
 
 import (
 	"book-newread/loop/datastore"
-	"fmt"
+	"log"
 	"sync"
 	"time"
 )
@@ -22,7 +22,7 @@ func statusUpdate(st SELECT_STATUS, data string) {
 	defer smux.Unlock()
 	s := datastore.Status{}
 	if err := datastore.Read(&s); err != nil {
-		fmt.Println(err)
+		log.Println("error:", err)
 		return
 	}
 	if st == NOBEL_SELECT {
@@ -33,6 +33,6 @@ func statusUpdate(st SELECT_STATUS, data string) {
 		s.BookNowTIme = time.Now()
 	}
 	if err := datastore.Write(s); err != nil {
-		fmt.Println(err)
+		log.Println("error:", err)
 	}
 }

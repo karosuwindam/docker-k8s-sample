@@ -5,12 +5,27 @@ import (
 	"book-newread/loop"
 	"book-newread/webserver"
 	"context"
-	"fmt"
+	"errors"
+	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
+
+	"github.com/comail/colog"
 )
+
+func logConfig() error {
+	colog.SetDefaultLevel(colog.LDebug)
+	colog.SetMinLevel(colog.LTrace)
+	colog.SetFormatter(&colog.StdFormatter{
+		Colors: true,
+		Flag:   log.Ldate | log.Ltime | log.Lshortfile,
+	})
+	colog.Register()
+	return nil
+}
 
 func Init() error {
 	if err := config.Init(); err != nil {
@@ -22,14 +37,28 @@ func Init() error {
 	if err := webserver.Init(); err != nil {
 		return err
 	}
+	if err := logConfig(); err != nil {
+		return err
+	}
 	return nil
 }
 
 func Start() error {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	idleConnsClosed := make(chan struct{})
+	go func() {
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		<-sigs
+		//シャットダウン処理
+		log.Println("info:", "Server is shutting down...")
+		Stop(ctx)
+		log.Println("info:", "Server is shut down")
+		close(idleConnsClosed)
+	}()
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(1)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -42,25 +71,33 @@ func Start() error {
 		}
 	}(ctx)
 	if err := loop.RunWait(); err != nil {
-		fmt.Println("Runloop wait timeout :", err)
+		log.Println("error:", "Runloop wait timeout :", err)
 	}
-	go func(ctx context.Context) {
-		defer wg.Done()
-		if err := webserver.Start(ctx); err != nil {
-			panic(err)
-		}
-	}(context.Background())
+	// go func(ctx context.Context) {
+	// 	defer wg.Done()
+	if err := webserver.Start(ctx); err != nil {
+		panic(err)
+	}
+	// }(context.Background())
 
-	<-sigs
-	Stop()
+	<-idleConnsClosed
 	wg.Wait()
 	return nil
 }
 
-func Stop() {
-	loop.Stop()
-	webserver.Stop(context.Background())
-	fmt.Println("main Shutdown")
+func Stop(ctx context.Context) {
+	if err := loop.Stop(context.Background()); err != nil {
+		log.Println("error:", err)
+	}
+	if err := webserver.Stop(ctx); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			log.Println("error:", "HTTP server Shutdown: timeout")
+
+		} else {
+			log.Println("error:", err)
+
+		}
+	}
 }
 
 func main() {
@@ -70,5 +107,5 @@ func main() {
 	if err := Start(); err != nil {
 		panic(err)
 	}
-	fmt.Println("All Shutdown")
+	log.Println("info:", "All Shutdown")
 }

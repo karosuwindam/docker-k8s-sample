@@ -167,7 +167,7 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 		//カクヨムのページからスクレイピング
 		for i := 0; i < 3; i++ {
 			if data, err := getKakuyomu(ctx, url); err != nil {
-				log.Println(err)
+				log.Println("error:", err)
 				outerr = err
 			} else {
 				outerr = nil
@@ -192,7 +192,7 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 		//アルファポリスのページからスクレイピング
 		for i := 0; i < 3; i++ {
 			if data, err := getAlpha(ctx, url); err != nil {
-				log.Println(err)
+				log.Println("error:", err)
 				outerr = err
 			} else {
 				outerr = nil

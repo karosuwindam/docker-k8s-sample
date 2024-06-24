@@ -1,7 +1,7 @@
 package calendarscripting
 
 import (
-	"fmt"
+	"log"
 	"strings"
 	"sync"
 
@@ -61,7 +61,7 @@ func GetComicList(year, month string, booktype int) []BookList {
 	doc, err := goquery.NewDocument(url)
 	readmutex.Unlock()
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println("error:", err.Error())
 		return output
 	}
 
