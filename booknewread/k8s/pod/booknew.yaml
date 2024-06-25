@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: booknewread
-          image: bookserver2:31000/karosu/booknewread:0.22.1
+          image: bookserver2:31000/karosu/booknewread:0.22.2
           imagePullPolicy: IfNotPresent
           # imagePullPolicy: Always
           env:

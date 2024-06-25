@@ -41,14 +41,13 @@ func Run(ctx context.Context) error {
 	var wg sync.WaitGroup
 	log.Println("info:", "start loop")
 	resetflag = true
-	readNewBookData()
 	loogflag = true
 	wg.Add(1)
 	go func() {
 		wg.Done()
 		readNarouData(context.Background())
 	}()
-
+	readNewBookData()
 	wg.Wait()
 	resetflag = false
 
