@@ -84,6 +84,7 @@ kubectl label nodes bookserver2 gpio=false
 kubectl label nodes k8s-worker-1 gpio=true
 kubectl label nodes k8s-worker-2 gpio=false
 kubectl label nodes k8s-worker-4 gpio=false
+kubectl label nodes k8s-worker-4 uart=true
 
 
 kubectl apply -f grafana-prometesus/k8s/volume/
@@ -91,6 +92,17 @@ kubectl apply -f grafana-prometesus/k8s/config/
 kubectl apply -f grafana-prometesus/k8s/pod/
 kubectl apply -f grafana-prometesus/k8s/service/
 kubectl apply -f grafana-prometesus/k8s/ingress/ 
+```
+
+```
+kubectl apply -f nfs-sc/k8s/deploy.yml
+```
+
+```
+kubectl apply -f grafana-jaeger/otel-config.yaml
+kubectl apply -f grafana-jaeger/otel-ingreass.yml
+kubectl apply -f grafana-jaeger/volume
+kubectl apply -f grafana-jaeger/pod
 ```
 
 ```

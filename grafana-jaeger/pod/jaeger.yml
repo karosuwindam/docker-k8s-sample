@@ -21,6 +21,14 @@ spec:
           env:
             - name: TZ
               value: 'Asia/Tokyo'
+            - name: SPAN_STORAGE_TYPE
+              value: badger
+            - name: BADGER_EPHEMERAL
+              value: "false"
+            - name: BADGER_DIRECTORY_VALUE
+              value: /badger/data
+            - name: BADGER_DIRECTORY_KEY
+              value: /badger/key
           ports:
             - name: query
               containerPort: 16686
@@ -32,22 +40,13 @@ spec:
             requests:
               cpu: "500m"
               memory: 512Mi
-          # volumeMounts:
-          #   - name: config-vol
-          #     mountPath: /etc/grafana/grafana.ini
-          #     subPath: grafana.ini
-          #   - name: grafana-vol
-          #     mountPath: /var/lib/grafana
-      # volumes:
-      #   - name: grafana-vol
-      #     persistentVolumeClaim:
-      #       claimName: grafana-pv-claim
-      #   - name: config-vol
-      #     configMap:
-      #       name: grafana-configmap
-      #       items:
-      #         - key: defaults.ini
-      #           path: grafana.ini
+          volumeMounts:
+            - name: jaeger-vol
+              mountPath: /badger
+      volumes:
+        - name: jaeger-vol
+          persistentVolumeClaim:
+            claimName: jaeger-pv-claim
 ---
 apiVersion: v1
 kind: Service
