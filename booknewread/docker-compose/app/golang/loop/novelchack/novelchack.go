@@ -16,6 +16,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 type List struct {
@@ -167,7 +168,7 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 		//カクヨムのページからスクレイピング
 		for i := 0; i < 3; i++ {
 			if data, err := getKakuyomu(ctx, url); err != nil {
-				log.Println(err)
+				log.Println("error:", err)
 				outerr = err
 			} else {
 				outerr = nil
@@ -192,7 +193,7 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 		//アルファポリスのページからスクレイピング
 		for i := 0; i < 3; i++ {
 			if data, err := getAlpha(ctx, url); err != nil {
-				log.Println(err)
+				log.Println("error:", err)
 				outerr = err
 			} else {
 				outerr = nil
@@ -276,11 +277,13 @@ func (nd *NaroudData) narouChangeList(ctx context.Context) (List, error) {
 		count := nd.body[1].General_all_no
 		out.LastUrl = out.Url + strconv.Itoa(count) + "/"
 		out.LastStoryT = strconv.Itoa(count) + "話"
+
 		span.SetAttributes(attribute.String("url", out.Url))
 		span.SetAttributes(attribute.String("title", out.Title))
 		span.SetAttributes(attribute.String("LastUrl", out.LastUrl))
 		span.SetAttributes(attribute.String("LastStoryT", out.LastStoryT))
-
+	} else {
+		span.SetStatus(codes.Error, "Not Found Data")
 	}
 	return out, nil
 }

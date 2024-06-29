@@ -8,7 +8,7 @@ import (
 	"book-newread/loop/novelchack"
 	"context"
 	"errors"
-	"fmt"
+	"log"
 	"math"
 	"strconv"
 	"sync"
@@ -16,6 +16,7 @@ import (
 )
 
 var shutdown chan bool
+var done chan bool
 var resetflag bool
 var resetCH chan bool
 var loogflag bool
@@ -32,26 +33,21 @@ func Init() error {
 	}
 	shutdown = make(chan bool, 1)
 	resetCH = make(chan bool, 1)
+	done = make(chan bool, 1)
 	return nil
 }
 
 func Run(ctx context.Context) error {
 	var wg sync.WaitGroup
-	fmt.Println("start loop")
+	log.Println("info:", "start loop")
 	resetflag = true
-	wg.Add(2)
+	loogflag = true
+	wg.Add(1)
 	go func() {
-		defer wg.Done()
+		wg.Done()
 		readNarouData(context.Background())
 	}()
-	go func() {
-		defer wg.Done()
-		readNewBookData()
-		loogflag = true
-	}()
-	defer func() {
-		loogflag = false
-	}()
+	readNewBookData()
 	wg.Wait()
 	resetflag = false
 
@@ -61,6 +57,7 @@ loop:
 		case <-ctx.Done():
 			break loop
 		case <-shutdown:
+			done <- true
 			break loop
 		case <-resetCH:
 			resetflag = true
@@ -90,7 +87,7 @@ loop:
 			resetflag = false
 		}
 	}
-	fmt.Println("end loop")
+	log.Println("info:", "end loop")
 	return nil
 }
 
@@ -117,11 +114,19 @@ loop:
 	return nil
 }
 
-func Stop() error {
+func Stop(ctx context.Context) error {
 	if loogflag {
+		loogflag = false
 		shutdown <- true
 	}
-	time.Sleep(1 * time.Second)
+	select {
+	case <-done:
+		break
+	case <-ctx.Done():
+		return errors.New("contex done")
+	case <-time.After(time.Second):
+		return errors.New("time over 1 sec")
+	}
 	return nil
 }
 
@@ -137,7 +142,7 @@ func Reset() {
 
 // 新刊情報の取得
 func readNewBookData() {
-	fmt.Println("start new book data count")
+	log.Println("info:", "start new book data count")
 	statusUpdate(BOOK_SELECT, "Reload")
 	t := time.Now()
 	var wg sync.WaitGroup
@@ -179,18 +184,18 @@ func readNewBookData() {
 	}
 	wg.Wait()
 	if err := datastore.Write(output); err != nil {
-		fmt.Println(err)
+		log.Println("error:", err)
 	}
 
 	endtime := time.Now()
-	fmt.Println("read new book data end", (endtime.Sub(t)).Seconds(), "s")
+	log.Println("info:", "read new book data end", (endtime.Sub(t)).Seconds(), "s")
 	statusUpdate(BOOK_SELECT, "ok")
 
 }
 
 // Web小説のデータを取得する
 func readNarouData(ctx context.Context) {
-	fmt.Println("start novel data count")
+	log.Println("info:", "start novel data count")
 	ctx, traceSpan := config.TracerS(ctx, "readNarouData", "loop Nobel")
 	defer traceSpan.End()
 	statusUpdate(NOBEL_SELECT, "Reload")
@@ -214,14 +219,16 @@ func readNarouData(ctx context.Context) {
 					<-slots
 					wg.Done()
 				}()
+				if !loogflag { //ループ終了は何もしない
+					return
+				}
 				//urlによる解析処理
-
 				if tmp, err := novelchack.ChackURLData(ctx, url); err == nil {
 					if err = datastore.Write(tmp); err != nil {
-						fmt.Println(err)
+						log.Println("error:", err)
 					}
 				} else if err != novelchack.ErrAtherUrl {
-					fmt.Println(err)
+					log.Println("error:", err)
 				}
 				datastore.AddCount()
 				per := datastore.ReadPerCount()
@@ -234,6 +241,6 @@ func readNarouData(ctx context.Context) {
 		wg.Wait()
 	}
 	endtime := time.Now()
-	fmt.Println("read novel data end", (endtime.Sub(now)).Seconds(), "s")
+	log.Println("info:", "read novel data end", (endtime.Sub(now)).Seconds(), "s")
 	statusUpdate(NOBEL_SELECT, "ok")
 }

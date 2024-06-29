@@ -76,7 +76,7 @@ func TracerStop(ctx context.Context) {
 		return
 	}
 	if err := tracer_ch(ctx); err != nil {
-		log.Printf("failed to shutdown TracerProvider: %v", err)
+		log.Printf("error:", "failed to shutdown TracerProvider: %v", err)
 	}
 }
 
