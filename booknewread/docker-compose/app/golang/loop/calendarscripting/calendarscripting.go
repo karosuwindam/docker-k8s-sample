@@ -1,11 +1,16 @@
 package calendarscripting
 
 import (
+	"book-newread/config"
+	"context"
 	"log"
+	"net/http"
 	"strings"
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type BookList struct {
@@ -41,7 +46,7 @@ func FilterComicList(data []BookList) []BookList {
 
 var readmutex sync.Mutex
 
-func GetComicList(year, month string, booktype int) []BookList {
+func GetComicList(year, month string, booktype int, ctx context.Context) []BookList {
 	var output []BookList
 	mounth_tmp := month
 
@@ -57,14 +62,43 @@ func GetComicList(year, month string, booktype int) []BookList {
 	if (year != "") && (month != "") {
 		url += "?year=" + year + "&month=" + month
 	}
-	readmutex.Lock()
-	doc, err := goquery.NewDocument(url)
-	readmutex.Unlock()
-	if err != nil {
-		log.Println("error:", err.Error())
+	var err_ch chan error
+	var doc_ch chan *goquery.Document
+	err_ch = make(chan error, 1)
+	doc_ch = make(chan *goquery.Document, 1)
+	go func() {
+		readmutex.Lock()
+		defer readmutex.Unlock()
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			err_ch <- err
+			return
+		}
+		client := http.Client{
+			Transport: otelhttp.NewTransport(http.DefaultTransport),
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			err_ch <- err
+			return
+		}
+		defer resp.Body.Close()
+		doc_tmp, err := goquery.NewDocumentFromResponse(resp)
+		if err != nil {
+			err_ch <- err
+			return
+		}
+		doc_ch <- doc_tmp
+	}()
+	var doc *goquery.Document
+	select {
+	case err := <-err_ch:
+		log.Println("error:", err)
 		return output
+	case doc = <-doc_ch:
 	}
-
+	_, span := config.TracerS(ctx, "check data", url)
+	defer span.End()
 	if mounth_tmp == "" {
 		mounth_tmp, _ = doc.Find("input.month").Attr("value")
 	}
@@ -99,5 +133,6 @@ func GetComicList(year, month string, booktype int) []BookList {
 
 		})
 	})
+	span.SetAttributes(attribute.Int("data count", len(output)))
 	return output
 }
