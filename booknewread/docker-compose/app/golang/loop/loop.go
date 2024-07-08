@@ -47,7 +47,7 @@ func Run(ctx context.Context) error {
 		wg.Done()
 		readNarouData(context.Background())
 	}()
-	readNewBookData()
+	readNewBookData(context.Background())
 	wg.Wait()
 	resetflag = false
 
@@ -64,7 +64,7 @@ loop:
 			wg.Add(2)
 			go func() { //新刊を取得する
 				defer wg.Done()
-				readNewBookData()
+				readNewBookData(context.Background())
 			}()
 			go func() { //小説のデータを取得する
 				defer wg.Done()
@@ -77,7 +77,7 @@ loop:
 			wg.Add(2)
 			go func() { //新刊を取得する
 				defer wg.Done()
-				readNewBookData()
+				readNewBookData(context.Background())
 			}()
 			go func() { //小説のデータを取得する
 				defer wg.Done()
@@ -141,15 +141,19 @@ func Reset() {
 }
 
 // 新刊情報の取得
-func readNewBookData() {
+func readNewBookData(ctx context.Context) {
 	log.Println("info:", "start new book data count")
+	ctx, traceSpan := config.TracerS(ctx, "readNewBookData", "loop NewBookData")
+	defer traceSpan.End()
 	statusUpdate(BOOK_SELECT, "Reload")
 	t := time.Now()
 	var wg sync.WaitGroup
 	var output []datastore.BListData = make([]datastore.BListData, 3)
 	for i := 0; i < 3; i++ {
 		wg.Add(1)
-		go func(i int) {
+		go func(i int, ctx context.Context) {
+			ctx, spango := config.TracerS(ctx, "readNewBookData_min", "count "+strconv.Itoa(i))
+			defer spango.End()
 			defer wg.Done()
 			var listdata datastore.BListData
 			var listdata_mux sync.Mutex
@@ -162,25 +166,29 @@ func readNewBookData() {
 			}
 			var wgg sync.WaitGroup
 			wgg.Add(2)
-			go func() {
+			go func(ctx context.Context) {
+				ctx, spango := config.TracerS(ctx, "readNewBookData_Nobel", "count "+strconv.Itoa(i))
+				defer spango.End()
 				defer wgg.Done()
-				tmp := calendarscripting.GetComicList(listdata.Year, listdata.Month, calendarscripting.LITENOVEL)
+				tmp := calendarscripting.GetComicList(listdata.Year, listdata.Month, calendarscripting.LITENOVEL, ctx)
 				tmp = calendarscripting.FilterComicList(tmp)
 				listdata_mux.Lock()
 				listdata.LiteNobel = tmp
 				listdata_mux.Unlock()
-			}()
-			go func() {
+			}(ctx)
+			go func(ctx context.Context) {
+				ctx, spango := config.TracerS(ctx, "readNewBookData_Comic", "count "+strconv.Itoa(i))
+				defer spango.End()
 				defer wgg.Done()
-				tmp := calendarscripting.GetComicList(listdata.Year, listdata.Month, calendarscripting.COMIC)
+				tmp := calendarscripting.GetComicList(listdata.Year, listdata.Month, calendarscripting.COMIC, ctx)
 				tmp = calendarscripting.FilterComicList(tmp)
 				listdata_mux.Lock()
 				listdata.Comic = tmp
 				listdata_mux.Unlock()
-			}()
+			}(ctx)
 			wgg.Wait()
 			output[i] = listdata
-		}(i)
+		}(i, ctx)
 	}
 	wg.Wait()
 	if err := datastore.Write(output); err != nil {
@@ -188,7 +196,7 @@ func readNewBookData() {
 	}
 
 	endtime := time.Now()
-	log.Println("info:", "read new book data end", (endtime.Sub(t)).Seconds(), "s")
+	log.Println("info:", "read new book data end", "spantime", (endtime.Sub(t)).Seconds(), "s")
 	statusUpdate(BOOK_SELECT, "ok")
 
 }
@@ -241,6 +249,6 @@ func readNarouData(ctx context.Context) {
 		wg.Wait()
 	}
 	endtime := time.Now()
-	log.Println("info:", "read novel data end", (endtime.Sub(now)).Seconds(), "s")
+	log.Println("info:", "read novel data end", "spantime", (endtime.Sub(now)).Seconds(), "s")
 	statusUpdate(NOBEL_SELECT, "ok")
 }
