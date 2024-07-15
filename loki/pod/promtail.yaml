@@ -31,8 +31,7 @@ spec:
         # image: grafana/promtail
         args:
         - --config.file=/etc/promtail/config.yaml
-        - --client.external-labels=hostname=${hostname}
-        # - --config.expand-env=true
+        - --config.expand-env=true
         # - --config.expand-env=true
         # - --config.file=/etc/promtail/config.yml
         env: 
