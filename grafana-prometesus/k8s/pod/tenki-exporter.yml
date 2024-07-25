@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenki-exporter
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      app: tenki-exporter
+  template:
+    metadata:
+      labels:
+        app: tenki-exporter
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9150'
+        prometheus.io/path: /metrics
+        podinfo: "tenki-exporter"
+    spec:
+      containers:
+        - name: tenki-exporter
+          image: bookserver2:31000/karosu/tenki-ejent:0.1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TRACER_ON
+              value: "true"
+            - name: TRACER_SERVICE_NAME
+              value: "tenki-ejent"
+          ports:
+            - containerPort: 9150
+          resources:
+            limits:
+              cpu: 500m
+              memory: 400Mi
+            requests:
+              cpu: 200m
+              memory: 200Mi
