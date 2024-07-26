@@ -12,3 +12,7 @@ func NewAPI() *API {
 func (a *API) GetAmedasMapData() []amedas.PrometesusData {
 	return amedasAPI.PData
 }
+
+func (a *API) GetAmedasMapDatav2() amedas.PrometesusDatas {
+	return amedasAPI.PDMapData
+}

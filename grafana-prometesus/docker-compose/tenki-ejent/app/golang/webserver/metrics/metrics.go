@@ -50,6 +50,18 @@ func getMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getMetricsV2(w http.ResponseWriter, r *http.Request) {
+	var output []string
+	api := contoroller.NewAPI()
+	datas := api.GetAmedasMapDatav2()
+	output = convertDatav2(datas)
+	w.Header().Set("Content-Type", "text/plan; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	for _, d := range output {
+		fmt.Fprintln(w, d)
+	}
+}
+
 func convertData(pd []amedas.PrometesusData) []string {
 	tmp := pd
 	var out []string
@@ -74,8 +86,71 @@ func convertData(pd []amedas.PrometesusData) []string {
 		}
 		tmp = tmp_tmp
 	}
+	//tmp内で、tmp[].Nameが空であるものを削除
+	var tmp_out []amedas.PrometesusData
+	for i := 0; i < len(tmp); i++ {
+		if tmp[i].Name != "" {
+			tmp_out = append(tmp_out, tmp[i])
+		}
+	}
+	tmp = tmp_out
 	if len(tmp) != 0 {
 		logger.Error("Unexpected Data", "data", tmp)
 	}
 	return out
+}
+
+func convertDatav2(datas amedas.PrometesusDatas) []string {
+
+	tmp := []amedas.PrometesusData{}
+	for _, d := range datas.Temp {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Humidity {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Snow {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Snow1h {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Snow6h {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Snow12h {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Snow24h {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Sun10m {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Sun1h {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Visibility {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Precipitation10m {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Precipitation1h {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Precipitation3h {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Precipitation24h {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.WindDirection {
+		tmp = append(tmp, d)
+	}
+	for _, d := range datas.Wind {
+		tmp = append(tmp, d)
+	}
+
+	return convertData(tmp)
 }

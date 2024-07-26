@@ -1,5 +1,4 @@
 FROM golang:1.22.1 As builder
-#RUN apt update && apt upgrade -y
 WORKDIR /app
 ADD ./golang .
 RUN go build -o app
@@ -7,15 +6,8 @@ RUN go build -o app
 
 FROM debian:unstable-slim
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.23.0"
+LABEL version="0.2.0"
 LABEL name="tenki-ejent"
-# RUN <<EOF
-# apt-get update
-# apt-get upgrade -y
-# apt-get install -y locales locales-all curl
-# apt-get clean
-# rm -rf /var/lib/apt/lists/*
-# EOF
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y locales locales-all curl && \

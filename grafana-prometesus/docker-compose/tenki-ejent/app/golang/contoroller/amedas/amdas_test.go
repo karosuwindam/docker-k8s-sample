@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -33,6 +34,12 @@ func TestGetJSON(t *testing.T) {
 	}
 	api := NewAmedasAPI()
 	fmt.Println(api.GetPrometesusData())
+	api.GetAmedasTableData(ctx)
+	api.GetAmedasMapData(ctx)
+	fmt.Println(api.GetPrometesusDatas())
+	time.Sleep(1 * time.Second)
+	api.CleanData()
+	fmt.Println(api.PDMapData)
 	// fmt.Println(getJsonData(ctx, AMEDAS_ELEMNT_URL))
 }
 

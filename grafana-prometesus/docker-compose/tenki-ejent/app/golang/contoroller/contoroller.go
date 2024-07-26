@@ -45,8 +45,16 @@ loop:
 			_, span1 := config.TracerS(ctx1, "controller.Run", "GetPrometesusData")
 			amedasAPI.GetPrometesusData()
 			span1.End()
+			_, span1 = config.TracerS(ctx1, "controller.Run", "GetPrometesusDatas")
+			amedasAPI.GetPrometesusDatas()
+			amedasAPI.CleanData()
+			span1.End()
 			TabledataGetTime = stime
-			logger.Info("OneShot", "Time", time.Since(stime).String(), "DataCount", len(amedasAPI.PData))
+			logger.Info("1 time after loop",
+				"Time", time.Since(stime).String(),
+				"DataCount", len(amedasAPI.PData),
+				"DataMapCount", amedasAPI.CountSumMap(),
+			)
 			waitTime = WAITTIME_DEFAULT - time.Now().Sub(stime)
 			span.End()
 		case <-wait:
@@ -63,7 +71,15 @@ loop:
 			_, span1 := config.TracerS(ctx1, "controller.Run", "GetPrometesusData")
 			amedasAPI.GetPrometesusData()
 			span1.End()
-			logger.Info("1 time after loop", "Time", time.Since(stime).String(), "DataCount", len(amedasAPI.PData))
+			_, span1 = config.TracerS(ctx1, "controller.Run", "GetPrometesusDatas")
+			amedasAPI.GetPrometesusDatas()
+			amedasAPI.CleanData()
+			span1.End()
+			logger.Info("1 time after loop",
+				"Time", time.Since(stime).String(),
+				"DataCount", len(amedasAPI.PData),
+				"DataMapCount", amedasAPI.CountSumMap(),
+			)
 			waitTime = WAITTIME_DEFAULT - time.Now().Sub(stime)
 			span.End()
 			// default:

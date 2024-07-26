@@ -1,5 +1,5 @@
 # TAG = 24.0.0-fpm-alpine
-TAG = 0.1.0
+TAG = 0.2.0
 DOCKER = docker
 NAME = bookserver2:31000/karosu/tenki-ejent
 

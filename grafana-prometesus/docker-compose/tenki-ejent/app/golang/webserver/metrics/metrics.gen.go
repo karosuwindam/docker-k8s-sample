@@ -7,5 +7,6 @@ func Init(url string, mux *http.ServeMux) error {
 		url = url[:len(url)-1]
 	}
 	mux.HandleFunc("GET "+url, getMetrics)
+	mux.HandleFunc("GET "+url+"/v2", getMetrics)
 	return nil
 }
