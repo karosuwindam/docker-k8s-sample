@@ -13,8 +13,7 @@ func TestNovelChack(t *testing.T) {
 	novelchack.Init()
 	ctx := context.TODO()
 
-	url := "https://kakuyomu.jp/works/4852201425154978969"
-	// url := "https://kakuyomu.jp/works/16816452218254294002"
+	url := "https://kakuyomu.jp/works/1177354054883819762"
 	if tmp, err := novelchack.ChackURLData(ctx, url); err != nil {
 		t.Error(err)
 	} else {

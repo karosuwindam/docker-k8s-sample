@@ -1,5 +1,4 @@
-# TAG = 24.0.0-fpm-alpine
-TAG = 0.23.0
+TAG = 0.24.0
 DOCKER = docker
 NAME = bookserver2:31000/karosu/booknewread
 

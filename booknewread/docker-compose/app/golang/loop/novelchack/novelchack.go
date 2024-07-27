@@ -86,6 +86,7 @@ const (
 	BASE_URL_KAKUYOMU = "https://kakuyomu.jp"
 	BASE_URL_NOCKUS   = "https://novel18.syosetu.com"
 	BASE_URL_ALPHAS   = "https://www.alphapolis.co.jp"
+	KAKUYOMU_SIDEBER  = "episode_sidebar"
 )
 
 const (
@@ -381,8 +382,31 @@ func chackKakuyomu(ctx context.Context, data documentdata) List {
 				output.Lastdate = t.Local()
 			}
 		})
-
 	})
+	//第一話の取り出しとサイドバー処理
+	//Layout_layout__5aFuw Layout_items-normal__4mOqD Layout_justify-normal__zqNe7 Layout_direction-row__boh0Z Layout_wrap-wrap__yY3zM Layout_gap-2s__xUCm0
+	doc.Find("div.Layout_layout__5aFuw.Layout_items-normal__4mOqD.Layout_justify-normal__zqNe7.Layout_direction-row__boh0Z.Layout_wrap-wrap__yY3zM.Layout_gap-2s__xUCm0").Each(func(i int, s *goquery.Selection) {
+		tmpurl, _ := s.Find("a").Attr("href")
+		if tmpurl != "" {
+			output.LastUrl = BASE_URL_KAKUYOMU + tmpurl
+		}
+		tmpdoc, err := getKakuyomu(ctx, BASE_URL_KAKUYOMU+tmpurl+"/"+KAKUYOMU_SIDEBER)
+		if err == nil {
+			eTempUrl := ""
+			eEpText := ""
+			eEpTime := ""
+			tmpdoc.data.Find("li").Each(func(i int, ss *goquery.Selection) {
+				eTempUrl, _ = ss.Find("a").Attr("href")
+				eEpText = ss.Find("a").Find("span").Text()
+				eEpTime, _ = ss.Find("a").Find("time").Attr("datetime")
+			})
+			t, _ := time.Parse("2006-01-02T15:04:05Z", eEpTime)
+			output.LastStoryT = eEpText
+			output.LastUrl = BASE_URL_KAKUYOMU + eTempUrl
+			output.Lastdate = t.Local()
+		}
+	})
+
 	if (output.LastStoryT == "") && (output.LastUrl == "") {
 		infoTmp := doc.Find("div.Typography_fontSize-m__mskXq.Typography_color-gray__ObCRz.Typography_lineHeight-3s__OOxkK.Base_block__H4wj4")
 		timedata, _ := infoTmp.Find("time").Attr("datetime")
