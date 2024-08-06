@@ -16,18 +16,35 @@ data:
       - url: http://loki:3100/loki/api/v1/push
     
     scrape_configs:
+    - job_name: dnsmasq
+      static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          app: snsmasq
+          __path__: /var/log/dnsmasq/dnsmasq.log
+          nodename: ${HOSTNAME}
     - job_name: system
       static_configs:
       - targets:
           - localhost
         labels:
           job: varlogs
-          __path__: /var/log/*log
+          __path__: /var/log/*.log
           nodename: ${HOSTNAME}
       relabel_configs:
         - source_labels:
             - __meta_kubernetes_pod_node_name
-          target_label: __host__        
+          target_label: __host__
+    - job_name: syslog
+      static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          __path__: /var/log/syslog
+          nodename: ${HOSTNAME}
     - job_name: journal
       journal:
         max_age: 12h
