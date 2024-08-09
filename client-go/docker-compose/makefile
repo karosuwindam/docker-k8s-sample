@@ -1,4 +1,4 @@
-TAG = 0.4.0
+TAG = 0.5.0
 DOCKER = docker
 NAME = bookserver2:31000/karosu/client-go
 
@@ -10,7 +10,7 @@ BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 TEMPLATE = ./Dockerfile_tmp
 TARGET = Dockerfile_arm
 TARGET_FILE = ./
-GO_VERSION = 1.19.9
+GO_VERSION = 1.22.6
 ARCH = armv6l
 OPT = "--privileged"
 
@@ -27,7 +27,7 @@ push:
 	${DOCKER} push ${NAME}:${TAG}
 build-kit: create
 	@echo "--- buildkit build --"
-	${BUILD} --addr ${BUILD_ADDR_ARM} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${TARGET_FILE} --opt source=${TARGET_FILE}${TARGET}
+	${BUILD} --addr ${BUILD_ADDR} build --output name=${NAME}:${TAG},${BUILD_OPTION} --frontend=dockerfile.v0 --local context=${TARGET_FILE}   --local dockerfile=${TARGET_FILE} --opt source=${TARGET_FILE}${TARGET}
 run:
 	${DOCKER} run --rm --name=booknewread -p 18080:8080 ${NAME}:${TAG}
 help:
