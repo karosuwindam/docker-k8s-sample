@@ -8,10 +8,10 @@ BUILD_ADDR_ARM = tcp://buildkit-arm.bookserver.home:1235 #arm
 BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 
 TEMPLATE = ./Dockerfile_tmp
-TARGET = Dockerfile_arm
+TARGET = Dockerfile
 TARGET_FILE = ./
 GO_VERSION = 1.22.6
-ARCH = armv6l
+ARCH = arm64
 OPT = "--privileged"
 
 

@@ -18,7 +18,7 @@ spec:
       serviceAccount: client-go
       containers:
       - name: client
-        image: bookserver2:31000/karosu/client-go:0.4.0
+        image: bookserver2:31000/karosu/client-go:0.5.0
         resources:
           limits:
             memory: "128Mi"
@@ -26,5 +26,9 @@ spec:
         env:
           - name: KUBE_PATH_FLAG
             value: "false"
+          - name: TRACER_ON
+            value: "false"
+          - name: TRACER_SERVICE_URL
+            value: "client-go"
         ports:
           - containerPort: 8080
