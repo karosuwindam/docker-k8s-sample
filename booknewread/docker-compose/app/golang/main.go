@@ -12,20 +12,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"github.com/comail/colog"
 )
-
-func logConfig() error {
-	colog.SetDefaultLevel(colog.LDebug)
-	colog.SetMinLevel(colog.LTrace)
-	colog.SetFormatter(&colog.StdFormatter{
-		Colors: true,
-		Flag:   log.Ldate | log.Ltime | log.Lshortfile,
-	})
-	colog.Register()
-	return nil
-}
 
 func Init() error {
 	if err := config.Init(); err != nil {
@@ -35,9 +22,6 @@ func Init() error {
 		return err
 	}
 	if err := webserver.Init(); err != nil {
-		return err
-	}
-	if err := logConfig(); err != nil {
 		return err
 	}
 	return nil
@@ -73,12 +57,9 @@ func Start() error {
 	if err := loop.RunWait(); err != nil {
 		log.Println("error:", "Runloop wait timeout :", err)
 	}
-	// go func(ctx context.Context) {
-	// 	defer wg.Done()
 	if err := webserver.Start(ctx); err != nil {
 		panic(err)
 	}
-	// }(context.Background())
 
 	<-idleConnsClosed
 	wg.Wait()
