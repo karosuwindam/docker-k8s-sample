@@ -401,9 +401,11 @@ func chackKakuyomu(ctx context.Context, data documentdata) List {
 				eEpTime, _ = ss.Find("a").Find("time").Attr("datetime")
 			})
 			t, _ := time.Parse("2006-01-02T15:04:05Z", eEpTime)
-			output.LastStoryT = eEpText
-			output.LastUrl = BASE_URL_KAKUYOMU + eTempUrl
-			output.Lastdate = t.Local()
+			if output.Lastdate.Before(t.Local()) {
+				output.LastStoryT = eEpText
+				output.LastUrl = BASE_URL_KAKUYOMU + eTempUrl
+				output.Lastdate = t.Local()
+			}
 		}
 	})
 

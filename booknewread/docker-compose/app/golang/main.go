@@ -32,11 +32,11 @@ func Start() error {
 	go func() {
 		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
 		<-sigs
 		//シャットダウン処理
 		log.Println("info:", "Server is shutting down...")
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 		Stop(ctx)
 		log.Println("info:", "Server is shut down")
 		close(idleConnsClosed)
