@@ -7,7 +7,7 @@ FROM ubuntu:22.04 As builder
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y curl gcc git locales locales-all &&\
     locale-gen ja_JP.UTF-8
-RUN curl -OL https://dl.google.com/go/go1.22.1.linux-aarch64.tar.gz &&\
+RUN curl -OL https://go.dev/dl/go1.22.1.linux-aarch64.tar.gz &&\
     tar -C /usr/local -xzf go1.22.1.linux-aarch64.tar.gz &&\
     rm -rf go1.22.1.linux-aarch64.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
