@@ -17,9 +17,9 @@ type SetupLoop struct {
 }
 
 type NobelChack struct {
-	MaxNarouAPI    int `env:"NOBEL_MAX_NAROU_API" envDefault:"1"`
+	MaxNarouAPI    int `env:"NOBEL_MAX_NAROU_API" envDefault:"2"`
 	MaxKakuyomuAPI int `env:"NOBEL_MAX_NAROU_API" envDefault:"2"`
-	MaxNarou18API  int `env:"NOBEL_MAX_NAROU_18_API" envDefault:"1"`
+	MaxNarou18API  int `env:"NOBEL_MAX_NAROU_18_API" envDefault:"2"`
 	MaxAlphaAPI    int `env:"NOBEL_MAX_ALPHA_API" envDefault:"2"`
 }
 
@@ -50,6 +50,9 @@ func Init() error {
 	TraData = TracerData{}
 
 	if err := env.Parse(&TraData); err != nil {
+		return err
+	}
+	if err := logConfig(); err != nil {
 		return err
 	}
 	return nil
