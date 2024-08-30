@@ -141,3 +141,10 @@ kubectl apply -f kube-web-view/k8s
 
 kubectl apply -f pyroscorpe/deploy.yaml
 ```
+
+
+## イメージリスト確認
+
+```
+kubectl get pods -A -o=jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.nodeName}{"\t"}{"\t"}{.spec.containers[].image}{"\n"}{end}'
+```
