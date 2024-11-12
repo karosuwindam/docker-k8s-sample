@@ -3,6 +3,7 @@ package indexpage
 import (
 	"book-newread/config"
 	"html/template"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -17,6 +18,7 @@ func Init(url string) func(w http.ResponseWriter, r *http.Request) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
+	slog.DebugContext(r.Context(), r.Method+":"+r.URL.Path, "method", r.Method, "url", r.URL.Path)
 	url := r.URL.Path[len(baseurl):]
 	pass := config.Web.StaticPage
 	if pass[len(pass)-1:] != "/" {
@@ -68,6 +70,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	slog.WarnContext(r.Context(), "404 Not Found", "url", r.URL.Path)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("404 Not Found"))

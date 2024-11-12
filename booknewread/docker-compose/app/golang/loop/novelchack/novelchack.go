@@ -199,7 +199,6 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 		//アルファポリスのページからスクレイピング
 		for i := 0; i < 3; i++ {
 			if data, err := getAlpha(ctx, url); err != nil {
-
 				slog.ErrorContext(ctx, "getAlpha", "error", err)
 				outerr = err
 			} else {
@@ -284,6 +283,9 @@ func (nd *NaroudData) narouChangeList(ctx context.Context) (List, error) {
 		count := nd.body[1].General_all_no
 		out.LastUrl = out.Url + strconv.Itoa(count) + "/"
 		out.LastStoryT = strconv.Itoa(count) + "話"
+		if nd.body[1].End == 0 {
+			out.LastStoryT = "全" + out.LastStoryT
+		}
 
 		span.SetAttributes(attribute.String("url", out.Url))
 		span.SetAttributes(attribute.String("title", out.Title))

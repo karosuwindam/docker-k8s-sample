@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
 	slogmulti "github.com/samber/slog-multi"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
@@ -91,6 +93,14 @@ func initLoggerProvider(ctx context.Context, res *resource.Resource, opt interfa
 
 }
 
+func initResourc(ctx context.Context, servicName string) (*resource.Resource, error) {
+	return resource.Merge(resource.Default(),
+		resource.NewWithAttributes(semconv.SchemaURL,
+			semconv.ServiceName(servicName),
+			semconv.ServiceVersion(TraData.ServiceVersion),
+		))
+}
+
 var tracer_ch func(context.Context) error
 
 func TracerStart(urldata, serviceName string, ctx context.Context) (shutdown func(context.Context) error, err error) {
@@ -109,7 +119,8 @@ func TracerStart(urldata, serviceName string, ctx context.Context) (shutdown fun
 	}
 
 	if !TraData.TracerUse {
-		err = nil
+
+		err = logConfig()
 		return
 	}
 	slog.Info("Tracer Start", "url", urldata, "service", serviceName)
@@ -118,11 +129,7 @@ func TracerStart(urldata, serviceName string, ctx context.Context) (shutdown fun
 		handleErr(err)
 		return
 	}
-	res, err := resource.New(ctx,
-		resource.WithAttributes(
-			semconv.ServiceNameKey.String(serviceName),
-		),
-	)
+	res, err := initResourc(ctx, serviceName)
 	if err != nil {
 		handleErr(err)
 		return
@@ -169,4 +176,12 @@ func TracerStop(ctx context.Context) {
 
 func TracerS(ctx context.Context, processName, spanName string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
 	return otel.Tracer(processName).Start(ctx, spanName, opts...)
+}
+
+func TraceHttpHandleFunc(mux *http.ServeMux, pattern string, handlerFunc func(http.ResponseWriter, *http.Request)) {
+	// handler := otelhttp.WithRouteTag(pattern, http.HandlerFunc(handlerFunc))
+	handler := otelhttp.NewHandler(http.HandlerFunc(handlerFunc), pattern,
+		otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+	)
+	mux.Handle(pattern, handler)
 }

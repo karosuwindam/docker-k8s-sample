@@ -9,8 +9,6 @@ import (
 	"net"
 	"net/http"
 	"time"
-
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // SetupServer
@@ -57,30 +55,31 @@ func Init() error {
 	api.Init(cfg.mux)
 	// fileserver := http.FileServer(http.Dir(config.Web.StaticPage))
 	// cfg.mux.Handle("/", fileserver)
-	cfg.mux.HandleFunc("/", indexpage.Init("/"))
+	// cfg.mux.HandleFunc("/", indexpage.Init("/"))
+	config.TraceHttpHandleFunc(cfg.mux, "/", indexpage.Init("/"))
 	return nil
 }
 
 func Start(ctx context.Context) error {
 	var err error = nil
-	if config.TraData.TracerUse {
-		hander := otelhttp.NewHandler(cfg.mux, "http-server",
-			otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
-		)
-		srv = &http.Server{
-			Addr:         cfg.hostname + ":" + cfg.port,
-			Handler:      hander,
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
-		}
-	} else {
-		srv = &http.Server{
-			Addr:         cfg.hostname + ":" + cfg.port,
-			Handler:      cfg.mux,
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
-		}
+	// if config.TraData.TracerUse {
+	// 	hander := otelhttp.NewHandler(cfg.mux, "http-server",
+	// 		otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+	// 	)
+	// 	srv = &http.Server{
+	// 		Addr:         cfg.hostname + ":" + cfg.port,
+	// 		Handler:      hander,
+	// 		ReadTimeout:  5 * time.Second,
+	// 		WriteTimeout: 10 * time.Second,
+	// 	}
+	// } else {
+	srv = &http.Server{
+		Addr:         cfg.hostname + ":" + cfg.port,
+		Handler:      cfg.mux,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
+	// }
 	l, err := net.Listen(cfg.protocol, srv.Addr)
 	if err != nil {
 		return err

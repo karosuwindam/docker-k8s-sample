@@ -24,9 +24,10 @@ type NobelChack struct {
 }
 
 type TracerData struct {
-	GrpcURL     string `env:"TRACER_GRPC_URL" envDefault:"otel-grpc.bookserver.home:4317"`
-	ServiceName string `env:"TRACER_SERVICE_URL" envDefault:"booknewRead-test"`
-	TracerUse   bool   `env:"TRACER_ON" envDefault:"false"`
+	GrpcURL        string `env:"TRACER_GRPC_URL" envDefault:"otel-grpc.bookserver.home:4317"`
+	ServiceName    string `env:"TRACER_SERVICE_URL" envDefault:"booknewRead-test"`
+	TracerUse      bool   `env:"TRACER_ON" envDefault:"false"`
+	ServiceVersion string `env:"TRACER_SERVICE_VERSION" envDefault:"0.26.1"`
 }
 
 var Web SetupServer

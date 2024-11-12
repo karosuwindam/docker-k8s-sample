@@ -9,7 +9,6 @@ import (
 func ReadWeb(w http.ResponseWriter, r *http.Request) {
 	status := datastore.Status{}
 	if err := datastore.Read(&status); err != nil {
-
 		slog.Error("ReadWeb Read", "error", err)
 		return
 	}
