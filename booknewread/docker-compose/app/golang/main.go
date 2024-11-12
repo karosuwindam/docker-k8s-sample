@@ -6,7 +6,7 @@ import (
 	"book-newread/webserver"
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
@@ -34,11 +34,11 @@ func Start() error {
 		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 		<-sigs
 		//シャットダウン処理
-		log.Println("info:", "Server is shutting down...")
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		slog.InfoContext(ctx, "Server is shutting down...")
 		defer cancel()
 		Stop(ctx)
-		log.Println("info:", "Server is shut down")
+		slog.InfoContext(ctx, "Server is shut down")
 		close(idleConnsClosed)
 	}()
 	var wg sync.WaitGroup
@@ -46,8 +46,10 @@ func Start() error {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	config.TracerStart(config.TraData.GrpcURL, config.TraData.ServiceName, ctx)
-	defer config.TracerStop(ctx)
+	tshutdown, terr := config.TracerStart(config.TraData.GrpcURL, config.TraData.ServiceName, ctx)
+	if terr != nil {
+		defer tshutdown(context.Background())
+	}
 	go func(ctx context.Context) {
 		defer wg.Done()
 		if err := loop.Run(ctx); err != nil {
@@ -55,7 +57,7 @@ func Start() error {
 		}
 	}(ctx)
 	if err := loop.RunWait(); err != nil {
-		log.Println("error:", "Runloop wait timeout :", err)
+		slog.ErrorContext(ctx, "Runloop wait timeout :", err)
 	}
 	if err := webserver.Start(ctx); err != nil {
 		panic(err)
@@ -68,14 +70,14 @@ func Start() error {
 
 func Stop(ctx context.Context) {
 	if err := loop.Stop(context.Background()); err != nil {
-		log.Println("error:", err)
+		slog.ErrorContext(ctx, "loop.Stop", err)
 	}
 	if err := webserver.Stop(ctx); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
-			log.Println("error:", "HTTP server Shutdown: timeout")
+			slog.ErrorContext(ctx, "HTTP server Shutdown: timeout")
 
 		} else {
-			log.Println("error:", err)
+			slog.ErrorContext(ctx, "webserver.Stop", err)
 
 		}
 	}
@@ -88,5 +90,5 @@ func main() {
 	if err := Start(); err != nil {
 		panic(err)
 	}
-	log.Println("info:", "All Shutdown")
+	slog.Info("All Shutdown")
 }

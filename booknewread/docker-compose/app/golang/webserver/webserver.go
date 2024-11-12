@@ -5,12 +5,10 @@ import (
 	"book-newread/webserver/api"
 	"book-newread/webserver/indexpage"
 	"context"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"time"
-
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // SetupServer
@@ -57,35 +55,36 @@ func Init() error {
 	api.Init(cfg.mux)
 	// fileserver := http.FileServer(http.Dir(config.Web.StaticPage))
 	// cfg.mux.Handle("/", fileserver)
-	cfg.mux.HandleFunc("/", indexpage.Init("/"))
+	// cfg.mux.HandleFunc("/", indexpage.Init("/"))
+	config.TraceHttpHandleFunc(cfg.mux, "/", indexpage.Init("/"))
 	return nil
 }
 
 func Start(ctx context.Context) error {
 	var err error = nil
-	if config.TraData.TracerUse {
-		hander := otelhttp.NewHandler(cfg.mux, "http-server",
-			otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
-		)
-		srv = &http.Server{
-			Addr:         cfg.hostname + ":" + cfg.port,
-			Handler:      hander,
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
-		}
-	} else {
-		srv = &http.Server{
-			Addr:         cfg.hostname + ":" + cfg.port,
-			Handler:      cfg.mux,
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
-		}
+	// if config.TraData.TracerUse {
+	// 	hander := otelhttp.NewHandler(cfg.mux, "http-server",
+	// 		otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+	// 	)
+	// 	srv = &http.Server{
+	// 		Addr:         cfg.hostname + ":" + cfg.port,
+	// 		Handler:      hander,
+	// 		ReadTimeout:  5 * time.Second,
+	// 		WriteTimeout: 10 * time.Second,
+	// 	}
+	// } else {
+	srv = &http.Server{
+		Addr:         cfg.hostname + ":" + cfg.port,
+		Handler:      cfg.mux,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
+	// }
 	l, err := net.Listen(cfg.protocol, srv.Addr)
 	if err != nil {
 		return err
 	}
-	log.Println("info:", "Start Server", cfg.hostname+":"+cfg.port)
+	slog.InfoContext(ctx, "Start Server"+cfg.hostname+":"+cfg.port, "hostname", cfg.hostname, "port", cfg.port)
 	go func() {
 		if err = srv.Serve(l); err != nil && err != http.ErrServerClosed {
 			panic(err)
@@ -117,10 +116,10 @@ func Stop(ctx context.Context) error {
 	case <-done:
 		break
 	case <-ctx.Done():
-		log.Println("ctx done")
+		slog.Warn("ctx done")
 		break
 	case <-time.After(time.Microsecond * 500):
-		log.Println("errors:", "shutdown time out over 500 ms")
+		slog.Warn("shutdown time out over 500 ms")
 		break
 	}
 	return nil

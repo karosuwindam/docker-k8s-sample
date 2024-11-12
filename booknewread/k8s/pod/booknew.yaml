@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: booknewread
-          image: bookserver2:31000/karosu/booknewread:0.25.0
+          image: bookserver2:31000/karosu/booknewread:0.26.1
           imagePullPolicy: IfNotPresent
           # imagePullPolicy: Always
           env:
@@ -27,6 +27,8 @@ spec:
               value: "新刊取得:local"
             - name: TRACER_ON
               value: "true"
+            - name: TRACER_SERVICE_URL
+              value: "booknewRead"
           ports:
             - containerPort: 8080
           volumeMounts:

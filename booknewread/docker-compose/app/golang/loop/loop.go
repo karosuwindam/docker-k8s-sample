@@ -8,7 +8,7 @@ import (
 	"book-newread/loop/novelchack"
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"math"
 	"strconv"
 	"sync"
@@ -39,7 +39,7 @@ func Init() error {
 
 func Run(ctx context.Context) error {
 	var wg sync.WaitGroup
-	log.Println("info:", "start loop")
+	slog.InfoContext(ctx, "Start loop")
 	resetflag = true
 	loogflag = true
 	wg.Add(1)
@@ -87,7 +87,7 @@ loop:
 			resetflag = false
 		}
 	}
-	log.Println("info:", "end loop")
+	slog.InfoContext(ctx, "end loop")
 	return nil
 }
 
@@ -142,9 +142,9 @@ func Reset() {
 
 // 新刊情報の取得
 func readNewBookData(ctx context.Context) {
-	log.Println("info:", "start new book data count")
 	ctx, traceSpan := config.TracerS(ctx, "readNewBookData", "loop NewBookData")
 	defer traceSpan.End()
+	slog.InfoContext(ctx, "start new book data count")
 	statusUpdate(BOOK_SELECT, "Reload")
 	t := time.Now()
 	var wg sync.WaitGroup
@@ -187,25 +187,26 @@ func readNewBookData(ctx context.Context) {
 				listdata_mux.Unlock()
 			}(ctx)
 			wgg.Wait()
+			slog.DebugContext(ctx, "readNewBookData End "+"count "+strconv.Itoa(i), "listdata", listdata)
 			output[i] = listdata
 		}(i, ctx)
 	}
 	wg.Wait()
 	if err := datastore.Write(output); err != nil {
-		log.Println("error:", err)
+		slog.ErrorContext(ctx, "datastore.Write", err)
 	}
 
 	endtime := time.Now()
-	log.Println("info:", "read new book data end", "spantime", (endtime.Sub(t)).Seconds(), "s")
+	slog.InfoContext(ctx, "read new book data end", "spantime(s)", (endtime.Sub(t)).Seconds())
 	statusUpdate(BOOK_SELECT, "ok")
 
 }
 
 // Web小説のデータを取得する
 func readNarouData(ctx context.Context) {
-	log.Println("info:", "start novel data count")
 	ctx, traceSpan := config.TracerS(ctx, "readNarouData", "loop Nobel")
 	defer traceSpan.End()
+	slog.InfoContext(ctx, "start novel data count")
 	statusUpdate(NOBEL_SELECT, "Reload")
 	now := time.Now()
 	limit := 10
@@ -216,6 +217,7 @@ func readNarouData(ctx context.Context) {
 	if len(urls) != 0 {
 		datastore.ClearCount()
 		datastore.SetMaxCount(len(urls))
+		slog.DebugContext(ctx, "read bookmark", "count", len(urls))
 		wg.Add(len(urls))
 		for _, url := range urls {
 			slots <- struct{}{}
@@ -233,10 +235,10 @@ func readNarouData(ctx context.Context) {
 				//urlによる解析処理
 				if tmp, err := novelchack.ChackURLData(ctx, url); err == nil {
 					if err = datastore.Write(tmp); err != nil {
-						log.Println("error:", err)
+						slog.ErrorContext(ctx, "datastore.Write", err)
 					}
 				} else if err != novelchack.ErrAtherUrl {
-					log.Println("error:", err)
+					slog.ErrorContext(ctx, "novelchack.ChackURLData", err)
 				}
 				datastore.AddCount()
 				per := datastore.ReadPerCount()
@@ -249,6 +251,6 @@ func readNarouData(ctx context.Context) {
 		wg.Wait()
 	}
 	endtime := time.Now()
-	log.Println("info:", "read novel data end", "spantime", (endtime.Sub(now)).Seconds(), "s")
+	slog.InfoContext(ctx, "read novel data end", "spantime(s)", (endtime.Sub(now)).Seconds())
 	statusUpdate(NOBEL_SELECT, "ok")
 }

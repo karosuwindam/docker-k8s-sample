@@ -3,7 +3,7 @@ package calendarscripting
 import (
 	"book-newread/config"
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
@@ -93,9 +93,10 @@ func GetComicList(year, month string, booktype int, ctx context.Context) []BookL
 	var doc *goquery.Document
 	select {
 	case err := <-err_ch:
-		log.Println("error:", err)
+		slog.Error("GetComicList", "error", err)
 		return output
 	case doc = <-doc_ch:
+		slog.Debug("GetComicList Get Url Data OK", "url", url)
 	}
 	_, span := config.TracerS(ctx, "check data", url)
 	defer span.End()
