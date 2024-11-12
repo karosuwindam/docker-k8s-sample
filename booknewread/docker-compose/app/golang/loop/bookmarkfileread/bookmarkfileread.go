@@ -3,7 +3,7 @@ package bookmarkfileread
 import (
 	"book-newread/config"
 	"io/ioutil"
-	"log"
+	"log/slog"
 	"os"
 	"sort"
 	"strings"
@@ -68,7 +68,7 @@ func readBookBark(path string) []BookBark {
 	doc, err := goquery.NewDocumentFromReader(stringReader)
 	// doc, err := goquery.NewDocument(path)
 	if err != nil {
-		log.Println("error:", err.Error())
+		slog.Error("readBookBark", "error", err)
 		return output
 	}
 	doc.Find("dt").Each(func(i int, s *goquery.Selection) {

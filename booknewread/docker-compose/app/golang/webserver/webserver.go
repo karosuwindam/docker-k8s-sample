@@ -5,7 +5,7 @@ import (
 	"book-newread/webserver/api"
 	"book-newread/webserver/indexpage"
 	"context"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"time"
@@ -85,7 +85,7 @@ func Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Println("info:", "Start Server", cfg.hostname+":"+cfg.port)
+	slog.InfoContext(ctx, "Start Server"+cfg.hostname+":"+cfg.port, "hostname", cfg.hostname, "port", cfg.port)
 	go func() {
 		if err = srv.Serve(l); err != nil && err != http.ErrServerClosed {
 			panic(err)
@@ -117,10 +117,10 @@ func Stop(ctx context.Context) error {
 	case <-done:
 		break
 	case <-ctx.Done():
-		log.Println("ctx done")
+		slog.Warn("ctx done")
 		break
 	case <-time.After(time.Microsecond * 500):
-		log.Println("errors:", "shutdown time out over 500 ms")
+		slog.Warn("shutdown time out over 500 ms")
 		break
 	}
 	return nil

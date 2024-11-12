@@ -1,4 +1,4 @@
-TAG = 0.25.0
+TAG = 0.26.0
 DOCKER = docker
 NAME = bookserver2:31000/karosu/booknewread
 

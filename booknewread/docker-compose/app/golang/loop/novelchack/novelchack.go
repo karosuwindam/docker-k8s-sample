@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -156,6 +156,7 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 	case NAROU_WEB:
 		ctx, span := config.TracerS(ctx, "ChackURLData", "Narou")
 		defer span.End()
+		slog.DebugContext(ctx, "Check Narou URL", "url", url)
 		//なろうのAPIを使用して解析
 		if d, err := narouAPIRead(ctx, API_URL_NAROU, url); err == nil {
 			output, outerr = d.narouChangeList(ctx)
@@ -166,10 +167,11 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 
 		ctx, span := config.TracerS(ctx, "ChackURLData", "Kakuyomu")
 		defer span.End()
+		slog.DebugContext(ctx, "Check Kakuyomu URL", "url", url)
 		//カクヨムのページからスクレイピング
 		for i := 0; i < 3; i++ {
 			if data, err := getKakuyomu(ctx, url); err != nil {
-				log.Println("error:", err)
+				slog.ErrorContext(ctx, "getKakuyomu", "error", err)
 				outerr = err
 			} else {
 				outerr = nil
@@ -181,20 +183,24 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 	case NNOCKU_WEB:
 		ctx, span := config.TracerS(ctx, "ChackURLData", "Narou18")
 		defer span.End()
+		slog.DebugContext(ctx, "Check Narou18 URL", "url", url)
 		//なろうR18のAPIを使用して解析
 		if d, err := narouAPIRead(ctx, API_URL_NOCKU, url); err == nil {
 			output, outerr = d.narouChangeList(ctx)
 		} else {
+			slog.ErrorContext(ctx, "narouAPIRead", "error", err)
 			return output, err
 		}
 	case ALPHA_WEB:
 
 		ctx, span := config.TracerS(ctx, "ChackURLData", "Alpha")
 		defer span.End()
+		slog.DebugContext(ctx, "Check Alpha URL", "url", url)
 		//アルファポリスのページからスクレイピング
 		for i := 0; i < 3; i++ {
 			if data, err := getAlpha(ctx, url); err != nil {
-				log.Println("error:", err)
+
+				slog.ErrorContext(ctx, "getAlpha", "error", err)
 				outerr = err
 			} else {
 				outerr = nil
@@ -284,6 +290,7 @@ func (nd *NaroudData) narouChangeList(ctx context.Context) (List, error) {
 		span.SetAttributes(attribute.String("LastUrl", out.LastUrl))
 		span.SetAttributes(attribute.String("LastStoryT", out.LastStoryT))
 	} else {
+		slog.WarnContext(ctx, "Not Found Data URL"+nd.baseurl+"/"+nd.apikey+"/", "url", nd.baseurl, "apikey", nd.apikey)
 		span.SetStatus(codes.Error, "Not Found Data")
 	}
 	return out, nil
