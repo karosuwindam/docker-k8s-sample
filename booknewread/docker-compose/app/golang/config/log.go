@@ -1,18 +1,22 @@
 package config
 
 import (
-	"log"
+	"log/slog"
 
-	"github.com/comail/colog"
+	"github.com/m-mizutani/clog"
 )
 
-func logConfig() error {
-	colog.SetDefaultLevel(colog.LDebug)
-	colog.SetMinLevel(colog.LTrace)
-	colog.SetFormatter(&colog.StdFormatter{
-		Colors: true,
-		Flag:   log.Ldate | log.Ltime | log.Lshortfile,
-	})
-	colog.Register()
-	return nil
+var logLevel slog.Leveler = slog.LevelInfo
+
+func logHandler(level slog.Leveler) *clog.Handler {
+	return clog.New(
+		clog.WithColor(true),
+		clog.WithSource(true),
+		clog.WithLevel(level),
+	)
+}
+
+func logConfig() {
+	logger := slog.New(logHandler(logLevel))
+	slog.SetDefault(logger)
 }
