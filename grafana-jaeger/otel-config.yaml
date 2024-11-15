@@ -137,6 +137,8 @@ data:
         endpoint: "jaeger-service:4317" # Replace with a real endpoint.
         tls:
           insecure: true
+      prometheus:
+        endpoint: ${env:MY_POD_IP}:8888        
       otlphttp/loki:
         endpoint: "http://loki:3100/otlp"
       debug:
@@ -147,6 +149,10 @@ data:
           receivers: [otlp]
           processors: [memory_limiter, batch]
           exporters: [otlp,debug]
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [prometheus, debug]
         logs:
           receivers: [otlp]
           processors: []
