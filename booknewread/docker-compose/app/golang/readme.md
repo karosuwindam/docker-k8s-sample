@@ -9,6 +9,7 @@ https://calendar.gameiroiro.com/
 
 ver 0.26
 OpenTelemetryによるログ出力を可能に変更
+goのバージョンをアップデート
 
 ver 0.25
 カクヨムの最新話の取得最終行ではなく、最終更新日に変更

@@ -7,9 +7,9 @@ FROM ubuntu:22.04 As builder
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y curl gcc git locales locales-all &&\
     locale-gen ja_JP.UTF-8
-RUN curl -OL https://go.dev/dl/go1.22.1.linux-aarch64.tar.gz &&\
-    tar -C /usr/local -xzf go1.22.1.linux-aarch64.tar.gz &&\
-    rm -rf go1.22.1.linux-aarch64.tar.gz
+RUN curl -OL https://go.dev/dl/go1.23.3.linux-aarch64.tar.gz &&\
+    tar -C /usr/local -xzf go1.23.3.linux-aarch64.tar.gz &&\
+    rm -rf go1.23.3.linux-aarch64.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
 # RUN go get -u github.com/seihmd/openbd &&\
 #     go get -u github.com/PuerkitoBio/goquery &&\
@@ -24,7 +24,7 @@ FROM ubuntu:22.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
 LABEL version="0.26.1"
 LABEL docker_arch="aarch64"
-LABEL go_version="1.22.1"
+LABEL go_version="1.23.3"
 LABEL name="booknewread"
 
 RUN apt-get update && \

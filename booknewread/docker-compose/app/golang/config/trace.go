@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
 	slogmulti "github.com/samber/slog-multi"
@@ -15,12 +14,15 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
@@ -90,7 +92,29 @@ func initLoggerProvider(ctx context.Context, res *resource.Resource, opt interfa
 		sdklog.WithProcessor(sdklog.NewBatchProcessor(logerExporter)),
 	)
 	return loggerProvider, nil
+}
 
+func initMetricProvider(ctx context.Context, res *resource.Resource, opt interface{}) (
+	*sdkmetric.MeterProvider, error) {
+	var metricProvider *sdkmetric.MeterProvider
+	var metricExporter sdkmetric.Exporter
+	var err error
+	if conn, ok := opt.(*grpc.ClientConn); ok {
+		metricExporter, err = otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithGRPCConn(conn))
+	} else if url, ok := opt.(string); ok {
+		metricExporter, err = otlpmetrichttp.New(ctx, otlpmetrichttp.WithEndpoint(url))
+	}
+	if err != nil {
+		return nil, err
+	}
+	metricProvider = sdkmetric.NewMeterProvider(
+		sdkmetric.WithResource(res),
+		sdkmetric.WithReader(
+			sdkmetric.NewPeriodicReader(metricExporter,
+				sdkmetric.WithInterval(time.Second)),
+		),
+	)
+	return metricProvider, nil
 }
 
 func initResourc(ctx context.Context, servicName string) (*resource.Resource, error) {
@@ -120,7 +144,7 @@ func TracerStart(urldata, serviceName string, ctx context.Context) (shutdown fun
 
 	if !TraData.TracerUse {
 
-		err = logConfig()
+		logConfig()
 		return
 	}
 	slog.Info("Tracer Start", "url", urldata, "service", serviceName)
@@ -135,7 +159,7 @@ func TracerStart(urldata, serviceName string, ctx context.Context) (shutdown fun
 		return
 	}
 	var tracerProvider *sdktrace.TracerProvider
-	// var meterProvider *sdkmetric.MeterProvider
+	var meterProvider *sdkmetric.MeterProvider
 	var loggerProvider *sdklog.LoggerProvider
 	var errtmp error
 
@@ -149,13 +173,20 @@ func TracerStart(urldata, serviceName string, ctx context.Context) (shutdown fun
 		handleErr(errtmp)
 		return
 	}
+	meterProvider, errtmp = initMetricProvider(ctx, res, conn)
+	if errtmp != nil {
+		handleErr(errtmp)
+		return
+	}
 	shutdownFuncs = append(shutdownFuncs, tracerProvider.Shutdown)
 	otel.SetTracerProvider(tracerProvider)
 	shutdownFuncs = append(shutdownFuncs, loggerProvider.Shutdown)
 	global.SetLoggerProvider(loggerProvider)
+	shutdownFuncs = append(shutdownFuncs, meterProvider.Shutdown)
+	otel.SetMeterProvider(meterProvider)
 	logger := slog.New(
 		slogmulti.Fanout(
-			slog.NewTextHandler(os.Stdout, nil),
+			logHandler(logLevel),
 			otelslog.NewHandler(serviceName),
 		),
 	)

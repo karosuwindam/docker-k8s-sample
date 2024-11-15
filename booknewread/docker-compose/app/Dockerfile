@@ -1,4 +1,4 @@
-FROM golang:1.22.1 As builder
+FROM golang:1.23.3 As builder
 #RUN apt update && apt upgrade -y
 WORKDIR /app
 ADD ./golang .

@@ -1,4 +1,4 @@
-TAG = 0.26.1
+TAG = 0.26.2
 DOCKER = docker
 NAME = bookserver2:31000/karosu/booknewread
 
@@ -10,7 +10,7 @@ BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 TEMPLATE = ./app/Dockerfile_tmp
 TARGET = Dockerfile_arm
 TARGET_FILE = ./app
-GO_VERSION = 1.22.1
+GO_VERSION = 1.23.3
 ARCH = aarch64
 OPT = "--privileged"
 
