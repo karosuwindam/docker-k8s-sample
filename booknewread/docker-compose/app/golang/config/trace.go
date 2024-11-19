@@ -25,7 +25,7 @@ import (
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 	"go.opentelemetry.io/otel/trace"
 
 	"google.golang.org/grpc"
@@ -41,6 +41,28 @@ func initConn(url string) (*grpc.ClientConn, error) {
 		return nil, fmt.Errorf("failed to create gRPC connection to collector: %w", err)
 	}
 	return conn, err
+}
+
+func initResourc(ctx context.Context, servicName string) (*resource.Resource, error) {
+	// res := resource.Default()
+	res, err := resource.New(ctx,
+		resource.WithFromEnv(), // Discover and provide attributes from OTEL_RESOURCE_ATTRIBUTES and OTEL_SERVICE_NAME environment variables.
+		// resource.WithTelemetrySDK(), // Discover and provide information about the OpenTelemetry SDK used.
+		// resource.WithProcess(),      // Discover and provide process information.
+		// resource.WithOS(),           // Discover and provide OS information.
+		resource.WithContainer(),   // Discover and provide container information.
+		resource.WithContainerID(), // Discover and provide container ID information.
+		resource.WithHost(),        // Discover and provide host information.
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return resource.Merge(res,
+		resource.NewWithAttributes(semconv.SchemaURL,
+			semconv.ServiceName(servicName),
+			semconv.ServiceVersion(TraData.ServiceVersion),
+		))
 }
 
 func initTracerProvider(ctx context.Context, res *resource.Resource, opt interface{}) (
@@ -115,28 +137,6 @@ func initMetricProvider(ctx context.Context, res *resource.Resource, opt interfa
 		),
 	)
 	return metricProvider, nil
-}
-
-func initResourc(ctx context.Context, servicName string) (*resource.Resource, error) {
-	// res := resource.Default()
-	res, err := resource.New(ctx,
-		resource.WithFromEnv(),      // Discover and provide attributes from OTEL_RESOURCE_ATTRIBUTES and OTEL_SERVICE_NAME environment variables.
-		resource.WithTelemetrySDK(), // Discover and provide information about the OpenTelemetry SDK used.
-		resource.WithProcess(),      // Discover and provide process information.
-		resource.WithOS(),           // Discover and provide OS information.
-		resource.WithContainer(),    // Discover and provide container information.
-		resource.WithContainerID(),  // Discover and provide container ID information.
-		resource.WithHost(),         // Discover and provide host information.
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return resource.Merge(res,
-		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(servicName),
-			semconv.ServiceVersion(TraData.ServiceVersion),
-		))
 }
 
 var tracer_ch func(context.Context) error
