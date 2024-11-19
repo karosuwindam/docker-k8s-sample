@@ -118,7 +118,21 @@ func initMetricProvider(ctx context.Context, res *resource.Resource, opt interfa
 }
 
 func initResourc(ctx context.Context, servicName string) (*resource.Resource, error) {
-	return resource.Merge(resource.Default(),
+	// res := resource.Default()
+	res, err := resource.New(ctx,
+		resource.WithFromEnv(),      // Discover and provide attributes from OTEL_RESOURCE_ATTRIBUTES and OTEL_SERVICE_NAME environment variables.
+		resource.WithTelemetrySDK(), // Discover and provide information about the OpenTelemetry SDK used.
+		resource.WithProcess(),      // Discover and provide process information.
+		resource.WithOS(),           // Discover and provide OS information.
+		resource.WithContainer(),    // Discover and provide container information.
+		resource.WithContainerID(),  // Discover and provide container ID information.
+		resource.WithHost(),         // Discover and provide host information.
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return resource.Merge(res,
 		resource.NewWithAttributes(semconv.SchemaURL,
 			semconv.ServiceName(servicName),
 			semconv.ServiceVersion(TraData.ServiceVersion),
@@ -187,7 +201,10 @@ func TracerStart(urldata, serviceName string, ctx context.Context) (shutdown fun
 	logger := slog.New(
 		slogmulti.Fanout(
 			logHandler(logLevel),
-			otelslog.NewHandler(serviceName),
+			otelslog.NewHandler(
+				serviceName,
+				otelslog.WithSource(true),
+			),
 		),
 	)
 	slog.SetDefault(logger)
