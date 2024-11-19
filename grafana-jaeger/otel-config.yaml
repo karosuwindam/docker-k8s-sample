@@ -72,7 +72,7 @@ spec:
       - command:
           - "/otelcol"
           - "--config=/conf/otel-agent-config.yaml"
-        image: otel/opentelemetry-collector:0.94.0
+        image: otel/opentelemetry-collector:0.112.0
         name: otel-agent
         resources:
           limits:
@@ -137,13 +137,27 @@ data:
         endpoint: "jaeger-service:4317" # Replace with a real endpoint.
         tls:
           insecure: true
+      prometheus:
+        endpoint: ${env:MY_POD_IP}:8888        
+      otlphttp/loki:
+        endpoint: "http://loki:3100/otlp"
+      debug:
     service:
       extensions: [zpages]
       pipelines:
         traces/1:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [otlp]
+          exporters: [otlp,debug]
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [prometheus, debug]
+        logs:
+          receivers: [otlp]
+          processors: []
+          exporters: [otlphttp/loki,debug]
+          
 ---
 apiVersion: v1
 kind: Service
@@ -199,7 +213,7 @@ spec:
       - command:
           - "/otelcol"
           - "--config=/conf/otel-collector-config.yaml"
-        image: otel/opentelemetry-collector:0.94.0
+        image: otel/opentelemetry-collector:0.112.0
         name: otel-collector
         resources:
           limits:

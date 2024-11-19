@@ -138,8 +138,6 @@ kubectl apply -f loki/pod
 kubectl apply -f buildkit/k8s
 
 kubectl apply -f kube-web-view/k8s
-
-kubectl apply -f pyroscorpe/deploy.yaml
 ```
 
 
