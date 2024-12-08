@@ -219,10 +219,10 @@ func readNarouData(ctx context.Context) {
 		datastore.SetMaxCount(len(urls))
 		slog.DebugContext(ctx, "read bookmark", "count", len(urls))
 		wg.Add(len(urls))
-		for _, url := range urls {
+		for url, name := range urls {
 			slots <- struct{}{}
 
-			go func(url string) {
+			go func(url string, name string) {
 				ctx, span := config.TracerS(ctx, "readNarouData_min", url)
 				defer func() {
 					span.End()
@@ -233,7 +233,7 @@ func readNarouData(ctx context.Context) {
 					return
 				}
 				//urlによる解析処理
-				if tmp, err := novelchack.ChackURLData(ctx, url); err == nil {
+				if tmp, err := novelchack.ChackURLData(ctx, url, name); err == nil {
 					if err = datastore.Write(tmp); err != nil {
 						slog.ErrorContext(ctx, "datastore.Write", err)
 					}
@@ -246,7 +246,7 @@ func readNarouData(ctx context.Context) {
 				// float64をstringに変換
 				pers := strconv.FormatFloat(per*100, 'f', -1, 64)
 				statusUpdate(NOBEL_SELECT, "Reload:"+pers+"%")
-			}(url)
+			}(url, name)
 		}
 		wg.Wait()
 	}
