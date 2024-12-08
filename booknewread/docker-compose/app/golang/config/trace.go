@@ -25,7 +25,7 @@ import (
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 
 	"google.golang.org/grpc"
@@ -50,6 +50,7 @@ func initResourc(ctx context.Context, servicName string) (*resource.Resource, er
 		// resource.WithTelemetrySDK(), // Discover and provide information about the OpenTelemetry SDK used.
 		// resource.WithProcess(),      // Discover and provide process information.
 		// resource.WithOS(),           // Discover and provide OS information.
+		resource.WithProcessRuntimeName(),
 		resource.WithContainer(),   // Discover and provide container information.
 		resource.WithContainerID(), // Discover and provide container ID information.
 		resource.WithHost(),        // Discover and provide host information.

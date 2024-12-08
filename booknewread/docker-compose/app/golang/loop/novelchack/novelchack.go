@@ -147,7 +147,7 @@ func chackUrlPage(url string) nobelWebType {
 var ErrAtherUrl = errors.New("other url data")
 
 // URLから小説の種類を判別してデータを取得
-func ChackURLData(ctx context.Context, url string) (List, error) {
+func ChackURLData(ctx context.Context, url string, name string) (List, error) {
 	var output List
 	var outerr error = nil
 	url = strings.Replace(url, "http://", "https://", 1)
@@ -160,6 +160,10 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 		//なろうのAPIを使用して解析
 		if d, err := narouAPIRead(ctx, API_URL_NAROU, url); err == nil {
 			output, outerr = d.narouChangeList(ctx)
+			if output.Title == "" {
+				output.Title = name
+				output.Url = url
+			}
 		} else {
 			return output, err
 		}
@@ -187,6 +191,10 @@ func ChackURLData(ctx context.Context, url string) (List, error) {
 		//なろうR18のAPIを使用して解析
 		if d, err := narouAPIRead(ctx, API_URL_NOCKU, url); err == nil {
 			output, outerr = d.narouChangeList(ctx)
+			if output.Title == "" {
+				output.Title = name
+				output.Url = url
+			}
 		} else {
 			slog.ErrorContext(ctx, "narouAPIRead", "error", err)
 			return output, err
@@ -292,8 +300,9 @@ func (nd *NaroudData) narouChangeList(ctx context.Context) (List, error) {
 		span.SetAttributes(attribute.String("LastUrl", out.LastUrl))
 		span.SetAttributes(attribute.String("LastStoryT", out.LastStoryT))
 	} else {
-		slog.WarnContext(ctx, "Not Found Data URL"+nd.baseurl+"/"+nd.apikey+"/", "url", nd.baseurl, "apikey", nd.apikey)
+		slog.WarnContext(ctx, "Not Found Data URL:"+nd.baseurl+"/"+nd.apikey+"/", "url", nd.baseurl, "apikey", nd.apikey)
 		span.SetStatus(codes.Error, "Not Found Data")
+		// out.Title =
 	}
 	return out, nil
 }

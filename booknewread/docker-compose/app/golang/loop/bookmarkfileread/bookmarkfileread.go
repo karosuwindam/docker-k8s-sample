@@ -26,8 +26,8 @@ func Init() error {
 	return nil
 }
 
-func ReadBookmark() []string {
-	out := []string{}
+func ReadBookmark() map[string]string {
+	// out := []string{}
 	tmpBook := make(map[string]string)
 	if files := readfilepass(); len(files) != 0 {
 		for _, f := range files {
@@ -38,10 +38,10 @@ func ReadBookmark() []string {
 			}
 		}
 	}
-	for url, _ := range tmpBook {
-		out = append(out, url)
-	}
-	return out
+	// for url, s := range tmpBook {
+	// 	out = append(out, url)
+	// }
+	return tmpBook
 }
 
 func readfilepass() []string {
