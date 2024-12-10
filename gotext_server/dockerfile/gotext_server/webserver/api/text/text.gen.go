@@ -11,6 +11,7 @@ func Init(url string, mux *http.ServeMux) error {
 	if f, err := os.Stat(config.Read.FilePass); os.IsNotExist(err) || !f.IsDir() {
 		return err
 	}
-	mux.HandleFunc("GET "+url, webTextRead)
+	config.TraceHttpHandleFunc(mux, "GET "+url, webTextRead)
+	// mux.HandleFunc("GET "+url, webTextRead)
 	return nil
 }

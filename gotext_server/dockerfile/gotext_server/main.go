@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"gocsvserver/config"
 	"gocsvserver/webserver"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
@@ -21,14 +21,19 @@ func Start() error {
 	sigs := make(chan os.Signal, 1)
 	var wg sync.WaitGroup
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	_, cancel := context.WithCancel(context.Background())
+	ctx := context.Background()
+	tshutdown, terr := config.TracerStart(config.TraData.GrpcURL, config.TraData.ServiceName, ctx)
+	if terr != nil {
+		defer tshutdown(context.Background())
+	}
+	ctxweb, cancel := context.WithCancel(ctx)
 	wg.Add(1)
-	go func() {
+	go func(ctx context.Context) {
 		defer wg.Done()
-		if err := webserver.Start(); err != nil {
+		if err := webserver.Start(ctx); err != nil {
 			panic(err)
 		}
-	}()
+	}(ctxweb)
 
 	<-sigs
 	cancel()
@@ -39,7 +44,7 @@ func Start() error {
 
 func Stop() {
 	webserver.Stop()
-	fmt.Println("main Shutdown")
+	slog.Info("main Shutdown")
 }
 func main() {
 	if err := Init(); err != nil {
