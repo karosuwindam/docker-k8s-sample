@@ -6,8 +6,10 @@ import (
 	"gocsvserver/config"
 	"gocsvserver/webserver/api"
 	"gocsvserver/webserver/indexpage"
+	"log/slog"
 	"net"
 	"net/http"
+	"time"
 )
 
 // SetupServer
@@ -31,8 +33,8 @@ type Server struct {
 
 var cfg SetupServer
 
-var ctx context.Context
-var cancel context.CancelFunc
+var shutdown chan bool
+var done chan bool
 
 func HelloWeb(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
@@ -41,41 +43,63 @@ func HelloWeb(w http.ResponseWriter, r *http.Request) {
 }
 
 func Init() error {
+	shutdown = make(chan bool, 1)
+	done = make(chan bool, 1)
 	cfg = SetupServer{
 		protocol: config.Web.Protocol,
 		hostname: config.Web.Hostname,
 		port:     config.Web.Port,
 		mux:      http.NewServeMux(),
 	}
-	ctx, cancel = context.WithCancel(context.Background())
-	api.Init(cfg.mux)
-	cfg.mux.HandleFunc("/", indexpage.Init("/"))
+	if err := api.Init(cfg.mux); err != nil {
+		slog.Error("api.Init error", "error", err)
+	}
+	config.TraceHttpHandleFunc(cfg.mux, "/", indexpage.Init("/"))
 	return nil
 }
 
-func Start() error {
+func Start(ctx context.Context) error {
 	var err error = nil
 	srv := &http.Server{
-		Addr:    cfg.hostname + ":" + cfg.port,
-		Handler: cfg.mux,
+		Addr:         cfg.hostname + ":" + cfg.port,
+		Handler:      cfg.mux,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 	l, err := net.Listen(cfg.protocol, srv.Addr)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Start Server", cfg.hostname+":"+cfg.port)
+	slog.InfoContext(ctx, "Start Server"+cfg.hostname+":"+cfg.port, "hostname", cfg.hostname, "port", cfg.port)
 	go func() {
 		if err = srv.Serve(l); err != nil && err != http.ErrServerClosed {
-			panic(err)
+
 		} else {
 			err = nil
 		}
 	}()
-	<-ctx.Done()
+	select {
+	case <-shutdown:
+		done <- true
+		break
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 	return err
 }
 
 func Stop() error {
-	cancel()
+	if len(shutdown) > 0 {
+		return nil
+	}
+	shutdown <- true
+	select {
+	case <-done:
+		slog.Debug("Web server stop")
+		break
+	case <-time.After(10 * time.Second):
+		return fmt.Errorf("Web server stop timeout")
+	}
+
 	return nil
 }

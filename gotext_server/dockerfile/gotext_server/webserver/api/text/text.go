@@ -2,9 +2,10 @@ package text
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"gocsvserver/config"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"regexp"
@@ -19,6 +20,10 @@ type TXTData struct {
 }
 
 func webTextRead(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	ctx, span := config.TracerS(ctx, "webTextRead", "web read Text File")
+	defer span.End()
+	slog.DebugContext(ctx, r.Method+":"+r.URL.Path, "method", r.Method, "url", r.URL.Path)
 	//config.Read.FilePassによるフォルダ指定からファイルリスト取得
 	output := []TXTData{}
 	tmppass := config.Read.FilePass
@@ -31,10 +36,13 @@ func webTextRead(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, file := range files {
-		if t := *readTxt(tmppass, file.Name()); t.Year != "" {
+		slog.DebugContext(ctx, "webTextRead "+tmppass+file.Name(), "file", file.Name(), "tmppass", tmppass)
+		ctxfile := contextWriteFilename(ctx, tmppass, file.Name())
+		if t := *readTxt(ctxfile); t.Year != "" {
 			output = append(output, t)
 		}
 	}
+	slog.DebugContext(ctx, "webTextRead out sort", "output", output)
 	sort.Slice(output, func(i, j int) bool {
 		return output[i].Year+output[i].Quart > output[j].Year+output[j].Quart
 	})
@@ -42,15 +50,24 @@ func webTextRead(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func readTxt(filepass, filename string) *TXTData {
+func readTxt(ctx context.Context) *TXTData {
+	ctx, span := config.TracerS(ctx, "readTxt", "read Text File")
+	defer span.End()
+	filepass, filename, ok := contextReadFilename(ctx)
+	if !ok {
+		slog.WarnContext(ctx, "readTxt", "error", "filename not found")
+		return &TXTData{}
+	}
 	var title []string
 	re := regexp.MustCompile(`(\d{4})_(\d{1})Q.txt`)
 	if !re.MatchString(filename) {
+		slog.WarnContext(ctx, "readTxt", "error", "filename not match")
 		return &TXTData{}
 	}
+	slog.DebugContext(ctx, "readText Open file "+filepass+filename, "filename", filename)
 	//行ごとに読み込む
 	if f, err := os.Open(filepass + filename); err != nil {
-		log.Println(err)
+		slog.ErrorContext(ctx, "readTxt os.OpenError", "error", err)
 		return &TXTData{}
 	} else {
 		defer f.Close()
