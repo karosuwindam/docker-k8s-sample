@@ -7,7 +7,7 @@ ADD ./ .
 RUN CGO_ENABLED=0 go build -o app
 
 FROM debian:11
-LABEL version="0.0.9"
+LABEL version="0.1.0"
 LABEL name="gotext-server"
 LABEL goversion="1.22"
 RUN cp /etc/apt/sources.list /etc/apt/sources.list.bak && \
