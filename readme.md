@@ -57,7 +57,7 @@ kubectl label node/k8s-worker-4 type=k8s-worker-4
 
 ```
 kubectl apply -f pvd/kuberente-pv.yaml 
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.10/config/manifests/metallb-native.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
 kubectl apply -f metallb/metallb.yaml 
 kubectl apply -f inggress/controller-v1.8.0-deploy.yaml 
 ```
