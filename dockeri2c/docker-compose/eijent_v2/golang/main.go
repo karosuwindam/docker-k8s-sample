@@ -1,12 +1,14 @@
 package main
 
 import (
+	"app/config"
 	"app/senser"
 	"app/uptime"
 	"app/webserver"
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,6 +16,13 @@ import (
 
 	"golang.org/x/sync/errgroup"
 )
+
+func init() {
+
+	if err := config.Init(); err != nil {
+		panic(err)
+	}
+}
 
 func RootConfg() []webserver.WebConfig {
 	output := []webserver.WebConfig{}
@@ -43,7 +52,9 @@ func Run(ctx context.Context) error {
 	defer stop()
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		fmt.Println("Start Read Sennser")
+		slog.InfoContext(ctx,
+			"Start Read Senser",
+		)
 		chdata := false
 		for {
 			senser.SenserRead()
@@ -56,7 +67,10 @@ func Run(ctx context.Context) error {
 		return nil
 	})
 	eg.Go(func() error {
-		fmt.Println("Start Read Gyro")
+		slog.InfoContext(
+			ctx,
+			"Start Read Gyro",
+		)
 		chdata := false
 		for {
 			senser.SenserMoveRead()
@@ -83,25 +97,34 @@ func EndRun() {
 
 func main() {
 	count := 0
+	tshutdown, terr := config.TracerStart(config.TraData.GrpcURL, config.TraData.ServiceName, context.Background())
+	if terr != nil {
+		defer tshutdown(context.Background())
+	}
 	for {
 		ck := uptime.Read()
 		if ck > 180 {
 			break
 		} else {
 			if count == 0 {
-				fmt.Println("sleep wake up time", ck)
+				slog.Info(
+					fmt.Sprintf("sleep wake up time %v", ck),
+				)
 			}
 			time.Sleep(time.Second)
 		}
 		count++
 	}
-	fmt.Println(uptime.Read())
-	fmt.Println("start")
+	slog.Info(
+		fmt.Sprintf("uptime over %v starting", uptime.Read()),
+	)
 	ctx := context.Background()
 	if err := Run(ctx); err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
 	EndRun()
-	fmt.Println("end")
+	slog.Info(
+		fmt.Sprintf("senser stop end"),
+	)
 }

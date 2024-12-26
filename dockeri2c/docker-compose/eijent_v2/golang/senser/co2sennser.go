@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/tarm/serial"
+	"golang.org/x/exp/slog"
 )
 
 type Co2Sennser struct {
@@ -68,7 +69,7 @@ func (t *MhZ19c) Init(name string) bool {
 			t.Flag = true
 			break
 		}
-		fmt.Println("count:", i+1)
+		slog.Info("Co2Read count:", i+1)
 		t.port.Close()
 		time.Sleep(500 * time.Microsecond)
 		t.port, _ = serial.OpenPort(c)
@@ -84,7 +85,7 @@ func (t *MhZ19c) Read() (int, int) {
 	c := &serial.Config{Name: t.com, Baud: BAUDRATE}
 	t.port, err = serial.OpenPort(c)
 	if err != nil {
-		fmt.Println(err.Error())
+		slog.Warn("serial.OpenPort Error", "error", err.Error())
 		t.Message = err.Error()
 		return -1, -1
 	}
@@ -112,14 +113,15 @@ func (t *MhZ19c) ReadChack() bool {
 		n, err := s.Write(READ_DATA)
 		// log.Printf("WriteData %v:%q", len(READ_DATA), READ_DATA)
 		if err != nil {
-			log.Printf(err.Error())
+			slog.Error("ReadChack s.Write error", "error", err)
+
 		}
 		for {
 			buf := make([]byte, 128)
 			n, err = s.Read(buf)
 			if err != nil {
 				if n != 0 {
-					log.Println(n, err.Error())
+					slog.Error(fmt.Sprintf("ReadChack s.Read error n=%v", n), "error", err)
 				}
 				break
 			}
@@ -200,18 +202,19 @@ func (t *Co2Sennser) Init(name string) bool {
 	c := &serial.Config{Name: name, Baud: BAUDRATE}
 	t.port, err = serial.OpenPort(c)
 	if err != nil {
-		fmt.Println(err.Error())
+		slog.Error("serial.OpenPort Error", "error", err)
 		t.Message = err.Error()
 		return false
 	}
 	t.InitData, err = t.write(INIT_DATA)
 	if err != nil {
-		fmt.Println(err.Error())
+		slog.Error("write Error", "error", err)
 		t.Message = err.Error()
 		return false
 	}
 	if !t.checkdata(INIT) {
-		fmt.Println("checkdata is Error")
+		slog.Error("checkdata is Error")
+
 		t.Message = err.Error()
 		return false
 	}
@@ -237,7 +240,7 @@ func (t *Co2Sennser) Read() (int, int) {
 		return -1, -1
 	}
 	if !t.checkdata(READ) {
-		fmt.Println("checkdata is Error")
+		slog.Error("checkdata is Error")
 		t.Message = "checkdata is Error"
 		return -1, -1
 	}

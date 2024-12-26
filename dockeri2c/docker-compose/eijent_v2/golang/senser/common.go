@@ -1,11 +1,15 @@
 package senser
 
 import (
+	"app/config"
+	"context"
 	"fmt"
 	"math"
 	"strconv"
 	"sync"
 	"time"
+
+	"golang.org/x/exp/slog"
 )
 
 var (
@@ -167,7 +171,7 @@ func SennserSetup() {
 			serialmu.Lock()
 			if !SennserData.CO2Sensor_data.Init(SRIAL_PORT) {
 				serialmu.Unlock()
-				fmt.Printf("Count:%v Srical Error for MH-Z19C\n", i+1)
+				slog.Info("Count:%v Srical Error for MH-Z19C", i+1)
 				if "open "+SRIAL_PORT+": permission denied" == SennserData.CO2Sensor_data.Message {
 					break
 				}
@@ -185,7 +189,7 @@ func SennserSetup() {
 		mma := make(chan bool)
 		go func() {
 			if !SennserData.Mma8452q_data.Init() {
-				fmt.Println("I2C not for MMA8452q")
+				slog.Warn("I2C not for MMA8452q")
 			} else {
 				i2cmu.Lock()
 				tmpzero := []ZeroMma8452q{}
@@ -212,17 +216,17 @@ func SennserSetup() {
 		}()
 		i2cmu.Lock()
 		if !SennserData.Bme280_data.Init() {
-			fmt.Println("I2C not for BME280")
+			slog.Warn("I2C not for BME280")
 		}
 		i2cmu.Unlock()
 		i2cmu.Lock()
 		if !SennserData.Am2320_data.Init() {
-			fmt.Println("I2C not for AM2320")
+			slog.Warn("I2C not for AM2320")
 		}
 		i2cmu.Unlock()
 		i2cmu.Lock()
 		if !SennserData.Tsl2561_data.Init() {
-			fmt.Println("I2C not for TSL2561")
+			slog.Warn("I2C not for TSL2561")
 		}
 		i2cmu.Unlock()
 		<-mma
@@ -232,7 +236,7 @@ func SennserSetup() {
 	go func() {
 		gpiomu.Lock()
 		if !SennserData.DhtSenser_data.Init(DHT_GPIO) {
-			fmt.Println("GPIO not for DHT Senser")
+			slog.Warn("GPIO not for DHT Senser")
 		}
 		gpiomu.Unlock()
 		ch3 <- true
@@ -344,18 +348,25 @@ func SennserMoveReadData() {
 
 // 通常センサーの読み取り
 func SenserRead() {
+	ctx, span := config.TracerS(context.Background(), "SenserRead", "Senser Read")
+	defer span.End()
+
 	ch := make(chan bool, 7)
 	if SennserResetRead() {
-		fmt.Println("Reset Sennser Set Up.")
+		slog.InfoContext(ctx,
+			"Reset Sennser Set Up.")
 		SennserSetup()
 	}
-	go func() { //ch1
+	go func(ctx context.Context) { //ch1
 		if SennserData.Bme280_data.Flag {
+			ctx, span := config.TracerS(ctx, "SenserRead_BME280", "Senser Read BME280")
+			defer span.End()
 			for i := 0; i < 2; i++ {
 				i2cmu.Lock()
 				press, temp, hum := SennserData.Bme280_data.ReadData()
 				i2cmu.Unlock()
 				if press == temp && temp == hum && hum == -1 {
+					slog.WarnContext(ctx, "Read Error Bm280")
 					SennserData.Bme280_data.Message = "Read Error Bm280"
 					if errorCountUP(ERR_BME280) > ERROR_COUNT_MAX {
 						SennserData.Bme280_data.Flag = false
@@ -363,11 +374,13 @@ func SenserRead() {
 					}
 					time.Sleep(time.Microsecond * 100)
 				} else {
+
 					SennserDataValue.Mu.Lock()
 					SennserDataValue.Bme280.Press = strconv.FormatFloat(press, 'f', 2, 64)
 					SennserDataValue.Bme280.Temp = strconv.FormatFloat(temp, 'f', 2, 64)
 					SennserDataValue.Bme280.Hum = strconv.FormatFloat(hum, 'f', 2, 64)
 					SennserDataValue.Mu.Unlock()
+					slog.DebugContext(ctx, "Read BME280", "Press", press, "Temp", temp, "Hum", hum)
 					errorCountReset(ERR_BME280)
 					break
 				}
@@ -375,9 +388,11 @@ func SenserRead() {
 
 		}
 		ch <- true
-	}()
-	go func() { //ch2
+	}(ctx)
+	go func(ctx context.Context) { //ch2
 		if SennserData.Am2320_data.Flag {
+			ctx, span := config.TracerS(ctx, "SenserRead_AM2320", "Senser Read AM2320")
+			defer span.End()
 			for i := 0; i < 2; i++ {
 				i2cmu.Lock()
 				hum, temp := SennserData.Am2320_data.Read()
@@ -387,10 +402,11 @@ func SenserRead() {
 					SennserDataValue.Am2320.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
 					SennserDataValue.Am2320.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
 					SennserDataValue.Mu.Unlock()
+					slog.DebugContext(ctx, "Read AM2320", "Temp", temp, "Hum", hum)
 					errorCountReset(ERR_AM2320)
 					break
 				} else {
-					fmt.Println("reread AM2320")
+					slog.WarnContext(ctx, "re read AM2320")
 					if errorCountUP(ERR_AM2320) > ERROR_COUNT_MAX {
 						SennserData.Am2320_data.Flag = false
 						break
@@ -401,9 +417,11 @@ func SenserRead() {
 
 		}
 		ch <- true
-	}()
-	go func() { //ch3
+	}(ctx)
+	go func(ctx context.Context) { //ch3
 		if SennserData.CO2Sensor_data.Flag {
+			ctx, span := config.TracerS(ctx, "SenserRead_CO2Sensor", "Senser Read CO2Sensor")
+			defer span.End()
 			for i := 0; i < 2; i++ {
 				serialmu.Lock()
 				co2, temp := SennserData.CO2Sensor_data.Read()
@@ -413,11 +431,12 @@ func SenserRead() {
 					SennserDataValue.CO2.Co2 = strconv.Itoa(co2)
 					SennserDataValue.CO2.Temp = strconv.Itoa(temp)
 					SennserDataValue.Mu.Unlock()
+					slog.DebugContext(ctx, "Co2Sensor Read", "Co2", co2, "Temp", temp)
 					errorCountReset(ERR_CO2SENSOR)
 					break
 				} else {
-					fmt.Println("reread Co2Sensor")
-					fmt.Println("reread AM2320")
+					slog.WarnContext(ctx, "reread Co2Sensor")
+
 					if errorCountUP(ERR_CO2SENSOR) > ERROR_COUNT_MAX {
 						SennserData.CO2Sensor_data.Flag = false
 						break
@@ -428,21 +447,26 @@ func SenserRead() {
 			}
 		}
 		ch <- true
-	}()
-	go func() { //ch4
+	}(ctx)
+	go func(ctx context.Context) { //ch4
 		if SennserData.Tsl2561_data.Flag {
+			ctx, span := config.TracerS(ctx, "SenserRead_TSL2561", "Senser Read TSL2561")
+			defer span.End()
 			i2cmu.Lock()
 			lux := SennserData.Tsl2561_data.ReadVisibleLux()
 			i2cmu.Unlock()
 			SennserDataValue.Mu.Lock()
 			SennserDataValue.Tsl2561.Lux = strconv.Itoa(lux)
 			SennserDataValue.Mu.Unlock()
+			slog.DebugContext(ctx, "TSL2561 Read", "Lux", lux)
 			errorCountReset(ERR_TSL2561)
 		}
 		ch <- true
-	}()
-	go func() { //ch5
+	}(ctx)
+	go func(ctx context.Context) { //ch5
 		if SennserData.DhtSenser_data.Flag {
+			ctx, span := config.TracerS(ctx, "SenserRead_DhtSenser", "Senser Read DhtSenser")
+			defer span.End()
 			for i := 0; i < 2; i++ {
 				gpiomu.Lock()
 				hum, temp := SennserData.DhtSenser_data.Read()
@@ -452,10 +476,11 @@ func SenserRead() {
 					SennserDataValue.DhtSenser.Hum = strconv.FormatFloat(hum, 'f', 1, 64)
 					SennserDataValue.DhtSenser.Temp = strconv.FormatFloat(temp, 'f', 1, 64)
 					SennserDataValue.Mu.Unlock()
+					slog.DebugContext(ctx, "DhtSenser Read", "Temp", temp, "Hum", hum)
 					errorCountReset(ERR_DHTSENSER)
 					break
 				} else {
-					fmt.Println("reread DhtSenser")
+					slog.WarnContext(ctx, "reread DhtSenser")
 					if errorCountUP(ERR_DHTSENSER) > ERROR_COUNT_MAX {
 						SennserData.DhtSenser_data.Flag = false
 						break
@@ -465,7 +490,7 @@ func SenserRead() {
 			}
 		}
 		ch <- true
-	}()
+	}(ctx)
 	go func() { //ch6
 		if SennserData.Mma8452q_data.Flag {
 			SennserMoveReadData()

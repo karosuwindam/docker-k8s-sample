@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/caarlos0/env/v6"
+	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -41,7 +42,9 @@ func NewSetup() (*SetupServer, error) {
 }
 
 func (t *SetupServer) NewServer() (*Server, error) {
-	fmt.Println("Setupserver", t.Protocol, t.Hostname+":"+t.Port)
+	slog.Info(
+		fmt.Sprintf("Setupserver %s %s:%s", t.Protocol, t.Hostname, t.Port),
+	)
 	l, err := net.Listen(t.Protocol, t.Hostname+":"+t.Port)
 	if err != nil {
 		return nil, err
@@ -63,7 +66,7 @@ func (s *Server) Run(ctx context.Context) error {
 	defer stop()
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		fmt.Println("Start Server")
+		slog.InfoContext(ctx, "Start Server")
 		if err := s.srv.Serve((s.l)); err != nil {
 			return err
 		}
@@ -73,6 +76,6 @@ func (s *Server) Run(ctx context.Context) error {
 	if err := s.srv.Shutdown(context.Background()); err != nil {
 		log.Println(err)
 	}
-	fmt.Println("shutdown")
+	slog.InfoContext(ctx, "Server is shut down")
 	return eg.Wait()
 }

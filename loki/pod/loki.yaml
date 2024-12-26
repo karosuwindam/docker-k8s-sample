@@ -28,7 +28,7 @@ spec:
                     - "k8s-worker-1"
       containers:
         - name: loki
-          image: grafana/loki:3.1.0
+          image: grafana/loki:3.2.1
           # image: grafana/loki:2.7.4
           imagePullPolicy: IfNotPresent
           args:
@@ -43,12 +43,22 @@ spec:
               cpu: 100m
               memory: 0.5Gi
           volumeMounts:
+            - name: loki-config
+              mountPath: /etc/loki/local-config.yaml
+              subPath: local-config.yaml
             - name: grafana-vol
               mountPath: /loki
       volumes:
         - name: grafana-vol
           persistentVolumeClaim:
             claimName: loki-pvc
+        - name: loki-config
+          configMap:
+            name: loki-configmap
+            items:
+              - key: local-config.yaml
+                path: local-config.yaml
+
 ---
 apiVersion: v1
 kind: Service
