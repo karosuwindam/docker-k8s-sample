@@ -81,8 +81,11 @@ kubectl label nodes k8s-worker-1 i2c=true
 kubectl label nodes k8s-worker-2 i2c=true
 kubectl label nodes bookserver2 i2c=true
 kubectl label nodes bookserver2 gpio=false
+kubectl label nodes bookserver2 uart=false
 kubectl label nodes k8s-worker-1 gpio=true
+kubectl label nodes k8s-worker-1 uart=false
 kubectl label nodes k8s-worker-2 gpio=false
+kubectl label nodes k8s-worker-2 uart=false
 kubectl label nodes k8s-worker-4 gpio=false
 kubectl label nodes k8s-worker-4 uart=true
 
