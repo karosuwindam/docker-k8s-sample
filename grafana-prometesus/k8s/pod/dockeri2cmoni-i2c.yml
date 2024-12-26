@@ -38,6 +38,10 @@ spec:
                   operator: In
                   values:
                     - "true"
+                - key: uart
+                  operator: In
+                  values:
+                  - "false"
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -51,6 +55,8 @@ spec:
             value: 'true'
           - name: I2C_ON
             value: 'true'
+          - name: UART_ON
+            value: "false"
           - name: TRACER_GRPC_URL
             value: 'otel-grpc.bookserver.home:4317'
           - name: TRACER_ON
@@ -112,6 +118,10 @@ spec:
                   operator: In
                   values:
                     - "false"
+                - key: uart
+                  operator: In
+                  values:
+                  - "false"
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -125,6 +135,88 @@ spec:
             value: 'false'
           - name: I2C_OK
             value: 'true'
+          - name: UART_ON
+            value: "false"
+          - name: TRACER_GRPC_URL
+            value: 'otel-grpc.bookserver.home:4317'
+          - name: TRACER_ON
+            value: 'true'
+          - name: TRACER_SERVICE_VERSION
+            value: '0.14.6'
+        ports:
+        - containerPort: 9140
+        resources:
+          limits:
+            cpu: 300m
+            memory: 400Mi
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        securityContext:
+          privileged: true
+      terminationGracePeriodSeconds: 30
+      hostNetwork: true
+      hostPID: true
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dockeri2cmoni-uart
+  namespace: gf-space
+spec:
+  selector:
+    matchLabels:
+      name: dockeri2cmoni
+  template:
+    metadata:
+      labels:
+        name: dockeri2cmoni
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9140'
+        prometheus.io/path: /metrics
+        podinfo: "Raspberrypi用 Prometeusエージェント"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+                - key: i2c
+                  operator: In
+                  values:
+                    - "true"
+                - key: gpio
+                  operator: In
+                  values:
+                    - "false"
+                - key: uart
+                  operator: In
+                  values:
+                  - "true"
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
+      containers:
+      - name: dockeri2cmoni
+        image: bookserver2:31000/moni/dockeri2cmoni:0.14.6
+        env:
+          - name: GPIO_OK
+            value: 'false'
+          - name: I2C_OK
+            value: 'true'
+          - name: UART_ON
+            value: "true"
           - name: TRACER_GRPC_URL
             value: 'otel-grpc.bookserver.home:4317'
           - name: TRACER_ON
