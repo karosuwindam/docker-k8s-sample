@@ -63,6 +63,8 @@ spec:
             value: 'true'
           - name: TRACER_SERVICE_VERSION
             value: '0.14.6'
+          - name: TRACER_SERVICE_URL
+            value: 'dockeri2cmoni'
         ports:
         - containerPort: 9140
         resources:
@@ -143,6 +145,8 @@ spec:
             value: 'true'
           - name: TRACER_SERVICE_VERSION
             value: '0.14.6'
+          - name: TRACER_SERVICE_URL
+            value: 'dockeri2cmoni'
         ports:
         - containerPort: 9140
         resources:
@@ -223,6 +227,8 @@ spec:
             value: 'true'
           - name: TRACER_SERVICE_VERSION
             value: '0.14.6'
+          - name: TRACER_SERVICE_URL
+            value: 'dockeri2cmoni'
         ports:
         - containerPort: 9140
         resources:
