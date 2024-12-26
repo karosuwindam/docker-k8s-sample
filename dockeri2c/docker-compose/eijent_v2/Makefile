@@ -11,7 +11,7 @@ BUILD_OPTION = "type=image,push=true,registry.insecure=true"
 TARGET = ./Dockerfile
 TEMPLATE = Dockerfile_tmp
 TARGET_FILE = ./golang
-GO_VERSION = 1.22.1
+GO_VERSION = 1.22.7
 ARCH = arm64
 DOCKERFILE_FOLDER = .
 
