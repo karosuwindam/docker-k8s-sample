@@ -97,7 +97,7 @@ func EndRun() {
 
 func main() {
 	count := 0
-	tshutdown, terr := config.TracerStart(config.TraData.GrpcURL, config.TraData.ServiceName, ctx)
+	tshutdown, terr := config.TracerStart(config.TraData.GrpcURL, config.TraData.ServiceName, context.Background())
 	if terr != nil {
 		defer tshutdown(context.Background())
 	}
