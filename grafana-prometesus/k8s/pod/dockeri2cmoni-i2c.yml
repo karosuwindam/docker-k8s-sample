@@ -51,6 +51,12 @@ spec:
             value: 'true'
           - name: I2C_ON
             value: 'true'
+          - name: TRACER_GRPC_URL
+            value: 'otel-grpc.bookserver.home:4317'
+          - name: TRACER_ON
+            value: 'true'
+          - name: TRACER_SERVICE_VERSION
+            value: '0.14.6'
         ports:
         - containerPort: 9140
         resources:
@@ -119,6 +125,12 @@ spec:
             value: 'false'
           - name: I2C_OK
             value: 'true'
+          - name: TRACER_GRPC_URL
+            value: 'otel-grpc.bookserver.home:4317'
+          - name: TRACER_ON
+            value: 'true'
+          - name: TRACER_SERVICE_VERSION
+            value: '0.14.6'
         ports:
         - containerPort: 9140
         resources:
