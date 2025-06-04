@@ -153,6 +153,9 @@ function statusckJSON(output) {
         if (data.BookMarkStatus!="ok") {
           timer = setInterval(statusRun, 3000, output);
         }else {
+          if (document.getElementById("pagetype").value == "2"){
+            getnobleJSON("output");
+          }
           timer = nil
         }
       // document.getElementById(output).innerHTML = data;
