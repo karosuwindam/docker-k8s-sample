@@ -1,5 +1,5 @@
 # TAG = 24.0.0-fpm-alpine
-TAG = 0.2.0
+TAG = 0.2.1
 DOCKER = docker
 NAME = bookserver2:31000/karosu/tenki-ejent
 
@@ -32,6 +32,7 @@ rmi:
 	${DOCKER} image prune -f    
 build-arm: create
 	@echo "--- build Dockerfile --"
+	@echo ${DOCKER} build -t ${NAME}:${TAG} -f ${TARGET_FILE}/${TARGET} ${TARGET_FILE}
 	${DOCKER} build -t ${NAME}:${TAG} -f ${TARGET_FILE}/${TARGET} ${TARGET_FILE}
 push:
 	${DOCKER} push ${NAME}:${TAG}

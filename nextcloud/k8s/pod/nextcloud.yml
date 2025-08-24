@@ -19,8 +19,8 @@ spec:
       - name: nextcloud
         # image: arm32v7/nextcloud
         # image: nextcloud_app
-        image: bookserver2:31000/karosu/nextcloud:30.0.2
-        # image: bookserver2:31000/karosu/nextcloud:29.0.3
+        # image: bookserver2:31000/karosu/nextcloud:30.0.2
+        image: bookserver2:31000/karosu/nextcloud:31.0.1
         # image: nextcloud:24.0.0
         imagePullPolicy: IfNotPresent
         ports:
@@ -46,12 +46,19 @@ spec:
         volumeMounts:
         - name: nextcloud-st
           mountPath: /var/www/html/
-      nodeSelector:
-        type: k8s-worker-2
+        - name: nextcloud-ini
+          mountPath: /usr/local/etc/php/conf.d/nextcloud.ini
+          subPath: nextcloud.ini
       volumes:
       - name: nextcloud-st
         persistentVolumeClaim:
           claimName: nextcloud-pv-claim
+      - name: nextcloud-ini
+        configMap:
+          name: nextcloud.ini
+          items:
+            - key: nextcloud.ini
+              path: nextcloud.ini
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -65,6 +72,10 @@ spec:
                   operator: In
                   values:
                     - arm64
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - k8s-worker-2
 ---
 apiVersion: v1
 kind: Service

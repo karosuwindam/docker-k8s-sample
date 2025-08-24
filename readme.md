@@ -18,8 +18,69 @@ arm 用のnextcloud読み込みファイル
 1. raspi-cpu-temp \
   ラズベリーパイのCPU温度図るだけのprometesu拡張ファイル
 
+* CiliumをHelmでインストールするために以下コマンドでリポジトリを登録する
 
-inginx-ingressのインストール
+```Bash
+helm repo add cilium https://helm.cilium.io/
+helm repo update
+```
+
+以下コマンドで、cilium-systemのネームスペースを作成してから、helmコマンドでインストールを実行します。
+以下のコマンドは、kube-poroxyの機能置き換えやIngress Controllerの配置をciliumが行うことや、共有ロードバランサモードを設置するようにします。また、Prometheusによる監視を有効にしています。
+
+```bash
+helm install cilium cilium/cilium --version 1.16.5 \
+--namespace cilium-system \
+--create-namespace \
+--set kubeProxyReplacement=true \
+--set ingressController.enabled=true \
+--set ingressController.loadbalancerMode=shared
+# オプション: Ingress ControllerとLoad Balancer機能を使う場合: 
+```
+
+```bash
+helm install cilium cilium/cilium --version 1.16.5 \
+--namespace cilium-system \
+--create-namespace \
+--set kubeProxyReplacement=true \
+--set ingressController.enabled=true \
+--set ingressController.loadbalancerMode=shared \
+--set monitorAggregation=none \
+--set metrics.enabled=true \
+--set prometheus.enabled=true \
+--set hubble.enabled=true \
+--set hubble.relay.enabled=true \
+--set hubble.ui.enabled=true \
+--set hubble.ui.standalone.enabled=true
+```
+
+```
+kubectl -n cilium-system get pod -w
+```
+
+以下の通りの設定で、Prometheusによる監視を有効にする
+```bash
+helm upgrade cilium cilium/cilium --version 1.16.5 \
+--namespace cilium-system \
+--reuse-values \
+--set monitorAggregation=none \
+--set metrics.enabled=true \
+--set prometheus.enabled=true
+```
+```bash
+helm upgrade cilium cilium/cilium --version 1.16.5 \
+  --namespace cilium-system \
+  --reuse-values \
+  --set hubble.enabled=true \
+  --set hubble.relay.enabled=true \
+  --set hubble.ui.enabled=true \
+  --set hubble.ui.standalone.enabled=true
+```
+
+* inginx-ingressのインストール
+
+flunnel用のデータ設定
+
  ```
   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.46.0/deploy/static/provider/baremetal/deploy.yaml
 ```
@@ -55,6 +116,8 @@ kubectl label node/k8s-worker-4 node-role.kubernetes.io/worker=k8s-worker-4
 kubectl label node/k8s-worker-4 type=k8s-worker-4
 ```
 
+
+* flunnel用
 ```
 kubectl apply -f pvd/kuberente-pv.yaml 
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml

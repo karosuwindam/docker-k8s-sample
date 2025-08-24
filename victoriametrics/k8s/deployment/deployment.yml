@@ -11,7 +11,7 @@ spec:
     metadata:
       labels:
         app: victoriametrics
-      annotations:
+        # sidecar.istio.io/inject: "true"
       annotations:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8428'
@@ -34,7 +34,7 @@ spec:
                 - key: kubernetes.io/hostname
                   operator: In
                   values:
-                    - "k8s-worker-2"
+                    - "k8s-worker-1"
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -42,12 +42,12 @@ spec:
         effect: NoSchedule
       containers:
         - name: victoriametrics
-          image: victoriametrics/victoria-metrics:v1.93.1
+          image: victoriametrics/victoria-metrics:v1.101.0
           # image: victoriametrics/victoria-metrics:v1.87.4
           imagePullPolicy: IfNotPresent
           args:
             - --storageDataPath=/victoria-metrics-data
-            - --retentionPeriod=30d
+            - --retentionPeriod=365d
           ports:
             - containerPort: 8428
           resources:
@@ -64,37 +64,6 @@ spec:
         - name: storage
           persistentVolumeClaim:
             claimName: victoriametrics-pv-claim
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: "victoriametrics-pv-volume"
-  namespace: gf-space
-  labels:
-    type: "local"
-spec:
-  storageClassName: "victoriametrics"
-  persistentVolumeReclaimPolicy: Retain
-  capacity:
-    storage: "100Gi"
-  accessModes:
-    - ReadWriteOnce
-  nfs:
-    server: k8s-worker-2
-    path: /home/pi/usb/usb1/nfs/kubernetes/victoriametrics
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: victoriametrics-pv-claim
-  namespace: gf-space
-spec:
-  storageClassName: victoriametrics
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Gi
 ---
 apiVersion: v1
 kind: Service

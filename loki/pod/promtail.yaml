@@ -57,6 +57,9 @@ spec:
         - name: journal-run
           mountPath: /run/log/journal
           readOnly: true
+        - name: machine-id
+          mountPath: /etc/machine-id
+          readOnly: true
         #   readOnly: true
     #     - name: run
     #       mountPath: /var/run
@@ -100,6 +103,9 @@ spec:
       - hostPath:
           path: /run/log/journal
         name: journal-run
+      - hostPath:
+          path: /etc/machine-id
+        name: machine-id
       - name: varlibdockercontainers
         hostPath:
           path: /var/lib/docker/containers

@@ -10,9 +10,12 @@ spec:
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - nfsvers=4.1
   nfs:
-    server: k8s-worker-2
-    path: /home/pi/usb/usb1/nfs/kubernetes/jellyfin-config
+    server: k8s-worker-3
+    # path: /home/pi/usb/usb1/nfs/kubernetes/jellyfin-config
+    path: /home/pi/usb/usb1/nfs/jellyfin-config
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

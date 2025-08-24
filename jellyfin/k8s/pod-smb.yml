@@ -114,9 +114,21 @@ spec:
                   operator: In
                   values:
                     - arm64
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - k8s-worker-1
+                    - k8s-worker-2
+                    - k8s-worker-3
+                    - k8s-worker-4
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
       containers:
         - name: jellyfin
-          image: lscr.io/linuxserver/jellyfin:10.9.11
+          image: lscr.io/linuxserver/jellyfin:10.10.7
           imagePullPolicy: IfNotPresent
           envFrom:
           - configMapRef:
@@ -168,7 +180,7 @@ spec:
         #     claimName: jellyfin-pvc-smb-other 
         - name: nextcloud
           persistentVolumeClaim:
-            claimName: jellyfin-pvc-smb-pi 
+            claimName: jellyfin-pvc-smb-pi
         - name: jellyfin-meta
           persistentVolumeClaim:
             claimName: jellyfin-meta-pv-claim

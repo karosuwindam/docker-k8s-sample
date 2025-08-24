@@ -13,7 +13,7 @@ RUN go build -o app
 
 FROM ubuntu:22.04
 LABEL maintainer "karosu <karosuwindam@gmail.com>"
-LABEL version="0.2.0"
+LABEL version="0.2.1"
 LABEL docker_arch="aarch64"
 LABEL go_version="1.22.1"
 LABEL name="tenki-ejent"

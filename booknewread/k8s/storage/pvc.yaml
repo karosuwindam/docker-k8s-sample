@@ -1,13 +1,28 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: booknewread-pv-claim
+spec:
+  storageClassName: booknewread-config
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: k8s-worker-2
+    path: /home/pi/usb/usb1/nfs/kubernetes/pv0004
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: booknewread--pv-claim
+  name: booknewread-pvc-claim
   namespace: booknew-sp
-  annotations:
-    "volume.beta.kubernetes.io/storage-class": "slow"
 spec:
+  storageClassName: booknewread-config
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 5Gi

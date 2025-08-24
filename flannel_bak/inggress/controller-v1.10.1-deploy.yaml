@@ -438,6 +438,9 @@ spec:
         app.kubernetes.io/name: ingress-nginx
         app.kubernetes.io/part-of: ingress-nginx
         app.kubernetes.io/version: 1.10.1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10254"
     spec:
       containers:
       - args:
@@ -451,7 +454,7 @@ spec:
         - --validating-webhook-certificate=/usr/local/certificates/cert
         - --validating-webhook-key=/usr/local/certificates/key
         - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
-        - --enable-metrics=false
+        - --enable-metrics=true
         env:
         - name: POD_NAME
           valueFrom:
@@ -499,6 +502,9 @@ spec:
           protocol: TCP
         - containerPort: 8443
           name: webhook
+          protocol: TCP
+        - name: metrics
+          containerPort: 10254
           protocol: TCP
         readinessProbe:
           failureThreshold: 3

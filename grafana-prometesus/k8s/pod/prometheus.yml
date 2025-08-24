@@ -11,6 +11,7 @@ spec:
     metadata:
       labels:
         app: prometheus
+        # sidecar.istio.io/inject: "true"
       annotations:
         podinfo: "Prometheus"
     spec:
@@ -27,8 +28,8 @@ spec:
       serviceAccount: prometheus
       containers:
         - name: prometheus
-          # image: prom/prometheus:v2.46.0
-          image: prom/prometheus:v2.48.1
+          image: prom/prometheus:v3.3.0
+          # image: prom/prometheus:v2.55.1
           # image: prom/prometheus:v2.43.0
           imagePullPolicy: IfNotPresent
           #/bin/prometheus

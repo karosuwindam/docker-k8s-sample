@@ -11,6 +11,7 @@ spec:
     metadata:
       labels:
         app: grafana
+        sidecar.istio.io/inject: "true"
       annotations:
         podinfo: "Grafana"
     spec:

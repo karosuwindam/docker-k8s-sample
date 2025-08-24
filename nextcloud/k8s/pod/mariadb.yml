@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       # - image: turgon37/armhf-mariadb
-      - image: mariadb:10.11.10
+      - image: mariadb:10.11.11
         imagePullPolicy: IfNotPresent
         name: mariadb
         env:
@@ -43,8 +43,24 @@ spec:
         volumeMounts:
         - name: mariadb-persistent-storage
           mountPath: /var/lib/mysql
-      nodeSelector:
-        type: k8s-worker-2
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm
+                    - arm64
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - k8s-worker-2
       volumes:
       - name: mariadb-persistent-storage
         persistentVolumeClaim:

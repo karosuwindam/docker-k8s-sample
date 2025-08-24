@@ -35,7 +35,7 @@ spec:
       containers:
         - name: kavita
           # image: kizaing/kavita:0.7.8
-          image: jvmilazz0/kavita:0.8.2
+          image: jvmilazz0/kavita:0.8.7
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000

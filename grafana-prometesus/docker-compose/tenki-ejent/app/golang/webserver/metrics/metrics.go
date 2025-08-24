@@ -42,7 +42,7 @@ func getMetrics(w http.ResponseWriter, r *http.Request) {
 	api := contoroller.NewAPI()
 	datas := api.GetAmedasMapData()
 	output = convertData(datas)
-	w.Header().Set("Content-Type", "text/plan; charset=utf-8")
+	w.Header().Set("Content-Type", "text/plain; version=0.0.4")
 	w.WriteHeader(http.StatusOK)
 	for _, d := range output {
 		fmt.Fprintln(w, d)
@@ -55,7 +55,7 @@ func getMetricsV2(w http.ResponseWriter, r *http.Request) {
 	api := contoroller.NewAPI()
 	datas := api.GetAmedasMapDatav2()
 	output = convertDatav2(datas)
-	w.Header().Set("Content-Type", "text/plan; charset=utf-8")
+	w.Header().Set("Content-Type", "text/plain; version=0.0.4")
 	w.WriteHeader(http.StatusOK)
 	for _, d := range output {
 		fmt.Fprintln(w, d)

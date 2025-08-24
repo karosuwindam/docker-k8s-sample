@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: haproxy-cm
+  namespace: haproxy
+data:
+  haproxy.cfg: |
+    global
+        #log         127.0.0.1 local2 info
+        log stdout len 4096 format local syslog debug
+        #chroot      /var/lib/haproxy
+        #pidfile     /var/run/haproxy.pid
+        maxconn     256
+        #user        haproxy
+        #group       haproxy
+        #daemon
+        #quiet
+
+    defaults
+        mode               tcp
+        log                global
+        option             tcplog
+        timeout connect    10s
+        timeout client     30s
+        timeout server     30s
+
+    frontend prometheus
+        bind *:8405
+        mode http
+        http-request use-service prometheus-exporter if { path /metrics }
+        no log
+
+    frontend http-in
+        bind *:80
+        mode               tcp
+        default_backend    http-out
+
+    backend http-out
+        balance            roundrobin
+        server             kuberentes ingress-nginx-controller.ingress-nginx.svc.cluster.local:80 check
+        #server             kuberentes 192.168.0.209:80 check
+
+    frontend https-in
+        bind *:443
+        mode               tcp
+        default_backend    https-out
+
+    backend https-out
+        balance            roundrobin
+        option      ssl-hello-chk
+        server             kuberentes ingress-nginx-controller.ingress-nginx.svc.cluster.local:443 check
+        #server             kuberentes 192.168.0.209:443 check
+    
+    frontend otlp-grpc-in
+        bind otel-grpc.bookserver.home:4317
+        mode               tcp
+        default_backend    otlp-grpc-out
+    
+    backend otlp-grpc-out
+        balance            roundrobin
+        server             kuberentes otel-collector.gf-space.svc.cluster.local:4317 check
+    frontend buildkitd
+        bind buildkit.bookserver.home:1234
+        mode               tcp
+        default_backend    buildkitd-out
+    backend buildkitd-out
+        balance            roundrobin
+        server             kuberentes buildkitd.registry.svc.cluster.local:1234 check

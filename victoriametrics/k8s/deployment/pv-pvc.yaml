@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "victoriametrics-pv-volume"
+  namespace: gf-space
+  labels:
+    type: "local"
+spec:
+  storageClassName: "victoriametrics"
+  persistentVolumeReclaimPolicy: Retain
+  capacity:
+    storage: "100Gi"
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    server: k8s-worker-1
+    path: /home/pi/usb/usb1/nfs/victoriametrics
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: victoriametrics-pv-claim
+  namespace: gf-space
+spec:
+  storageClassName: victoriametrics
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi

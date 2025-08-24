@@ -181,6 +181,8 @@ spec:
     port: 8888
   selector:
     component: otel-collector
+  externalIPs:
+    - 192.168.0.151
 ---
 apiVersion: apps/v1
 kind: Deployment
