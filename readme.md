@@ -120,15 +120,17 @@ kubectl label node/k8s-worker-4 type=k8s-worker-4
 * flunnel用
 ```
 kubectl apply -f pvd/kuberente-pv.yaml 
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml
+```
+```
 kubectl apply -f metallb/metallb.yaml 
-kubectl apply -f inggress/controller-v1.8.0-deploy.yaml 
+kubectl apply -f inggress/controller-v1.10.1-deploy.yaml 
 ```
 
 ```
 kubectl apply -f docker-registry/k8s/namespace/
 kubectl apply -f docker-registry/k8s/volume/
-kubectl apply -f docker-registry/k8s/arm64/
+kubectl apply -f docker-registry/k8s/arm/
 kubectl apply -f docker-registry/k8s/ingress/
 
 kubectl apply -f grafana-prometesus/k8s/namespace/
@@ -186,14 +188,9 @@ kubectl apply -f booknewread/k8s/storage/
 kubectl apply -f booknewread/k8s/pod/
 kubectl apply -f booknewread/k8s/ingress/
 
-
-kubectl apply -f isbm_server/k8s/namesapace/
-kubectl apply -f isbm_server/k8s/volume/
-kubectl apply -f isbm_server/k8s/pod/
-kubectl apply -f isbm_server/k8s/ingress/
-
 kubectl apply -f nextcloud/k8s/namespace/
 kubectl apply -f nextcloud/k8s/volume/
+kubectl apply -f nextcloud/k8s/config/
 kubectl apply -f nextcloud/k8s/pod/
 
 kubectl apply -f loki/account
@@ -204,6 +201,54 @@ kubectl apply -f loki/pod
 kubectl apply -f buildkit/k8s
 
 kubectl apply -f kube-web-view/k8s
+
+kubectl apply -f haproxy/ns.yaml
+kubectl apply -f haproxy/configmap.yaml
+kubectl apply -f haproxy/deploy.yaml
+```
+
+longhorn
+```
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+
+helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace \
+  --set persistence.defaultDataPath=/mnt/longhorn-data \
+  --set persistence.defaultSettings.defaultReplicaCount=3 \
+  --set monitoring.enabled=true \
+  --set monitoring.prometheus.serviceMonitor.enabled=true
+
+kubectl apply -f longhorn/ingress.yaml
+```
+
+nfs://
+バックアップ設定する場合は以下の通りのものをURLへ
+```
+nfs://k8s-worker-2:/home/pi/usb/usb1/nfs/kubernetes/longhorn
+```
+
+
+other app
+```
+kubectl apply -f caliber/k8s/namespace/
+kubectl apply -f caliber/k8s/
+
+kubectl apply -f kavita/k8s/namesapce/
+kubectl apply -f kavita/k8s/volume/
+kubectl apply -f kavita/k8s/pod
+kubectl apply -f kavita/k8s/service
+```
+
+jellyfin
+```
+kubectl apply -f jellyfin/k8s/namespace/
+
+# NAS用
+kubectl -n jellyfin create secret generic smbcreds --from-literal username=USERNAME --from-literal password="PASSWORD"
+# Next用
+kubectl -n jellyfin create secret generic smbpicreds --from-literal username=USERNAME --from-literal password="PASSWORD"
+
+kubectl apply -f jellyfin/k8s/
 ```
 
 

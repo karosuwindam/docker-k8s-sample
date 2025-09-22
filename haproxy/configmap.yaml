@@ -20,9 +20,9 @@ data:
         mode               tcp
         log                global
         option             tcplog
-        timeout connect    10s
-        timeout client     30s
-        timeout server     30s
+        timeout connect    60s
+        timeout client     120s
+        timeout server     120s
 
     frontend prometheus
         bind *:8405

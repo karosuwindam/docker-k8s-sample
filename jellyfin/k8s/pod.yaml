@@ -1,0 +1,89 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+      annotations:
+        podinfo: "jellyfin:マルチメディアの総合管理"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - k8s-worker-1
+                    - k8s-worker-2
+                    - k8s-worker-3
+                    - k8s-worker-4
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
+      containers:
+        - name: jellyfin
+          image: lscr.io/linuxserver/jellyfin:10.10.7
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - configMapRef:
+              name: jellyfin-env
+          ports:
+            - containerPort: 8096
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: movies
+              mountPath: /data/movies
+              readOnly: true
+            # - name: music
+            #   mountPath: /data/music
+            #   readOnly: true
+            - name: nextcloud
+              mountPath: /data/nextcloud
+              readOnly: true
+          resources:
+            limits:
+              cpu: 2
+              memory: 6Gi
+            requests:
+              cpu: 0.6
+              memory: 3Gi
+          securityContext:
+            privileged: true
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: jellyfin-config
+        - name: movies
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-movies 
+        # - name: music
+        #   persistentVolumeClaim:
+        #     claimName: jellyfin-pvc-smb-music 
+        # - name: other
+        #   persistentVolumeClaim:
+        #     claimName: jellyfin-pvc-smb-other 
+        - name: nextcloud
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-smb-pi
+---
