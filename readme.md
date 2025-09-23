@@ -138,6 +138,7 @@ kubectl apply -f grafana-prometesus/k8s/role/
 kubectl apply -f grafana-prometesus/k8s/account/
 kubectl apply -f grafana-prometesus/k8s/kube-state-metrics/account/
 kubectl apply -f grafana-prometesus/k8s/kube-state-metrics/role/
+kubectl apply -f victoriametrics/k8s/deployment/pv-pvc.yaml
 kubectl apply -f victoriametrics/k8s/deployment/deployment.yml
 kubectl apply -f grafana-prometesus/k8s/kube-state-metrics/pod/
 
@@ -154,6 +155,9 @@ kubectl label nodes k8s-worker-2 uart=false
 kubectl label nodes k8s-worker-4 gpio=false
 kubectl label nodes k8s-worker-4 uart=true
 
+
+# e-paperの書き込み用
+kubectl label nodes k8s-worker-3 e-paper=true
 
 kubectl apply -f grafana-prometesus/k8s/volume/
 kubectl apply -f grafana-prometesus/k8s/config/
