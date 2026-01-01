@@ -21,6 +21,7 @@ type NobelChack struct {
 	MaxKakuyomuAPI int `env:"NOBEL_MAX_NAROU_API" envDefault:"2"`
 	MaxNarou18API  int `env:"NOBEL_MAX_NAROU_18_API" envDefault:"2"`
 	MaxAlphaAPI    int `env:"NOBEL_MAX_ALPHA_API" envDefault:"2"`
+	Timeout        int `env:"NOBEL_TIMEOUT" envDefault:"2000"` //ms
 }
 
 type TracerData struct {

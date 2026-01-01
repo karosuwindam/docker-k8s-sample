@@ -250,16 +250,7 @@ func narouAPIRead(ctx context.Context, api, url string) (NaroudData, error) {
 			output.apikey = tmp_url[:i]
 		}
 
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, api+"?ncode="+output.apikey+"&out=json", nil)
-		if err != nil {
-			return output, err
-		}
-		// client := new(http.Client)
-		client := http.Client{
-			Transport: otelhttp.NewTransport(http.DefaultTransport),
-		}
-		resp, err := client.Do(req)
-
+		resp, err := gethtmldata(ctx, api+"?ncode="+output.apikey+"&out=json")
 		if err != nil {
 			return output, err
 		}
@@ -274,6 +265,34 @@ func narouAPIRead(ctx context.Context, api, url string) (NaroudData, error) {
 		return output, errors.New("error for url")
 	}
 	return output, nil
+}
+
+func gethtmldata(ctx context.Context, url string) (*http.Response, error) {
+	ctx, span := config.TracerS(ctx, "gethtmldata", url)
+	defer span.End()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	client := http.Client{
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+		Timeout:   time.Duration(config.Nobel.Timeout) * time.Millisecond,
+	}
+	var resp *http.Response
+	for i := 0; i < 2; i++ {
+		resp, err = client.Do(req)
+		if err != nil {
+			break
+		}
+		span.SetAttributes(attribute.Int("statuscode", resp.StatusCode))
+		if resp.StatusCode == http.StatusOK {
+			break
+		} else {
+			slog.DebugContext(ctx, "gethtmldata retry", "times", i+1, "url", url, "statuscode", resp.StatusCode)
+			time.Sleep(200 * time.Microsecond)
+		}
+	}
+	return resp, err
 }
 
 func (nd *NaroudData) narouChangeList(ctx context.Context) (List, error) {
@@ -316,13 +335,7 @@ func getAlpha(ctx context.Context, urldata string) (documentdata, error) {
 	defer func(ch chan string) {
 		<-ch
 	}(kakuyomu_ch)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urldata, nil)
-	// client := new(http.Client)
-	client := http.Client{
-		Transport: otelhttp.NewTransport(http.DefaultTransport),
-	}
-
-	resp, err := client.Do(req)
+	resp, err := gethtmldata(ctx, urldata)
 
 	if err != nil {
 		return output, err
@@ -352,6 +365,7 @@ func getKakuyomu(ctx context.Context, urldata string) (documentdata, error) {
 	// client := new(http.Client)
 	client := http.Client{
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
+		Timeout:   time.Duration(config.Nobel.Timeout) * time.Millisecond,
 	}
 
 	resp, err := client.Do(req)
